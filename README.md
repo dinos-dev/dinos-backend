@@ -20,4 +20,7 @@ $ pnpm add compression
 # common dependecy
 $ pnpm add -D @types/csurf @types/hpp
 
+# winston logging 
+$ pnpm add nest-winston winston winston-daily-rotate-file 
+
 ```
