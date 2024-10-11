@@ -1,8 +1,8 @@
 ## Tastery Api Server
 
-
 > **Package**
-```bash 
+
+```bash
 # swagger module
 $ pnpm add @nestjs/swagger
 # http-status-code module
