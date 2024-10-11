@@ -15,6 +15,7 @@ $ pnpm add helmet
 $ pnpm add csurf
 $ pnpm add hpp
 $ pnpm add cross-env
+$ pnpm add compression
 
 # common dependecy
 $ pnpm add -D @types/csurf @types/hpp
