@@ -23,4 +23,36 @@ $ pnpm add -D @types/csurf @types/hpp
 # winston logging 
 $ pnpm add nest-winston winston winston-daily-rotate-file 
 
+# typeorm & mysql2 
+$ pnpm add @nestjs/typeorm typeorm mysql2
+
+```
+
+</br>
+
+----
+
+</br>
+
+> **DB Container Info**
+
+- MySQL version: 8.0.33
+- Managed via Docker Compose
+
+> **Prerequisites**
+
+- Docker OR Docker-Compose
+
+> **Starting the Docker Container**
+
+```bash
+# Start the docker container
+$ docker-compose up
+```
+
+> **Stopping the Docker Container**
+
+```bash
+# Stop the docker container
+$ docker-compose down 
 ```
