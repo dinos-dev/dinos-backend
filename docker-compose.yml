@@ -1,0 +1,13 @@
+services:
+  mysql:
+    image: mysql:8.0.33  
+    restart: always
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: dev
+      MYSQL_USER: dev
+      MYSQL_PASSWORD: dev
+      MYSQL_ROOT_PASSWORD: dev
