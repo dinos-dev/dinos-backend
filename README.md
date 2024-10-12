@@ -23,4 +23,7 @@ $ pnpm add -D @types/csurf @types/hpp
 # winston logging 
 $ pnpm add nest-winston winston winston-daily-rotate-file 
 
+# typeorm & mysql2 
+$ pnpm add @nestjs/typeorm typeorm mysql2
+
 ```
