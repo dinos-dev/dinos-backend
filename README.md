@@ -49,10 +49,10 @@ $ pnpm add @nestjs/typeorm typeorm mysql2
 # Start the docker container
 
 # dev 
-$ NODE_ENV=development docker-compose up —build  
+$ NODE_ENV=development docker-compose up --build
 
 # prod 
-$ NODE_ENV=production docker-compose up —build 
+$ NODE_ENV=production docker-compose up --build 
 
 ```
 
