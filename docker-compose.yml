@@ -1,6 +1,17 @@
+version: '3.8'
 services:
+  nestjs:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env.${NODE_ENV}  # NODE_ENV에 따라 동적으로 설정
+    depends_on:
+      - mysql
+      
   mysql:
-    image: mysql:8.0.33  
+    image: mysql:8.0.33
     restart: always
     volumes:
       - ./mysql-data:/var/lib/mysql
