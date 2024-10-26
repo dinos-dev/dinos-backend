@@ -9,8 +9,8 @@ import {
  * 스웨거 문서 설정
  */
 export const swaggerConfig = new DocumentBuilder()
-  .setTitle('Tastery Rest API Docs')
-  .setDescription('This Docs Tastery Rest Api Docs')
+  .setTitle('Dinos Rest API Docs')
+  .setDescription('This Docs Dinos Rest Api Docs')
   .setVersion('1.0')
   .addBearerAuth({
     type: 'http',

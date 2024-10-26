@@ -1,4 +1,4 @@
-## Tastery Api Server
+## Dinos Api Server
 
 > **Package**
 

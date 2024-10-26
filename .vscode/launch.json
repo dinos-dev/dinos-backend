@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "tastery debuger",
+            "name": "dinos debuger",
             "runtimeExecutable": "pnpm",
             "runtimeArgs": [
                 "run",
