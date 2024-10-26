@@ -23,3 +23,6 @@ export const ENV_SCERET_KEY = 'SC_KEY';
 export const ENV_AWS_REGION = 'REGION';
 // S3 BUCKET
 export const ENV_AWS_BUCKET = 'BUCKET';
+
+// HASH ROUNDS
+export const ENV_HASH_ROUNDS = 'HASH_ROUNDS';

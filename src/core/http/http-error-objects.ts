@@ -29,9 +29,9 @@ export const HttpErrorConstants = {
     message: '가입된 정보가 존재합니다.',
   } as HttpErrorFormat,
 
-  EXIST_ID: {
-    error: 'EXIST_ID',
-    message: '이미 가입된 아이디 입니다.',
+  EXIST_EMAIL: {
+    error: 'EXIST_EMAIL',
+    message: '이미 가입된 이메일일 정보가 존재해요.',
   } as HttpErrorFormat,
 
   EXIST_DATA: {
