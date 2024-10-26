@@ -8,6 +8,7 @@ import {
   ENV_DB_USER,
 } from '../const/env-keys.const';
 import { Injectable } from '@nestjs/common';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Injectable()
 export class OrmConfig implements TypeOrmOptionsFactory {
@@ -21,9 +22,10 @@ export class OrmConfig implements TypeOrmOptionsFactory {
       username: this.configService.get<string>(ENV_DB_USER),
       password: this.configService.get<string>(ENV_DB_PASSWORD),
       database: this.configService.get<string>(ENV_DB_DATABASE),
-      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: process.env.ENV_NODE === 'production' ? false : true,
       logging: process.env.ENV_NODE === 'production' ? false : true,
+      namingStrategy: new SnakeNamingStrategy(),
     };
   }
 }
