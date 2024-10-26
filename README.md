@@ -16,7 +16,7 @@ $ pnpm add csurf
 $ pnpm add hpp
 $ pnpm add cross-env
 $ pnpm add compression
-
+$ pnpm add class-validator class-transformer
 # common dependecy
 $ pnpm add -D @types/csurf @types/hpp
 
@@ -25,6 +25,11 @@ $ pnpm add nest-winston winston winston-daily-rotate-file
 
 # typeorm & mysql2 
 $ pnpm add @nestjs/typeorm typeorm mysql2
+$ pnpm add typeorm-naming-strategies
+
+# bcrypt
+$ pnpm add bcrypt
+$ pnpm add -D @types/bcrypt
 
 ```
 
