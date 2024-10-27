@@ -8,9 +8,7 @@ import {
 
 @ValidatorConstraint({ name: 'isStrictPhoneNumber', async: false })
 @Injectable()
-export class RegexpPhoneNumberValidator
-  implements ValidatorConstraintInterface
-{
+export class RegexpPhoneNumberValidator implements ValidatorConstraintInterface {
   validate(phoneNumber: string) {
     // 정확히 010-1234-5678 또는 011-1234-5678 형식만 허용
     const phoneRegex = /^(010|011)-\d{4}-\d{4}$/;

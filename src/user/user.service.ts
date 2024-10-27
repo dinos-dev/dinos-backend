@@ -25,15 +25,9 @@ export class UserService {
 
     const user = User.signup(dto);
 
-    user.password = hashedPassword(
-      user.password,
-      parseInt(this.confgiService.get<string>(ENV_HASH_ROUNDS)),
-    );
+    user.password = hashedPassword(user.password, parseInt(this.confgiService.get<string>(ENV_HASH_ROUNDS)));
 
-    user.phoneNumber = hashedPhone(
-      user.phoneNumber,
-      parseInt(this.confgiService.get<string>(ENV_HASH_ROUNDS)),
-    );
+    user.phoneNumber = hashedPhone(user.phoneNumber, parseInt(this.confgiService.get<string>(ENV_HASH_ROUNDS)));
 
     return await this.userRepository.save(user);
   }

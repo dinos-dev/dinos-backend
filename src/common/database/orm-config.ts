@@ -1,12 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import {
-  ENV_DB_DATABASE,
-  ENV_DB_HOST,
-  ENV_DB_PASSWORD,
-  ENV_DB_PORT,
-  ENV_DB_USER,
-} from '../const/env-keys.const';
+import { ENV_DB_DATABASE, ENV_DB_HOST, ENV_DB_PASSWORD, ENV_DB_PORT, ENV_DB_USER } from '../const/env-keys.const';
 import { Injectable } from '@nestjs/common';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 

@@ -13,12 +13,14 @@ import HttpResponse from 'src/core/http/http-response';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  /**회원가입*/
   @Post()
   async register(@Body() dto: CreateUserDto, @Res() res: Response) {
     const user = await this.userService.register(dto);
     return HttpResponse.created(res, { body: user.id });
   }
 
+  /**이메일 중복체크*/
   @Get('/check-email/:email')
   async checkExistEmail(@Res() res: Response, @Param('email') email: string) {
     const isExistEmail = await this.userService.checkExistEmail(email);

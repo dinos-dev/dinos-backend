@@ -7,8 +7,7 @@ export const ApiCommonErrorResponseTemplate = () => {
   return applyDecorators(
     ApiResponse({
       status: StatusCodes.INTERNAL_SERVER_ERROR,
-      description:
-        '서버에서 예외처리하지 않은 에러 발생시 ( 500에러 발생시 별도로 요청.)',
+      description: '서버에서 예외처리하지 않은 에러 발생시 ( 500에러 발생시 별도로 요청.)',
       content: {
         'application/json': {
           example: {

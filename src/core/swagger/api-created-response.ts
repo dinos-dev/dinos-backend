@@ -1,9 +1,5 @@
 import { applyDecorators, Type } from '@nestjs/common';
-import {
-  ApiCreatedResponse,
-  ApiExtraModels,
-  getSchemaPath,
-} from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { CreatedResponseDto } from './created-response-dto';
 
 /**
@@ -13,9 +9,7 @@ import { CreatedResponseDto } from './created-response-dto';
  * @param type: DTO
  * @param isArray: boolean
  * */
-export const ApiCreatedResponseTemplate = <
-  DtoClass extends Type<unknown>,
->(params?: {
+export const ApiCreatedResponseTemplate = <DtoClass extends Type<unknown>>(params?: {
   description?: string;
   type?: DtoClass;
   isArray?: boolean;
@@ -42,10 +36,7 @@ export const ApiCreatedResponseTemplate = <
         ],
       },
     };
-    return applyDecorators(
-      ApiExtraModels(CreatedResponseDto, params?.type),
-      ApiCreatedResponse(schema),
-    );
+    return applyDecorators(ApiExtraModels(CreatedResponseDto, params?.type), ApiCreatedResponse(schema));
   } else {
     const schema = {
       description: params?.description,
@@ -56,9 +47,6 @@ export const ApiCreatedResponseTemplate = <
         ],
       },
     };
-    return applyDecorators(
-      ApiExtraModels(CreatedResponseDto),
-      ApiCreatedResponse(schema),
-    );
+    return applyDecorators(ApiExtraModels(CreatedResponseDto), ApiCreatedResponse(schema));
   }
 };
