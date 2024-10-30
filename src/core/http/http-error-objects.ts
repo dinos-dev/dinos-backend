@@ -14,6 +14,11 @@ export const HttpErrorConstants = {
     message: '로그인이 필요합니다.',
   } as HttpErrorFormat,
 
+  UNAUTHORIZED_USER: {
+    error: 'UNAUTHORIZED_USER',
+    message: '아이디 또는 비밀번호가 잘못 되었습니다.',
+  } as HttpErrorFormat,
+
   FORBIDDEN: {
     error: 'FORBIDDEN',
     message: '권한이 없습니다.',
@@ -51,8 +56,7 @@ export const HttpErrorConstants = {
 
   VALIDATE_ERROR: {
     error: 'VALIDATE_ERROR',
-    message:
-      '입력 형식이 올바르지 않거나, 일치하지 않습니다. 다시 확인해주세요.',
+    message: '입력 형식이 올바르지 않거나, 일치하지 않습니다. 다시 확인해주세요.',
   } as HttpErrorFormat,
 
   NOT_MACHTED: {
