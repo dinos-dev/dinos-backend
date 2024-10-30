@@ -31,6 +31,9 @@ $ pnpm add typeorm-naming-strategies
 $ pnpm add bcrypt
 $ pnpm add -D @types/bcrypt
 
+# jwt 
+$ pnpm add @nestjs/jwt
+
 ```
 
 </br>
