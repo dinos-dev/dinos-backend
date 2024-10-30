@@ -2,27 +2,25 @@
  * ENV 에서 관리하는 정보들을 관리하는 파일
  */
 
-// DB HOST 정보
-export const ENV_DB_HOST = 'DB_HOST';
-// DB PORT 정보
-export const ENV_DB_PORT = 'DB_PORT';
-// DB 사용자 정보
-export const ENV_DB_USER = 'DB_USER';
-// DB password 정보
-export const ENV_DB_PASSWORD = 'DB_PASSWORD';
-// DB Database 정보
-export const ENV_DB_DATABASE = 'DB_DATABASE';
-
-// S3(CLOUDFRONT) BUCKET INFO
-export const ENV_S3_STORAGE = 'STORAGE';
-// AWS ACCESS KEY
-export const ENV_ACESS_KEY = 'AC_KEY';
-// AWS SCERET KEY
-export const ENV_SCERET_KEY = 'SC_KEY';
-// AWS REGION
-export const ENV_AWS_REGION = 'REGION';
-// S3 BUCKET
-export const ENV_AWS_BUCKET = 'BUCKET';
-
-// HASH ROUNDS
-export const ENV_HASH_ROUNDS = 'HASH_ROUNDS';
+export const ENV_CONFIG = {
+  DB: {
+    HOST: 'DB_HOST',
+    PORT: 'DB_PORT',
+    USER: 'DB_USER',
+    PASSWORD: 'DB_PASSWORD',
+    DATABASE: 'DB_DATABASE',
+  },
+  AWS: {
+    S3_PATH: 'S3_PATH',
+    S3_AC_KEY: 'S3_AC_KEY',
+    S3_SC_KEY: 'S3_SC_KEY',
+    REGION: 'REGION',
+    BUKET_NAME: 'BUCKET',
+  },
+  AUTH: {
+    HASH_ROUNDS: 'HASH_ROUNDS',
+    EXPOSE_ACCESS_TK: 'EXPOSE_ACCESS_TK',
+    EXPOSE_REFRESH_TK: 'EXPOSE_REFRESH_TK',
+    JWT_SECRET: 'JWT_SECRET',
+  },
+};
