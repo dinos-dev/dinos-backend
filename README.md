@@ -34,6 +34,9 @@ $ pnpm add -D @types/bcrypt
 # jwt 
 $ pnpm add @nestjs/jwt
 
+# passport 
+$ pnpm add @nestjs/passport passport passport-local @types/passport-local
+
 ```
 
 </br>
