@@ -7,6 +7,7 @@ import { validatedPassword } from 'src/core/utils/password.utils';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/common/const/env-keys.const';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,32 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
+
+  /**
+   * 로그인시 유저의 이메일과 패스워드 검증
+   * @param email
+   * @param password
+   * @returns User
+   */
+  async authenticate(email: string, password: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_USER);
+    }
+
+    const passOk = await validatedPassword(password, user.password);
+
+    if (!passOk) {
+      throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_USER);
+    }
+
+    return user;
+  }
 
   /**
    * @param userAgent
@@ -26,46 +53,34 @@ export class AuthService {
     const agent = detectPlatform(userAgent);
     console.log('agent ->', agent);
 
-    const user = await this.userRepository.findOne({
-      where: {
-        email: dto.email,
-      },
-    });
+    const user = await this.authenticate(dto.email, dto.password);
 
-    if (!user) {
-      throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_USER);
-    }
+    return {
+      refreshToken: await this.issueToken(user, true),
+      accessToken: await this.issueToken(user, false),
+    };
+  }
 
-    const passOk = await validatedPassword(dto.password, user.password);
-
-    if (!passOk) {
-      throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_USER);
-    }
-
+  /**
+   * 토큰 발행 함수
+   * @param user
+   * @param isRefreshToken  true -> refresh, false -> access
+   */
+  async issueToken(user: User, isRefreshToken: boolean) {
     const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
     const accessTokeknSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
 
-    return {
-      refreshToken: await this.jwtService.signAsync(
-        {
-          sub: user.id,
-          type: 'rt',
-        },
-        {
-          secret: refreshTokenSecret,
-          expiresIn: this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK),
-        },
-      ),
-      accessToken: await this.jwtService.signAsync(
-        {
-          sub: user.id,
-          type: 'at',
-        },
-        {
-          secret: accessTokeknSecret,
-          expiresIn: this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
-        },
-      ),
-    };
+    return await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        type: isRefreshToken ? 'rt' : 'at',
+      },
+      {
+        secret: isRefreshToken ? refreshTokenSecret : accessTokeknSecret,
+        expiresIn: isRefreshToken
+          ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
+          : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
+      },
+    );
   }
 }
