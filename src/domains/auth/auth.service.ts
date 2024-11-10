@@ -8,11 +8,15 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/common/const/env-keys.const';
 import { User } from 'src/domains/user/entities/user.entity';
+import { SocialUserDto } from './dtos/social-user.dto';
+import { SocialAuthEnum } from './consts/social-auth.enum';
+import { SocialAuthService } from '../social-auth/social-auth.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly socialAuthService: SocialAuthService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -59,6 +63,32 @@ export class AuthService {
       refreshToken: await this.issueToken(user, true),
       accessToken: await this.issueToken(user, false),
     };
+  }
+
+  /**
+   * @param userAgent
+   * @param dto SocialUserDto
+   * @returns Login Info
+   */
+  async socialLogin(userAgent: string, dto: SocialUserDto) {
+    // 유저 Agent detect
+    const agent = detectPlatform(userAgent);
+    console.log('agent ->', agent);
+
+    switch (dto.socialAuthType) {
+      case SocialAuthEnum.GOOGLE:
+        await this.socialAuthService.googleAuthClient();
+        break;
+      case SocialAuthEnum.APPLE:
+        await this.socialAuthService.appleAuthClient();
+        break;
+      case SocialAuthEnum.NAVER:
+        await this.socialAuthService.naverAuthClient();
+        break;
+      case SocialAuthEnum.KAKAO:
+        await this.socialAuthService.kakaoAuthClient();
+        break;
+    }
   }
 
   /**
