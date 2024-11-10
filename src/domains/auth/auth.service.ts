@@ -1,13 +1,13 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LoginUserDto } from './dtos/login-user.dto';
 import { detectPlatform } from './utils/client.util';
-import { UserRepository } from 'src/user/repositories/user.repository';
+import { UserRepository } from 'src/domains/user/repositories/user.repository';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { validatedPassword } from 'src/core/utils/password.utils';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/common/const/env-keys.const';
-import { User } from 'src/user/entities/user.entity';
+import { User } from 'src/domains/user/entities/user.entity';
 
 @Injectable()
 export class AuthService {
