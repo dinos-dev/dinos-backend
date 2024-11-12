@@ -37,33 +37,24 @@ export class User extends BaseModel {
     type: 'varchar',
     length: 30,
   })
-  firstName: string;
-
-  @Column({
-    type: 'varchar',
-    length: 30,
-  })
-  lastName: string;
+  userName: string;
 
   static signup({
     email,
     password,
     phoneNumber,
-    firstName,
-    lastName,
+    userName,
   }: {
     email: string;
     password: string;
     phoneNumber: string;
-    firstName: string;
-    lastName: string;
+    userName: string;
   }) {
     const user = new User();
     user.email = email;
     user.password = password;
     user.phoneNumber = phoneNumber;
-    user.firstName = firstName;
-    user.lastName = lastName;
+    user.userName = userName;
     return user;
   }
 }
