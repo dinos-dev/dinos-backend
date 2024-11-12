@@ -3,10 +3,12 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
-import { hashedPassword } from 'src/core/utils/password.utils';
-import { ENV_CONFIG } from 'src/common/const/env-keys.const';
-import { hashedPhone } from 'src/core/utils/phone-number.utils';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+// import { SocialAuthEnum } from '../auth/consts/social-auth.enum';
+
+// import { hashedPassword } from 'src/core/utils/password.utils';
+// import { ENV_CONFIG } from 'src/common/const/env-keys.const';
+// import { hashedPhone } from 'src/core/utils/phone-number.utils';
 
 @Injectable()
 export class UserService {
@@ -21,21 +23,18 @@ export class UserService {
    * @returns user
    */
   async register(dto: CreateUserDto): Promise<User> {
-    await this.checkExistEmail(dto.email);
-
     const user = User.signup(dto);
-
-    user.password = hashedPassword(
-      user.password,
-      parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
-    );
-
-    user.phoneNumber = hashedPhone(
-      user.phoneNumber,
-      parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
-    );
-
     return await this.userRepository.save(user);
+
+    // user.password = hashedPassword(
+    //   user.password,
+    //   parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
+    // );
+
+    // user.phoneNumber = hashedPhone(
+    //   user.phoneNumber,
+    //   parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
+    // );
   }
 
   /**

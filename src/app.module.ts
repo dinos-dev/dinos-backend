@@ -7,7 +7,6 @@ import { OrmConfig } from './common/database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domains/user/user.module';
 import { AuthModule } from './domains/auth/auth.module';
-import { SocialAuthModule } from './domains/social-auth/social-auth.module';
 
 @Module({
   imports: [
@@ -23,7 +22,6 @@ import { SocialAuthModule } from './domains/social-auth/social-auth.module';
     }),
     UserModule,
     AuthModule,
-    SocialAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

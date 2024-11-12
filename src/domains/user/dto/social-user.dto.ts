@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { IsRegexpPhoneNumber } from 'src/common/validators/regexp.phone-number';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 
-export class CreateUserDto {
+export class SocialUserDto {
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
@@ -25,17 +24,9 @@ export class CreateUserDto {
   @IsEnum(SocialAuthEnum)
   @IsNotEmpty()
   @ApiProperty({
-    description: '가입(인증) 유형',
-    example: 'google, naver, apple, kakao',
+    description: '소셜 로그인 타입',
+    example: 'google, naver, apple,kakao',
     required: true,
   })
   authType: SocialAuthEnum;
-
-  @IsString()
-  @IsNotEmpty()
-  password: string;
-
-  @IsRegexpPhoneNumber()
-  @IsNotEmpty()
-  phoneNumber: string;
 }
