@@ -4,6 +4,8 @@ import { initSwagger } from './core/swagger/swagger-config';
 import { middleware } from './app.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { winstonLogger } from './core/utils/winston.logger';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { HttpErrorConstants } from './core/http/http-error-objects';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -12,6 +14,16 @@ async function bootstrap() {
     bufferLogs: true,
     logger: winstonLogger, // replacing logger
   });
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      exceptionFactory: (errors) => {
+        console.log('error --->', errors);
+        return new BadRequestException(HttpErrorConstants.VALIDATE_ERROR);
+      },
+    }),
+  );
 
   middleware(app);
 

@@ -14,6 +14,11 @@ export const HttpErrorConstants = {
     message: '로그인이 필요합니다.',
   } as HttpErrorFormat,
 
+  UNAUTHORIZED_USER: {
+    error: 'UNAUTHORIZED_USER',
+    message: '아이디 또는 비밀번호가 잘못 되었습니다.',
+  } as HttpErrorFormat,
+
   FORBIDDEN: {
     error: 'FORBIDDEN',
     message: '권한이 없습니다.',
@@ -29,9 +34,9 @@ export const HttpErrorConstants = {
     message: '가입된 정보가 존재합니다.',
   } as HttpErrorFormat,
 
-  EXIST_ID: {
-    error: 'EXIST_ID',
-    message: '이미 가입된 아이디 입니다.',
+  EXIST_EMAIL: {
+    error: 'EXIST_EMAIL',
+    message: '이미 가입된 이메일 정보가 존재해요.',
   } as HttpErrorFormat,
 
   EXIST_DATA: {
@@ -51,8 +56,7 @@ export const HttpErrorConstants = {
 
   VALIDATE_ERROR: {
     error: 'VALIDATE_ERROR',
-    message:
-      '입력 형식이 올바르지 않거나, 일치하지 않습니다. 다시 확인해주세요.',
+    message: '입력값이 유효하지 않습니다. 다시 확인해주세요.',
   } as HttpErrorFormat,
 
   NOT_MACHTED: {

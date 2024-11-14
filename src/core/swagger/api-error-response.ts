@@ -20,9 +20,7 @@ export const ApiErrorResponseTemplate = (
       const errorParams: ApiResponseOptions = {
         status: status,
         description: errorFormatList.reduce((prev, current) => {
-          prev =
-            prev +
-            `- ${current.error}: ${current.description || current.message}     \n`;
+          prev = prev + `- ${current.error}: ${current.description || current.message}     \n`;
           return prev;
         }, ``),
         content: {

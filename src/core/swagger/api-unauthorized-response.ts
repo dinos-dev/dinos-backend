@@ -13,8 +13,7 @@ export const ApiUnauthorizedErrorResponse = () => {
         'application/json': {
           examples: {
             case_1: {
-              summary:
-                '엑세스 토큰 만료, 리프레시 토큰으로 엑세스 토큰 재발급 필요',
+              summary: '엑세스 토큰 만료, 리프레시 토큰으로 엑세스 토큰 재발급 필요',
               value: {
                 status: StatusCodes.UNAUTHORIZED,
                 message: HttpErrorConstants.EXPIRED_ACCESS_TOKEN.message,

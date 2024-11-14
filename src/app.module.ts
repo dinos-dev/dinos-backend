@@ -5,6 +5,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OrmConfig } from './common/database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { UserModule } from './domains/user/user.module';
+import { AuthModule } from './domains/auth/auth.module';
 
 @Module({
   imports: [
@@ -16,11 +18,10 @@ import { DataSource, DataSourceOptions } from 'typeorm';
     }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'development'
-          ? '.env.development'
-          : '.env.production',
+      envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env.production',
     }),
+    UserModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

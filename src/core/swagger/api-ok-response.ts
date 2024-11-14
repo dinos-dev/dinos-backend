@@ -31,10 +31,7 @@ export const ApiOkResponseTemplate = <DtoClass extends Type<unknown>>(params?: {
         ],
       },
     };
-    return applyDecorators(
-      ApiExtraModels(ResponseDto, params?.type),
-      ApiOkResponse(schema),
-    );
+    return applyDecorators(ApiExtraModels(ResponseDto, params?.type), ApiOkResponse(schema));
   } else {
     const schema = {
       description: params?.description,
