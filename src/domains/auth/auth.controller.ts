@@ -15,17 +15,17 @@ import { SocialUserDto } from '../user/dto/social-user.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // // 타 인증서버를 거치지 않는 일반 로그인
-  // @Post('login')
-  // async login(@Req() req: Request, @Res() res: Response, @Body() dto: LoginUserDto) {
-  //   const token = await this.authService.login(req.get('user-agent').toLowerCase(), dto);
-  //   return HttpResponse.created(res, { body: token });
-  // }
-
   // 소셜 로그인
   @Post('social-login')
   async socialLogin(@Req() req: Request, @Res() res: Response, @Body() dto: SocialUserDto) {
     const token = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
     return HttpResponse.created(res, { body: token });
   }
+
+  // // 타 인증서버를 거치지 않는 일반 로그인
+  // @Post('login')
+  // async login(@Req() req: Request, @Res() res: Response, @Body() dto: LoginUserDto) {
+  //   const token = await this.authService.login(req.get('user-agent').toLowerCase(), dto);
+  //   return HttpResponse.created(res, { body: token });
+  // }
 }

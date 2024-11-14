@@ -10,6 +10,11 @@ export class UserRepository extends Repository<User> {
     super(User, dataSource.createEntityManager());
   }
 
+  /**
+   * 로컬 가입시 이메일 검증
+   * @param email
+   * @returns boolean
+   */
   async existByEmail(email: string): Promise<boolean> {
     const existEmail = await this.exists({
       where: {
@@ -37,9 +42,11 @@ export class UserRepository extends Repository<User> {
   }
 
   /**
+   * FindOne User OR Create
    * @param dto SocialUserDto
+   * @returns user
    */
-  async findOrCreate(dto: SocialUserDto) {
+  async findOrCreate(dto: SocialUserDto): Promise<User> {
     const user = await this.findOne({
       select: {
         id: true,

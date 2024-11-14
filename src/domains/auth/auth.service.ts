@@ -19,6 +19,58 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * @param userAgent
+   * @param dto SocialUserDto
+   * @returns Login Info
+   */
+  async socialLogin(userAgent: string, dto: SocialUserDto) {
+    // 유저 Agent detect
+    const agent = detectPlatform(userAgent);
+    console.log('agent info: logging target->', agent);
+    const user = await this.userRepository.findOrCreate(dto);
+
+    const { accessToken, refreshToken } = await this.generatedTokens(user);
+
+    return { accessToken, refreshToken };
+  }
+
+  /**
+   * access & refresh Token 발행 메서드
+   * @param user
+   */
+  private async generatedTokens(user: User) {
+    const accessToken = await this.issueToken(user, false);
+    const refreshToken = await this.issueToken(user, true);
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  /**
+   * 토큰 발행 함수
+   * @param user
+   * @param isRefreshToken  true -> refresh, false -> access
+   */
+  async issueToken(user: User, isRefreshToken: boolean) {
+    const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
+    const accessTokeknSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
+
+    return await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        type: isRefreshToken ? 'rt' : 'at',
+      },
+      {
+        secret: isRefreshToken ? refreshTokenSecret : accessTokeknSecret,
+        expiresIn: isRefreshToken
+          ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
+          : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
+      },
+    );
+  }
+
   // /**
   //  * 로그인시 유저의 이메일과 패스워드 검증
   //  * @param email
@@ -62,79 +114,4 @@ export class AuthService {
   //     accessToken: await this.issueToken(user, false),
   //   };
   // }
-
-  /**
-   * @param userAgent
-   * @param dto SocialUserDto
-   * @returns Login Info
-   */
-  async socialLogin(userAgent: string, dto: SocialUserDto) {
-    // 유저 Agent detect
-    const agent = detectPlatform(userAgent);
-    console.log('agent info: logging target->', agent);
-    // 가입된 유저인지 아닌지 파악
-    const isExistEmailAndAuthType = await this.userRepository.existByEmailAndAuthType(dto.email, dto.authType);
-    console.log(isExistEmailAndAuthType);
-    // 가입된 유저인 경우 유저 정보 조회후 바로 토큰 발행
-    if (isExistEmailAndAuthType) {
-      const user = await this.userRepository.findOne({
-        select: {
-          id: true,
-          email: true,
-          authType: true,
-        },
-        where: {
-          email: dto.email,
-          authType: dto.authType,
-        },
-      });
-      const accessToken = await this.issueToken(user, false);
-      const refreshToken = await this.issueToken(user, true);
-      return {
-        accessToken,
-        refreshToken,
-      };
-    } else {
-      // 생성된 유저 정보가 없음.
-      const user = User.signup(dto);
-      console.log('user -->', user);
-      await this.userRepository.save(user);
-    }
-  }
-
-  /**
-   * access & refresh Token 발행 메서드
-   * @param user
-   */
-  private async generatedTokens(user: User) {
-    const accessToken = await this.issueToken(user, false);
-    const refreshToken = await this.issueToken(user, true);
-    return {
-      accessToken,
-      refreshToken,
-    };
-  }
-
-  /**
-   * 토큰 발행 함수
-   * @param user
-   * @param isRefreshToken  true -> refresh, false -> access
-   */
-  async issueToken(user: User, isRefreshToken: boolean) {
-    const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
-    const accessTokeknSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
-
-    return await this.jwtService.signAsync(
-      {
-        sub: user.id,
-        type: isRefreshToken ? 'rt' : 'at',
-      },
-      {
-        secret: isRefreshToken ? refreshTokenSecret : accessTokeknSecret,
-        expiresIn: isRefreshToken
-          ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
-          : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
-      },
-    );
-  }
 }
