@@ -16,7 +16,7 @@ import { SocialLoginDocs } from './swagger/rest-swagger.decorator';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // 소셜 로그인
+  // 소셜 가입 & 로그인
   @SocialLoginDocs()
   @Post('social-login')
   async socialLogin(@Req() req: Request, @Res() res: Response, @Body() dto: SocialUserDto) {
