@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/common/const/env-keys.const';
 import { User } from 'src/domains/user/entities/user.entity';
 import { SocialUserDto } from '../user/dto/social-user.dto';
+import { LoginResponseDto } from './dtos/login-response.dto';
 
 // import { LoginUserDto } from './dtos/login-user.dto';
 // import { HttpErrorConstants } from 'src/core/http/http-error-objects';
@@ -24,7 +25,7 @@ export class AuthService {
    * @param dto SocialUserDto
    * @returns Login Info
    */
-  async socialLogin(userAgent: string, dto: SocialUserDto) {
+  async socialLogin(userAgent: string, dto: SocialUserDto): Promise<LoginResponseDto> {
     // 유저 Agent detect
     const agent = detectPlatform(userAgent);
     console.log('agent info: logging target->', agent);

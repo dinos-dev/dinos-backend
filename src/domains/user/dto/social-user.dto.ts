@@ -25,7 +25,7 @@ export class SocialUserDto {
   @IsNotEmpty()
   @ApiProperty({
     description: '소셜 로그인 타입',
-    example: 'google, naver, apple,kakao',
+    example: 'google, naver, apple, kakao',
     required: true,
   })
   authType: SocialAuthEnum;

@@ -56,7 +56,7 @@ export const HttpErrorConstants = {
 
   VALIDATE_ERROR: {
     error: 'VALIDATE_ERROR',
-    message: '입력 형식이 올바르지 않거나, 일치하지 않습니다. 다시 확인해주세요.',
+    message: '입력값이 유효하지 않습니다. 다시 확인해주세요.',
   } as HttpErrorFormat,
 
   NOT_MACHTED: {
