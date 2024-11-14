@@ -6,6 +6,7 @@ import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-commo
 import { Response, Request } from 'express';
 import HttpResponse from 'src/core/http/http-response';
 import { SocialUserDto } from '../user/dto/social-user.dto';
+import { SocialLoginDocs } from './swagger/rest-swagger.decorator';
 // import { SocialUserDto } from './dtos/social-user.dto';
 // import { LoginUserDto } from './dtos/login-user.dto';
 
@@ -16,6 +17,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   // 소셜 로그인
+  @SocialLoginDocs()
   @Post('social-login')
   async socialLogin(@Req() req: Request, @Res() res: Response, @Body() dto: SocialUserDto) {
     const token = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
