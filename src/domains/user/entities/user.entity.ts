@@ -1,7 +1,7 @@
-// import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { RefreshToken } from 'src/domains/auth/entities/refresh-token.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User extends BaseModel {
@@ -32,16 +32,8 @@ export class User extends BaseModel {
   })
   authType: string;
 
-  // @Column({
-  //   type: 'varchar',
-  //   length: 255,
-  //   nullable: true,
-  //   default: null,
-  // })
-  // @Exclude({
-  //   toPlainOnly: true,
-  // })
-  // password: string;
+  @OneToMany(() => RefreshToken, (refToken) => refToken.user)
+  refToken: RefreshToken[];
 
   static signup({ email, userName, authType }: { email: string; userName: string; authType: SocialAuthEnum }) {
     const user = new User();

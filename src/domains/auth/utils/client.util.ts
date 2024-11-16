@@ -1,6 +1,6 @@
-import { PlatFormType } from '../consts/platform.const';
+import { PlatFormEnumType, PlatFormType } from '../consts/platform.const';
 
-export function detectPlatform(userAgent: string): string {
+export async function detectPlatform(userAgent: string): Promise<PlatFormEnumType> {
   let currentOS;
 
   const web = /mozilla/i.test(userAgent);
