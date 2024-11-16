@@ -7,6 +7,7 @@ import { ENV_CONFIG } from 'src/common/const/env-keys.const';
 import { User } from 'src/domains/user/entities/user.entity';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
+import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 
 // import { LoginUserDto } from './dtos/login-user.dto';
 // import { HttpErrorConstants } from 'src/core/http/http-error-objects';
@@ -16,6 +17,7 @@ import { LoginResponseDto } from './dtos/login-response.dto';
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -27,11 +29,13 @@ export class AuthService {
    */
   async socialLogin(userAgent: string, dto: SocialUserDto): Promise<LoginResponseDto> {
     // 유저 Agent detect
-    const agent = detectPlatform(userAgent);
+    const agent = await detectPlatform(userAgent);
     console.log('agent info: logging target->', agent);
     const user = await this.userRepository.findOrCreate(dto);
-
+    // 토큰 발급
     const { accessToken, refreshToken } = await this.generatedTokens(user);
+    // 토큰 정보 추가 or 업데이트
+    await this.refreshTokenRepository.updateOrCreateRefToken(user, refreshToken, agent);
 
     return { accessToken, refreshToken };
   }

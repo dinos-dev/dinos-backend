@@ -63,7 +63,8 @@ export class UserRepository extends Repository<User> {
       return user;
     } else {
       const newUser = User.signup(dto);
-      return await this.save(newUser);
+      return newUser;
+      // return await this.save(newUser);
     }
   }
 }
