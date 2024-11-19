@@ -11,6 +11,7 @@ export abstract class BaseModel {
   updatedAt: Date;
 
   @DeleteDateColumn({ default: null })
+  @Exclude()
   deletedAt: Date | null;
 
   @VersionColumn()

@@ -76,7 +76,7 @@ export const HttpErrorConstants = {
 
   INVALID_TOKEN: {
     error: 'UNAUTHORIZED',
-    message: '잘못된 토큰값 입니다.',
+    message: '토큰 검증 실패',
   } as HttpErrorFormat,
 
   CANNOT_FIND_USER: {
@@ -126,7 +126,7 @@ export const HttpErrorConstants = {
 
   NOT_FOUND_USER: {
     error: 'NOT_FOUND_USER',
-    message: '토큰에 지정된 유저가 존재하지 않습니다.',
+    message: '사용자를 찾을수 없습니다.',
   } as HttpErrorFormat,
 
   NOT_REGISTER_USER: {

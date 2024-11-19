@@ -51,6 +51,7 @@ export class UserRepository extends Repository<User> {
       select: {
         id: true,
         email: true,
+        userName: true,
         authType: true,
       },
       where: {
