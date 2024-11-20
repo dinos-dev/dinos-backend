@@ -6,7 +6,7 @@ import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-commo
 import { Response, Request } from 'express';
 import HttpResponse from 'src/core/http/http-response';
 import { SocialUserDto } from '../user/dto/social-user.dto';
-import { SocialLoginDocs } from './swagger/rest-swagger.decorator';
+import { RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { Authorization } from './deocorators/authorization.decorator';
 
@@ -25,6 +25,7 @@ export class AuthController {
   }
 
   // 토큰 재발급
+  @RotateAccessTokenDocs()
   @UseGuards(RefreshTokenGuard)
   @Post('token/access')
   async rotateAccessToken(@Res() res: Response, @Req() req: Request, @Authorization() token: string) {
@@ -33,8 +34,8 @@ export class AuthController {
     return HttpResponse.created(res, { body: accessToken });
   }
 
-  @Post('logout')
-  async logOut(@Res() res: Response) {
-    return HttpResponse.ok(res);
-  }
+  // @Post('logout')
+  // async logOut(@Res() res: Response) {
+  //   return HttpResponse.ok(res);
+  // }
 }
