@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res, Headers } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
@@ -7,8 +7,8 @@ import { Response, Request } from 'express';
 import HttpResponse from 'src/core/http/http-response';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { SocialLoginDocs } from './swagger/rest-swagger.decorator';
-// import { SocialUserDto } from './dtos/social-user.dto';
-// import { LoginUserDto } from './dtos/login-user.dto';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { Authorization } from './deocorators/authorization.decorator';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
@@ -24,25 +24,17 @@ export class AuthController {
     return HttpResponse.created(res, { body: token });
   }
 
+  // 토큰 재발급
+  @UseGuards(RefreshTokenGuard)
+  @Post('token/access')
+  async rotateAccessToken(@Res() res: Response, @Req() req: Request, @Authorization() token: string) {
+    const payload = req.user;
+    const accessToken = await this.authService.rotateAccessToken(payload, token);
+    return HttpResponse.created(res, { body: accessToken });
+  }
+
   @Post('logout')
   async logOut(@Res() res: Response) {
     return HttpResponse.ok(res);
   }
-
-  /**
-   * Todo:// Guard 모듈 추가
-   * 토큰을 엔드포인트에서 바로 헤더로 받는것이 아니라 Guard or Middleware에서 받아서 처리되도록 핸들링
-   */
-  @Post('token/access')
-  async rotateAccessToken(@Res() res: Response, @Headers('authorization') token: string) {
-    const accessToken = await this.authService.rotateAccessToken(token);
-    return HttpResponse.ok(res, accessToken);
-  }
-
-  // // 타 인증서버를 거치지 않는 일반 로그인
-  // @Post('login')
-  // async login(@Req() req: Request, @Res() res: Response, @Body() dto: LoginUserDto) {
-  //   const token = await this.authService.login(req.get('user-agent').toLowerCase(), dto);
-  //   return HttpResponse.created(res, { body: token });
-  // }
 }

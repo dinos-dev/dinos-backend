@@ -11,6 +11,6 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
   imports: [JwtModule.register({}), TypeOrmModule.forFeature([RefreshToken]), UserModule],
   controllers: [AuthController],
   providers: [AuthService, RefreshTokenRepository],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

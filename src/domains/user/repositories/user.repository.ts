@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
+import { TokenPayLoad } from 'src/domains/auth/interfaces/token-payload.interface';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -65,7 +66,20 @@ export class UserRepository extends Repository<User> {
     } else {
       const newUser = User.signup(dto);
       return newUser;
-      // return await this.save(newUser);
     }
+  }
+
+  /**
+   * get refTokens byUser
+   * @param payLoad TokenPayload
+   * @returns Auth
+   */
+  async findAllrefToken(payLoad: TokenPayLoad): Promise<User> {
+    return await this.findOne({
+      where: {
+        id: payLoad.sub,
+      },
+      relations: ['refToken'],
+    });
   }
 }

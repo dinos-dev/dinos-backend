@@ -9,11 +9,8 @@ import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { TokenPayload } from './interfaces/token-payload.interface';
-
-// import { LoginUserDto } from './dtos/login-user.dto';
-// import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-// import { validatedPassword } from 'src/core/utils/password.utils';
+import { TokenPayLoad } from './interfaces/token-payload.interface';
+import { RefreshToken } from './entities/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
@@ -44,19 +41,23 @@ export class AuthService {
 
   /**
    * Refresh 토큰으로 Access 재발급
-   * @param rawToken
+   * @param payLoad TokenPayload
+   * @param token refToken
    * @returns accessToken
    */
-  async rotateAccessToken(rawToken: string): Promise<string> {
-    const payLoad = await this.parseBearerToken(rawToken, true);
-    const user = await this.userRepository.findOne({
-      where: {
-        id: payLoad.sub,
-      },
-    });
+  async rotateAccessToken(payLoad: TokenPayLoad, token: string): Promise<string> {
+    const parseToken = await this.validateBearerToken(token);
+    const user = await this.userRepository.findAllrefToken(payLoad);
 
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
+    }
+
+    // 리프레시 항목과 일치하는 정보가 없는지 체크
+    const isValidToken = user.refToken.some((refToken: RefreshToken) => refToken.refToken === parseToken);
+
+    if (!isValidToken) {
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
     }
 
     const accessToken = await this.issueToken(user, false);
@@ -84,12 +85,11 @@ export class AuthService {
   }
 
   /**
-   * Bearer 토큰 검증 및 payload 반환 메서드
-   * @param rawToken 토큰
-   * @param isRefreshToken
-   * @returns PayLoad
+   * BeaerToken 검증
+   * @param rawToken
+   * @returns Seperated Token(AT, RT)
    */
-  async parseBearerToken(rawToken: string, isRefreshToken: boolean): Promise<TokenPayload> {
+  async validateBearerToken(rawToken: string): Promise<string> {
     const bearerTokenSplit = rawToken.split(' ');
 
     if (bearerTokenSplit.length !== 2) {
@@ -102,8 +102,17 @@ export class AuthService {
       throw new BadRequestException(HttpErrorConstants.INVALID_TOKEN);
     }
 
-    const payload = await this.verifyAsyncToken(token, isRefreshToken);
+    return token;
+  }
 
+  /**
+   * Bearer 토큰 검증 및 payload 반환
+   * @param token
+   * @param isRefreshToken
+   * @returns PayLoad
+   */
+  async parseBearerToken(token: string, isRefreshToken: boolean): Promise<TokenPayLoad> {
+    const payload = await this.verifyAsyncToken(token, isRefreshToken);
     return payload;
   }
 
@@ -121,9 +130,11 @@ export class AuthService {
     } catch (error) {
       console.error('token verify exception error ->', error.name);
       if (error.name === 'TokenExpiredError') {
+        // 토큰 만료 핸들링
         throw new UnauthorizedException(HttpErrorConstants.EXPIRED_TOKEN);
       }
       if (error.name === 'JsonWebTokenError') {
+        // signature 불일치
         throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
       }
     }
@@ -143,12 +154,11 @@ export class AuthService {
   }
 
   /**
-   * 토큰 페이로드 생성 메서드
    * @param user
    * @param isRefreshToken
    * @returns TokenPayload
    */
-  private async createPayload(user: User, isRefreshToken: boolean): Promise<TokenPayload> {
+  private async createPayload(user: User, isRefreshToken: boolean): Promise<TokenPayLoad> {
     if (isRefreshToken) {
       return { sub: user.id }; // 최소 정보만 포함
     }
