@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
@@ -7,6 +7,7 @@ import { OrmConfig } from './common/database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domains/user/user.module';
 import { AuthModule } from './domains/auth/auth.module';
+import { BearerAccessTokenMiddleware } from './domains/auth/middlewares/bearer-access-token.middleware';
 
 @Module({
   imports: [
@@ -26,4 +27,20 @@ import { AuthModule } from './domains/auth/auth.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(BearerAccessTokenMiddleware)
+      .exclude(
+        {
+          path: 'auth/social-login',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/token/access',
+          method: RequestMethod.POST,
+        },
+      )
+      .forRoutes('*');
+  }
+}
