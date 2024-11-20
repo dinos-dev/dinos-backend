@@ -1,7 +1,8 @@
+import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 import { RefreshToken } from 'src/domains/auth/entities/refresh-token.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class User extends BaseModel {
@@ -31,6 +32,10 @@ export class User extends BaseModel {
     comment: '소셜 가입 방식 유형',
   })
   authType: string;
+
+  @DeleteDateColumn({ default: null })
+  @Exclude()
+  deletedAt: Date | null;
 
   @OneToMany(() => RefreshToken, (refToken) => refToken.user)
   refToken: RefreshToken[];
