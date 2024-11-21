@@ -33,6 +33,12 @@ export class User extends BaseModel {
   })
   authType: string;
 
+  @Column({
+    type: 'boolean',
+    default: true,
+  })
+  isActive: boolean;
+
   @DeleteDateColumn({ default: null })
   @Exclude()
   deletedAt: Date | null;

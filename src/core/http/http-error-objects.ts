@@ -118,9 +118,9 @@ export const HttpErrorConstants = {
 };
 
 HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR = [
-  HttpErrorConstants.UNAUTHORIZED,
   HttpErrorConstants.NOT_FOUND_TOKEN,
   HttpErrorConstants.INVALID_TOKEN,
   HttpErrorConstants.EXPIRED_TOKEN,
+  HttpErrorConstants.INVALID_TOKEN_FORMAT,
   HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE,
 ];
