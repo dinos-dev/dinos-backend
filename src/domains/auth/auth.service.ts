@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { detectPlatform } from './utils/client.util';
 import { UserRepository } from 'src/domains/user/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
@@ -94,13 +94,13 @@ export class AuthService {
     const bearerTokenSplit = rawToken.split(' ');
 
     if (bearerTokenSplit.length !== 2) {
-      throw new BadRequestException(HttpErrorConstants.INVALID_TOKEN);
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN_FORMAT);
     }
 
     const [bearer, token] = bearerTokenSplit;
 
     if (bearer.toLowerCase() !== 'bearer') {
-      throw new BadRequestException(HttpErrorConstants.INVALID_TOKEN);
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_BEARER_TOKEN);
     }
 
     return token;
@@ -136,7 +136,7 @@ export class AuthService {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
       }
     }
   }

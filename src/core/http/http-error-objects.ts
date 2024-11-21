@@ -36,22 +36,7 @@ export const HttpErrorConstants = {
 
   EXIST_EMAIL: {
     error: 'EXIST_EMAIL',
-    message: '이미 가입된 이메일 정보가 존재해요.',
-  } as HttpErrorFormat,
-
-  EXIST_DATA: {
-    error: 'EXIST_DATA',
-    message: '해당 정보가 이미 존재합니다.',
-  } as HttpErrorFormat,
-
-  FILE_SIZE_LIMIT_EXCEEDED: {
-    error: 'FILE_SIZE_LIMIT_EXCEEDED',
-    message: '업로드 하는 파일의 사이즈가 너무 큽니다.',
-  } as HttpErrorFormat,
-
-  INVALID_FILE_TYPE: {
-    error: 'INVALID_FILE_TYPE',
-    message: '파일의 규격이 다릅니다.',
+    message: '이미 가입된 이메일 정보가 존재합니다.',
   } as HttpErrorFormat,
 
   VALIDATE_ERROR: {
@@ -69,19 +54,14 @@ export const HttpErrorConstants = {
     message: '이메일 또는 비밀번호가 올바르지 않습니다.',
   } as HttpErrorFormat,
 
-  INVALID_PASSWORD: {
-    error: 'INVALID_PASSWORD',
-    message: '비밀번호가 올바르지 않습니다. ',
-  } as HttpErrorFormat,
-
   INVALID_TOKEN: {
-    error: 'UNAUTHORIZED',
+    error: 'INVALID_TOKEN',
     message: '토큰 검증 실패',
   } as HttpErrorFormat,
 
-  CANNOT_FIND_USER: {
-    error: 'CANNOT_FIND_USER',
-    message: '유저를 찾을 수 없습니다.',
+  INVALID_TOKEN_FORMAT: {
+    error: 'INVALID_TOKEN_FORMAT',
+    message: '토큰 포맷이 일치하지 않습니다.',
   } as HttpErrorFormat,
 
   EXPIRED_ACCESS_TOKEN: {
@@ -99,8 +79,8 @@ export const HttpErrorConstants = {
     message: '토큰이 만료되었습니다.',
   } as HttpErrorFormat,
 
-  FORBIDDEN_TOKEN: {
-    error: 'FORBIDDEN_TOKEN',
+  UNAUTHORIZED_INVALIE_SIGNATURE: {
+    error: 'UNAUTHORIZED_INVALIE',
     message: '토큰의 시그니처가 불일치 합니다.',
   } as HttpErrorFormat,
 
@@ -111,7 +91,7 @@ export const HttpErrorConstants = {
 
   INVALID_BEARER_TOKEN: {
     error: 'INVALID_BEARER_TOKEN',
-    message: '토큰의 타입이 Bearer 유형이 아닙니다.',
+    message: '잘못된 토큰 타입입니다.',
   } as HttpErrorFormat,
 
   NOT_COLLETED_ACCESS_TYPE: {
@@ -133,4 +113,14 @@ export const HttpErrorConstants = {
     error: 'NOT_REGISTER_USER',
     message: '가입된 유저가 아닙니다.',
   } as HttpErrorFormat,
+
+  COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Beaer Access Token Error Template)
 };
+
+HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR = [
+  HttpErrorConstants.UNAUTHORIZED,
+  HttpErrorConstants.NOT_FOUND_TOKEN,
+  HttpErrorConstants.INVALID_TOKEN,
+  HttpErrorConstants.EXPIRED_TOKEN,
+  HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE,
+];

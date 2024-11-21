@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
@@ -22,13 +22,13 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
     const bearerTokenSplit = authHeader.split(' ');
 
     if (bearerTokenSplit.length !== 2) {
-      throw new BadRequestException(HttpErrorConstants.INVALID_TOKEN);
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN_FORMAT);
     }
 
     const [bearer, token] = bearerTokenSplit;
 
     if (bearer.toLowerCase() !== 'bearer') {
-      throw new BadRequestException(HttpErrorConstants.INVALID_TOKEN);
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_BEARER_TOKEN);
     }
 
     try {
@@ -47,7 +47,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
       }
       next();
     }
@@ -70,7 +70,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
       }
     }
   }

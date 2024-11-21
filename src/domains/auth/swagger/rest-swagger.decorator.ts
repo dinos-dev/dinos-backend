@@ -56,11 +56,7 @@ export const RotateAccessTokenDocs = () => {
       },
       {
         status: StatusCodes.UNAUTHORIZED,
-        errorFormatList: [
-          HttpErrorConstants.INVALID_TOKEN,
-          HttpErrorConstants.NOT_FOUND_TOKEN,
-          HttpErrorConstants.EXPIRED_TOKEN,
-        ],
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
       },
     ]),
   );
@@ -87,11 +83,7 @@ export const LogOutDocs = () => {
     ApiErrorResponseTemplate([
       {
         status: StatusCodes.UNAUTHORIZED,
-        errorFormatList: [
-          HttpErrorConstants.INVALID_TOKEN,
-          HttpErrorConstants.NOT_FOUND_TOKEN,
-          HttpErrorConstants.EXPIRED_TOKEN,
-        ],
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
       },
     ]),
   );
