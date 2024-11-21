@@ -21,7 +21,7 @@ export default class HttpResponse {
   }
 
   static noContent(res: Response): Response<unknown> {
-    return res.status(status.OK).json();
+    return res.status(status.NO_CONTENT).json();
   }
 
   static badRequest<T>(res: Response, object?: T | Error): Response<unknown> {

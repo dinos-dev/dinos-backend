@@ -11,6 +11,7 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { TokenPayLoad } from './interfaces/token-payload.interface';
 import { RefreshToken } from './entities/refresh-token.entity';
+import { DeleteResult } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -138,6 +139,17 @@ export class AuthService {
         throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
       }
     }
+  }
+
+  /**
+   * refToken을 제거
+   * @param payLoad
+   * @returns
+   */
+  async removeRefToken(payLoad: TokenPayLoad): Promise<DeleteResult> {
+    return this.refreshTokenRepository.delete({
+      user: { id: payLoad.sub },
+    });
   }
 
   /**

@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiCreatedResponseTemplate } from 'src/core/swagger/api-created-response';
@@ -54,6 +54,37 @@ export const RotateAccessTokenDocs = () => {
         status: StatusCodes.BAD_REQUEST,
         errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
       },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: [
+          HttpErrorConstants.INVALID_TOKEN,
+          HttpErrorConstants.NOT_FOUND_TOKEN,
+          HttpErrorConstants.EXPIRED_TOKEN,
+        ],
+      },
+    ]),
+  );
+};
+
+/**로그아웃 */
+export const LogOutDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '로그아웃',
+      description: `
+      - 헤더에 authorization key로 Bearer AccessToken을 요청
+      - 응답 성공시 204 noContent를 반환한다 
+      `,
+    }),
+    ApiHeader({
+      name: 'authorization',
+      description: 'access token in Bearer format',
+      required: true,
+    }),
+    ApiNoContentResponse({
+      description: '로그아웃 성공 - 반환되는 데이터는 별도로 없다',
+    }),
+    ApiErrorResponseTemplate([
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: [

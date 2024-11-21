@@ -6,7 +6,7 @@ import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-commo
 import { Response, Request } from 'express';
 import HttpResponse from 'src/core/http/http-response';
 import { SocialUserDto } from '../user/dto/social-user.dto';
-import { RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
+import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { Authorization } from './deocorators/authorization.decorator';
 
@@ -34,8 +34,12 @@ export class AuthController {
     return HttpResponse.created(res, { body: accessToken });
   }
 
-  // @Post('logout')
-  // async logOut(@Res() res: Response) {
-  //   return HttpResponse.ok(res);
-  // }
+  // 로그아웃
+  @LogOutDocs()
+  @Post('logout')
+  async logOut(@Res() res: Response, @Req() req: Request) {
+    const payload = req.user;
+    await this.authService.removeRefToken(payload);
+    return HttpResponse.noContent(res);
+  }
 }
