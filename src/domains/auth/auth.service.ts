@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { detectPlatform } from './utils/client.util';
 import { UserRepository } from 'src/domains/user/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
@@ -11,7 +11,7 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { TokenPayLoad } from './interfaces/token-payload.interface';
 import { RefreshToken } from './entities/refresh-token.entity';
-import { DeleteResult } from 'typeorm';
+import { DataSource, DeleteResult } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -20,6 +20,7 @@ export class AuthService {
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly dataSource: DataSource,
   ) {}
 
   /**
@@ -31,13 +32,27 @@ export class AuthService {
     // 유저 Agent detect
     const agent = await detectPlatform(userAgent);
     console.log('agent info: logging target->', agent);
-    const user = await this.userRepository.findOrCreate(dto);
-    // 토큰 발급
-    const { accessToken, refreshToken } = await this.generatedTokens(user);
-    // 토큰 정보 추가 or 업데이트
-    await this.refreshTokenRepository.updateOrCreateRefToken(user, refreshToken, agent);
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      const user = await this.userRepository.findOrCreate(dto, qr);
+      // 토큰 발급
+      const { accessToken, refreshToken } = await this.generatedTokens(user);
 
-    return { accessToken, refreshToken };
+      // 토큰 정보 추가 or 업데이트
+      await this.refreshTokenRepository.updateOrCreateRefToken(user, refreshToken, agent, qr);
+
+      await qr.commitTransaction();
+
+      return { accessToken, refreshToken };
+    } catch (err) {
+      await qr.rollbackTransaction();
+      console.log('error->', err);
+      throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
+    } finally {
+      await qr.release();
+    }
   }
 
   /**

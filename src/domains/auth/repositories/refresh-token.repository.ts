@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { User } from 'src/domains/user/entities/user.entity';
 import { PlatFormEnumType } from '../consts/platform.const';
@@ -15,10 +15,11 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
    * @param user User
    * @param refToken refreshToken
    * @param platForm signup Platform
+   * @param qr QueryRunner
    * @returns
    */
-  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType) {
-    let userToken = await this.findOne({
+  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType, qr: QueryRunner) {
+    let userToken = await qr.manager.findOne(RefreshToken, {
       where: {
         user,
       },
@@ -33,6 +34,6 @@ export class RefreshTokenRepository extends Repository<RefreshToken> {
         platForm,
       });
     }
-    await this.save(userToken);
+    await qr.manager.save(RefreshToken, userToken);
   }
 }
