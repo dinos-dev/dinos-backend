@@ -14,3 +14,11 @@ export class LoginResponseDto {
   })
   refreshToken: string;
 }
+
+export class RotateAccessTokenDto {
+  @ApiProperty({
+    description: 'accessToken',
+    example: 'eInR59.eyJiJhdCIsImlhdCI6MTc.37gbkd4jAx123c',
+  })
+  accessToken: string;
+}

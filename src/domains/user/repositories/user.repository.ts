@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
+import { TokenPayLoad } from 'src/domains/auth/interfaces/token-payload.interface';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -46,11 +47,12 @@ export class UserRepository extends Repository<User> {
    * @param dto SocialUserDto
    * @returns user
    */
-  async findOrCreate(dto: SocialUserDto): Promise<User> {
-    const user = await this.findOne({
+  async findOrCreate(dto: SocialUserDto, qr: QueryRunner): Promise<User> {
+    const user = await qr.manager.findOne(User, {
       select: {
         id: true,
         email: true,
+        userName: true,
         authType: true,
       },
       where: {
@@ -63,7 +65,22 @@ export class UserRepository extends Repository<User> {
       return user;
     } else {
       const newUser = User.signup(dto);
-      return await this.save(newUser);
+      await qr.manager.save(User, newUser);
+      return newUser;
     }
+  }
+
+  /**
+   * get refTokens byUser
+   * @param payLoad TokenPayload
+   * @returns Auth
+   */
+  async findAllrefToken(payLoad: TokenPayLoad): Promise<User> {
+    return await this.findOne({
+      where: {
+        id: payLoad.sub,
+      },
+      relations: ['refToken'],
+    });
   }
 }

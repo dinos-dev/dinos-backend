@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
@@ -6,9 +6,9 @@ import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-commo
 import { Response, Request } from 'express';
 import HttpResponse from 'src/core/http/http-response';
 import { SocialUserDto } from '../user/dto/social-user.dto';
-import { SocialLoginDocs } from './swagger/rest-swagger.decorator';
-// import { SocialUserDto } from './dtos/social-user.dto';
-// import { LoginUserDto } from './dtos/login-user.dto';
+import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { Authorization } from './deocorators/authorization.decorator';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
@@ -24,10 +24,22 @@ export class AuthController {
     return HttpResponse.created(res, { body: token });
   }
 
-  // // 타 인증서버를 거치지 않는 일반 로그인
-  // @Post('login')
-  // async login(@Req() req: Request, @Res() res: Response, @Body() dto: LoginUserDto) {
-  //   const token = await this.authService.login(req.get('user-agent').toLowerCase(), dto);
-  //   return HttpResponse.created(res, { body: token });
-  // }
+  // 토큰 재발급
+  @RotateAccessTokenDocs()
+  @UseGuards(RefreshTokenGuard)
+  @Post('token/access')
+  async rotateAccessToken(@Res() res: Response, @Req() req: Request, @Authorization() token: string) {
+    const payload = req.user;
+    const accessToken = await this.authService.rotateAccessToken(payload, token);
+    return HttpResponse.created(res, { body: accessToken });
+  }
+
+  // 로그아웃
+  @LogOutDocs()
+  @Post('logout')
+  async logOut(@Res() res: Response, @Req() req: Request) {
+    const payload = req.user;
+    await this.authService.removeRefToken(payload);
+    return HttpResponse.noContent(res);
+  }
 }
