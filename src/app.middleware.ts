@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import * as csurf from 'csurf';
+// import * as csurf from 'csurf';
 import * as helmet from 'helmet';
 import * as hpp from 'hpp';
 import * as compression from 'compression';
@@ -13,7 +13,7 @@ export function middleware(app: INestApplication): INestApplication {
   app.use(compression());
 
   if (isProduction) {
-    app.use(csurf());
+    // app.use(csurf());
 
     app.use(hpp());
 
