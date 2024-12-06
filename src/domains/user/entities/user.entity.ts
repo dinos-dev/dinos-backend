@@ -26,6 +26,7 @@ export class User extends BaseModel {
   })
   userName: string;
 
+  @Exclude()
   @Column({
     type: 'enum',
     enum: Object.values(SocialAuthEnum),
@@ -33,14 +34,15 @@ export class User extends BaseModel {
   })
   authType: string;
 
+  @Exclude()
   @Column({
     type: 'boolean',
     default: true,
   })
   isActive: boolean;
 
-  @DeleteDateColumn({ default: null })
   @Exclude()
+  @DeleteDateColumn({ default: null })
   deletedAt: Date | null;
 
   @OneToMany(() => RefreshToken, (refToken) => refToken.user)
