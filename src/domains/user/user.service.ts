@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
@@ -49,37 +49,17 @@ export class UserService {
       await qr.release();
     }
   }
-  // /**
-  //  * 회원가입
-  //  * @param createUserDto
-  //  * @returns user
-  //  */
-  // async register(dto: CreateUserDto): Promise<User> {
-  //   const user = User.signup(dto);
-  //   return await this.userRepository.save(user);
 
-  //   // user.password = hashedPassword(
-  //   //   user.password,
-  //   //   parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
-  //   // );
-
-  //   // user.phoneNumber = hashedPhone(
-  //   //   user.phoneNumber,
-  //   //   parseInt(this.confgiService.get<string>(ENV_CONFIG.AUTH.HASH_ROUNDS)),
-  //   // );
-  // }
-
-  // /**
-  //  * 중복 이메일 체크
-  //  * @param email 이메일
-  //  * @returns boolean
-  //  */
-  // async checkExistEmail(email: string): Promise<boolean> {
-  //   const isExistEmail = await this.userRepository.existByEmail(email);
-
-  //   if (isExistEmail) {
-  //     throw new ConflictException(HttpErrorConstants.EXIST_EMAIL);
-  //   }
-  //   return isExistEmail;
-  // }
+  /**
+   * 유저 단일 조회
+   * @param payLoad
+   * @returns
+   */
+  async findById(payLoad: TokenPayLoad): Promise<User> {
+    const user = await this.userRepository.findById(payLoad);
+    if (!user) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
+    }
+    return user;
+  }
 }

@@ -71,7 +71,7 @@ export class UserRepository extends Repository<User> {
   }
 
   /**
-   * get refTokens byUser
+   * get ref-token by user
    * @param payLoad TokenPayload
    * @returns Auth
    */
@@ -81,6 +81,19 @@ export class UserRepository extends Repository<User> {
         id: payLoad.sub,
       },
       relations: ['refToken'],
+    });
+  }
+
+  /**
+   * payLoad sub based user find
+   * @param payLoad TokenPayload
+   * @returns User
+   */
+  async findById(papyLoad: TokenPayLoad): Promise<User> {
+    return await this.findOne({
+      where: {
+        id: papyLoad.sub,
+      },
     });
   }
 }

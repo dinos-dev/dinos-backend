@@ -2,14 +2,15 @@ import { CreateDateColumn, UpdateDateColumn, VersionColumn } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
 export abstract class BaseModel {
+  // @Exclude()
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
-  @UpdateDateColumn()
   @Exclude()
+  @UpdateDateColumn()
   updatedAt: Date;
 
+  @Exclude()
   @VersionColumn()
   version: number;
 }
