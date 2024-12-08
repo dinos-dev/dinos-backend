@@ -1,11 +1,10 @@
-import { Controller, Delete, Req, Get, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
-
-import { Request } from 'express';
 import { FindByIdDocs, WithdrawUserDocs } from './swagger/rest-swagger.decorator';
 import { HttpResponse } from 'src/core/http/http-response';
+import { UserId } from './decorator/user-id.decorator';
 
 @ApiTags('User - 회원관리')
 @UseInterceptors(ClassSerializerInterceptor) // 직렬화 인터셉터
@@ -16,17 +15,15 @@ export class UserController {
 
   @WithdrawUserDocs()
   @Delete()
-  async remove(@Req() req: Request) {
-    const payLoad = req.user;
-    await this.userService.withdrawUser(payLoad);
+  async remove(@UserId() userId: number) {
+    await this.userService.withdrawUser(userId);
     return HttpResponse.noContent();
   }
 
   @FindByIdDocs()
   @Get()
-  async findById(@Req() req: Request) {
-    const payLoad = req.user;
-    const user = await this.userService.findById(payLoad);
+  async findById(@UserId() userId: number) {
+    const user = await this.userService.findById(userId);
     return HttpResponse.ok(user);
   }
 }
