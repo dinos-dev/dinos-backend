@@ -54,7 +54,7 @@ export class UserService {
    * @param userId
    * @returns
    */
-  async findById(userId: number): Promise<User> {
+  async findById(userId: number) {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);

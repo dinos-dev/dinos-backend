@@ -1,10 +1,10 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { initSwagger } from './core/swagger/swagger-config';
 import { middleware } from './app.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { winstonLogger } from './core/utils/winston.logger';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpErrorConstants } from './core/http/http-error-objects';
 
 async function bootstrap() {
@@ -15,6 +15,7 @@ async function bootstrap() {
     logger: winstonLogger, // replacing logger
   });
 
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,

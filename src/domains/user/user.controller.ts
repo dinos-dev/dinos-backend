@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, ClassSerializerInterceptor, UseInterceptors } from '@nestjs/common';
+import { Controller, Delete, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
@@ -7,7 +7,6 @@ import { HttpResponse } from 'src/core/http/http-response';
 import { UserId } from './decorator/user-id.decorator';
 
 @ApiTags('User - 회원관리')
-@UseInterceptors(ClassSerializerInterceptor) // 직렬화 인터셉터
 @ApiCommonErrorResponseTemplate()
 @Controller('users')
 export class UserController {
