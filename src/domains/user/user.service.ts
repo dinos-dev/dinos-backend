@@ -4,7 +4,6 @@ import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { TokenPayLoad } from '../auth/interfaces/token-payload.interface';
 import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { DataSource } from 'typeorm';
 @Injectable()
@@ -17,28 +16,28 @@ export class UserService {
 
   /**
    * 회원탈퇴
-   * @param payLoad
+   * @param userId
    * @returns
    */
-  async withdrawUser(payLoad: TokenPayLoad): Promise<void> {
+  async withdrawUser(userId: number): Promise<void> {
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
     try {
       await qr.manager.softDelete(User, {
-        id: payLoad.sub,
+        id: userId,
       });
       await qr.manager.update(
         User,
         {
-          id: payLoad.sub,
+          id: userId,
         },
         {
           isActive: false,
         },
       );
       await qr.manager.delete(RefreshToken, {
-        user: { id: payLoad.sub },
+        user: { id: userId },
       });
       await qr.commitTransaction();
     } catch (err) {
@@ -52,11 +51,11 @@ export class UserService {
 
   /**
    * 유저 단일 조회
-   * @param payLoad
+   * @param userId
    * @returns
    */
-  async findById(payLoad: TokenPayLoad): Promise<User> {
-    const user = await this.userRepository.findById(payLoad);
+  async findById(userId: number) {
+    const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
     }

@@ -3,7 +3,6 @@ import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
-import { TokenPayLoad } from 'src/domains/auth/interfaces/token-payload.interface';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -72,13 +71,13 @@ export class UserRepository extends Repository<User> {
 
   /**
    * get ref-token by user
-   * @param payLoad TokenPayload
+   * @param userId
    * @returns Auth
    */
-  async findAllrefToken(payLoad: TokenPayLoad): Promise<User> {
+  async findAllrefToken(userId: number): Promise<User> {
     return await this.findOne({
       where: {
-        id: payLoad.sub,
+        id: userId,
       },
       relations: ['refToken'],
     });
@@ -86,13 +85,13 @@ export class UserRepository extends Repository<User> {
 
   /**
    * payLoad sub based user find
-   * @param payLoad TokenPayload
+   * @param userId
    * @returns User
    */
-  async findById(papyLoad: TokenPayLoad): Promise<User> {
+  async findById(userId: number): Promise<User> {
     return await this.findOne({
       where: {
-        id: papyLoad.sub,
+        id: userId,
       },
     });
   }

@@ -10,6 +10,7 @@ import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/re
 import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { Authorization } from './deocorators/authorization.decorator';
 import { HttpResponse } from 'src/core/http/http-response';
+import { UserId } from '../user/decorator/user-id.decorator';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
@@ -29,9 +30,8 @@ export class AuthController {
   @RotateAccessTokenDocs()
   @UseGuards(RefreshTokenGuard)
   @Post('token/access')
-  async rotateAccessToken(@Req() req: Request, @Authorization() token: string) {
-    const payload = req.user;
-    const accessToken = await this.authService.rotateAccessToken(payload, token);
+  async rotateAccessToken(@UserId() userId: number, @Authorization() token: string) {
+    const accessToken = await this.authService.rotateAccessToken(userId, token);
     return HttpResponse.created({ accessToken });
   }
 
@@ -39,9 +39,8 @@ export class AuthController {
   @LogOutDocs()
   @Post('logout')
   @HttpCode(204)
-  async logOut(@Req() req: Request) {
-    const payload = req.user;
-    await this.authService.removeRefToken(payload);
+  async logOut(@UserId() userId: number) {
+    await this.authService.removeRefToken(userId);
     return HttpResponse.noContent();
   }
 }

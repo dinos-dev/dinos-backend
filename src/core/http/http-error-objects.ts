@@ -104,6 +104,11 @@ export const HttpErrorConstants = {
     message: '엑세스 토큰이 아닙니다.',
   } as HttpErrorFormat,
 
+  TIMEOUT_EXCEPTION: {
+    error: 'TIMEOUT_EXCEPTION',
+    message: '요청에 대한 응답시간이 초과되었습니다.',
+  } as HttpErrorFormat,
+
   NOT_COLLETED_REFRESH_TYPE: {
     error: 'NOT_COLLETED_REFRESH_TYPE',
     message: '리프레시 토큰이 아닙니다.',

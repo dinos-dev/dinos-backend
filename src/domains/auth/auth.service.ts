@@ -57,13 +57,13 @@ export class AuthService {
 
   /**
    * Refresh 토큰으로 Access 재발급
-   * @param payLoad TokenPayload
-   * @param token refToken
+   * @param userId
+   * @param token
    * @returns accessToken
    */
-  async rotateAccessToken(payLoad: TokenPayLoad, token: string): Promise<string> {
+  async rotateAccessToken(userId: number, token: string): Promise<string> {
     const parseToken = await this.validateBearerToken(token);
-    const user = await this.userRepository.findAllrefToken(payLoad);
+    const user = await this.userRepository.findAllrefToken(userId);
 
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
@@ -158,12 +158,12 @@ export class AuthService {
 
   /**
    * refToken을 제거
-   * @param payLoad
+   * @param userId
    * @returns
    */
-  async removeRefToken(payLoad: TokenPayLoad): Promise<DeleteResult> {
+  async removeRefToken(userId: number): Promise<DeleteResult> {
     return this.refreshTokenRepository.delete({
-      user: { id: payLoad.sub },
+      user: { id: userId },
     });
   }
 
