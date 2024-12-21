@@ -8,6 +8,8 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domains/user/user.module';
 import { AuthModule } from './domains/auth/auth.module';
 import { BearerAccessTokenMiddleware } from './domains/auth/middlewares/bearer-access-token.middleware';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
 
 @Module({
   imports: [
@@ -25,7 +27,13 @@ import { BearerAccessTokenMiddleware } from './domains/auth/middlewares/bearer-a
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseTimeInterceptor,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
