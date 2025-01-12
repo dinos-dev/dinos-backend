@@ -41,6 +41,9 @@ $ pnpm install passport-jwt @types/passport-jwt
 # aws-sdk v3 
 $ pnpm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 
+# uuid module
+$ pnpm install uuid
+
 ```
 
 </br>

@@ -11,9 +11,8 @@ export const ENV_CONFIG = {
     DATABASE: 'DB_DATABASE',
   },
   AWS: {
-    S3_PATH: 'S3_PATH',
-    S3_AC_KEY: 'S3_AC_KEY',
-    S3_SC_KEY: 'S3_SC_KEY',
+    S3_ACCESS_KEY_ID: 'S3_ACCESS_KEY_ID',
+    S3_SECRET_KEY: 'S3_SECRET_KEY',
     REGION: 'REGION',
     BUKET_NAME: 'BUCKET',
   },
