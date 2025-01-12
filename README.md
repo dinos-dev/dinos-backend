@@ -4,39 +4,43 @@
 
 ```bash
 # swagger module
-$ pnpm add @nestjs/swagger
+$ pnpm install @nestjs/swagger
 # http-status-code module
-$ pnpm add http-status-codes
+$ pnpm install http-status-codes
 
 # common module 
-$ pnpm add @nestjs/throttler
-$ pnpm add @nestjs/config
-$ pnpm add helmet
-$ pnpm add csurf
-$ pnpm add hpp
-$ pnpm add cross-env
-$ pnpm add compression
-$ pnpm add class-validator class-transformer
+$ pnpm install @nestjs/throttler
+$ pnpm install @nestjs/config
+$ pnpm install helmet
+$ pnpm install csurf
+$ pnpm install hpp
+$ pnpm install cross-env
+$ pnpm install compression
+$ pnpm install class-validator class-transformer
 # common dependecy
-$ pnpm add -D @types/csurf @types/hpp
+$ pnpm install -D @types/csurf @types/hpp
 
 # winston logging 
-$ pnpm add nest-winston winston winston-daily-rotate-file 
+$ pnpm install nest-winston winston winston-daily-rotate-file 
 
 # typeorm & mysql2 
-$ pnpm add @nestjs/typeorm typeorm mysql2
-$ pnpm add typeorm-naming-strategies
+$ pnpm install @nestjs/typeorm typeorm mysql2
+$ pnpm install typeorm-naming-strategies
 
 # bcrypt
-$ pnpm add bcrypt
-$ pnpm add -D @types/bcrypt
+$ pnpm install bcrypt
+$ pnpm install -D @types/bcrypt
 
 # jwt 
-$ pnpm add @nestjs/jwt
+$ pnpm install @nestjs/jwt
 
 # passport 
-$ pnpm add @nestjs/passport passport passport-local @types/passport-local
-pnpm i passport-jwt @types/passport-jwt
+$ pnpm install @nestjs/passport passport passport-local @types/passport-local
+$ pnpm install passport-jwt @types/passport-jwt
+
+# aws-sdk v3 
+$ pnpm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+
 ```
 
 </br>

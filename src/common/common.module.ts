@@ -1,10 +1,4 @@
-import {
-  Global,
-  Module,
-  NestModule,
-  MiddlewareConsumer,
-  Logger,
-} from '@nestjs/common';
+import { Global, Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
 import { CommonService } from './common.service';
 import { LoggerContextMiddleware } from './middleware/logger-context.middleware';
 
