@@ -1,0 +1,1 @@
+export const PRESINED_URL_EXPIRESIN = 300;
