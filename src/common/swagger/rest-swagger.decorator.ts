@@ -10,7 +10,8 @@ export const CreatePresinedURLDocs = () => {
     ApiOperation({
       summary: 'Presined-URL 발급',
       description: `
-          - Presine-URL을 발급한다.
+          - Presined-URL을 발급한다.
+          - Presined-URL의 유효기간은 300초로 지정(300초 이후 만료)
           `,
     }),
     ApiHeader({
