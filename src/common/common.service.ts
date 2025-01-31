@@ -7,6 +7,7 @@ import { v4 as Uuid } from 'uuid';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { PRESINED_URL_EXPIRESIN } from './const/common.const';
+import { CreatePresinedUrlDto } from './dto/create.presined-url.dto';
 
 @Injectable()
 export class CommonService {
@@ -20,11 +21,20 @@ export class CommonService {
     });
   }
 
-  async createPresinedUrl(): Promise<string> {
+  /**
+   * presinedURL 생성
+   * @param dto CreatePresinedUrlDto
+   * @returns PresinedURL
+   */
+  async createPresinedUrl(dto: CreatePresinedUrlDto): Promise<string> {
+    const fileExtension = dto.filename.split('.').pop();
+
     const params = {
       Bucket: this.configService.get<string>(ENV_CONFIG.AWS.BUKET_NAME),
-      Key: `public/temp/${Uuid()}`,
+      Key: `public/temp/${Date.now()}_${Uuid()}.${fileExtension}`,
       ACL: ObjectCannedACL.public_read,
+      ContentType: dto.mimeType,
+      ContentLength: dto.size,
     };
     try {
       const url = await getSignedUrl(this.s3, new PutObjectCommand(params), {
