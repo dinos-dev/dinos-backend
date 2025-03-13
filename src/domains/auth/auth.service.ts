@@ -3,7 +3,7 @@ import { detectPlatform } from './utils/client.util';
 import { UserRepository } from 'src/domains/user/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ENV_CONFIG } from 'src/common/const/env-keys.const';
+import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { User } from 'src/domains/user/entities/user.entity';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LoginResponseDto } from './dtos/login-response.dto';

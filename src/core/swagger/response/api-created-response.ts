@@ -1,6 +1,6 @@
 import { applyDecorators, Type } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
-import { CreatedResponseDto } from './created-response-dto';
+import { CreatedResponseDto } from '../dto/created-response-dto';
 
 /**
  * 201 created response 템플릿 - 타입 설정이 필요한 경우 별도로 사용. created idx 이외의 다른 데이터도 필요할 때

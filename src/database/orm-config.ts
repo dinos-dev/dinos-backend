@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import { ENV_CONFIG } from '../const/env-keys.const';
+import { ENV_CONFIG } from '../core/config/env-keys.const';
 import { Injectable } from '@nestjs/common';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 

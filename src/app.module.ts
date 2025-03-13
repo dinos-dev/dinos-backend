@@ -3,13 +3,13 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrmConfig } from './common/database/orm-config';
+import { OrmConfig } from './database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domains/user/user.module';
 import { AuthModule } from './domains/auth/auth.module';
 import { BearerAccessTokenMiddleware } from './domains/auth/middlewares/bearer-access-token.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
+import { ResponseTimeInterceptor } from './core/interceptor/response-time.interceptor';
 import { CommonModule } from './common/common.module';
 
 @Module({

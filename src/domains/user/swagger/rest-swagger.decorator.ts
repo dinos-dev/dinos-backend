@@ -2,9 +2,9 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiHeader, ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { ApiErrorResponseTemplate } from 'src/core/swagger/api-error-response';
+import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
 import { FindOneUserResponseDto } from '../dto/find-user.response.dto';
-import { ApiOkResponseTemplate } from 'src/core/swagger/api-ok-response';
+import { ApiOkResponseTemplate } from 'src/core/swagger/response/api-ok-response';
 
 /**회원탈퇴*/
 export const WithdrawUserDocs = () => {

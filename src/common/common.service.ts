@@ -1,12 +1,12 @@
 import { ObjectCannedACL, PutObjectCommand, S3 } from '@aws-sdk/client-s3';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ENV_CONFIG } from './const/env-keys.const';
+import { ENV_CONFIG } from '../core/config/env-keys.const';
 
 import { v4 as Uuid } from 'uuid';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { PRESINED_URL_EXPIRESIN } from './const/common.const';
+import { PRESINED_URL_EXPIRESIN } from '../core/config/common.const';
 import { CreatePresinedUrlDto } from './dto/create.presined-url.dto';
 
 @Injectable()

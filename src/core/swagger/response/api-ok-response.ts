@@ -1,6 +1,6 @@
 import { applyDecorators, Type } from '@nestjs/common';
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from '@nestjs/swagger';
-import { ResponseDto } from './response-dto';
+import { ResponseDto } from '../dto/response-dto';
 
 /** 200(OK) Response Template*/
 export const ApiOkResponseTemplate = <DtoClass extends Type<unknown>>(params?: {

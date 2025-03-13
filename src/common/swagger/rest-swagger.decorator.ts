@@ -2,7 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { ApiErrorResponseTemplate } from 'src/core/swagger/api-error-response';
+import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
 import { CreatePresinedUrlDto } from '../dto/create.presined-url.dto';
 
 /**Presined-URL 발급*/

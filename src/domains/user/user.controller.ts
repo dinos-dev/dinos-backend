@@ -1,7 +1,7 @@
 import { Controller, Delete, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiTags } from '@nestjs/swagger';
-import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
+import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/response/api-error-common-response';
 import { FindByIdDocs, WithdrawUserDocs } from './swagger/rest-swagger.decorator';
 import { HttpResponse } from 'src/core/http/http-response';
 import { UserId } from './decorator/user-id.decorator';

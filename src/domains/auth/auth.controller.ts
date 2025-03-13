@@ -1,7 +1,7 @@
 import { Body, Controller, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/api-error-common-response';
+import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/response/api-error-common-response';
 
 import { Request } from 'express';
 

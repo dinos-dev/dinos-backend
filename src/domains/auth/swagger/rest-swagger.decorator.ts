@@ -2,8 +2,8 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiHeader, ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { ApiCreatedResponseTemplate } from 'src/core/swagger/api-created-response';
-import { ApiErrorResponseTemplate } from 'src/core/swagger/api-error-response';
+import { ApiCreatedResponseTemplate } from 'src/core/swagger/response/api-created-response';
+import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
 import { SocialUserDto } from 'src/domains/user/dto/social-user.dto';
 import { LoginResponseDto, RotateAccessTokenDto } from '../dtos/login-response.dto';
 

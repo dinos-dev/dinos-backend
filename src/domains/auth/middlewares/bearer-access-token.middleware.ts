@@ -2,7 +2,7 @@ import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/commo
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
-import { ENV_CONFIG } from 'src/common/const/env-keys.const';
+import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 
 @Injectable()

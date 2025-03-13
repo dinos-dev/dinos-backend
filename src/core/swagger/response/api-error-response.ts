@@ -1,5 +1,5 @@
 import { ApiResponse, ApiResponseOptions } from '@nestjs/swagger';
-import { HttpErrorFormat } from '../http/http-error-objects';
+import { HttpErrorFormat } from '../../http/http-error-objects';
 import { applyDecorators } from '@nestjs/common';
 
 /**
