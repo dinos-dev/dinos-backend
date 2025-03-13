@@ -2,7 +2,8 @@ import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entities/base.entity';
 import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
 import { RefreshToken } from 'src/domains/auth/entities/refresh-token.entity';
-import { Column, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UserProfile } from './user-profile.entity';
 
 @Entity()
 export class User extends BaseModel {
@@ -44,6 +45,12 @@ export class User extends BaseModel {
   @Exclude()
   @DeleteDateColumn({ default: null })
   deletedAt: Date | null;
+
+  @OneToOne(() => UserProfile, (userProfile) => userProfile.id, {
+    cascade: true,
+  })
+  @JoinColumn()
+  userProfile: UserProfile;
 
   @OneToMany(() => RefreshToken, (refToken) => refToken.user)
   refToken: RefreshToken[];

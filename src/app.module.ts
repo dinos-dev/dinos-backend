@@ -10,6 +10,7 @@ import { AuthModule } from './domains/auth/auth.module';
 import { BearerAccessTokenMiddleware } from './domains/auth/middlewares/bearer-access-token.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTimeInterceptor } from './common/interceptor/response-time.interceptor';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { ResponseTimeInterceptor } from './common/interceptor/response-time.inte
     }),
     UserModule,
     AuthModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [
