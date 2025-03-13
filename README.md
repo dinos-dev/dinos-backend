@@ -12,13 +12,12 @@ $ pnpm install http-status-codes
 $ pnpm install @nestjs/throttler
 $ pnpm install @nestjs/config
 $ pnpm install helmet
-$ pnpm install csurf
 $ pnpm install hpp
 $ pnpm install cross-env
 $ pnpm install compression
 $ pnpm install class-validator class-transformer
 # common dependecy
-$ pnpm install -D @types/csurf @types/hpp
+$ pnpm install -D @types/hpp
 
 # winston logging 
 $ pnpm install nest-winston winston winston-daily-rotate-file 
