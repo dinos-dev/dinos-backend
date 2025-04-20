@@ -1,4 +1,4 @@
-import { PlatFormEnumType, PlatFormType } from '../consts/platform.const';
+import { PlatFormEnumType, PlatFormType } from '../helper/platform.const';
 
 export async function detectPlatform(userAgent: string): Promise<PlatFormEnumType> {
   let currentOS;
@@ -16,7 +16,7 @@ export async function detectPlatform(userAgent: string): Promise<PlatFormEnumTyp
     } else if (userAgent.search('alamofire') > -1) {
       currentOS = PlatFormType.IOS;
     } else {
-      currentOS = PlatFormType.UNKONWN;
+      currentOS = PlatFormType.UNKNOWN;
     }
   }
   return currentOS;

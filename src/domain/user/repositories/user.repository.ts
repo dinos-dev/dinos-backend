@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
+import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
 
 @Injectable()
@@ -74,7 +74,7 @@ export class UserRepository extends Repository<User> {
    * @param userId
    * @returns Auth
    */
-  async findAllrefToken(userId: number): Promise<User> {
+  async findAllRefToken(userId: number): Promise<User> {
     return await this.findOne({
       where: {
         id: userId,

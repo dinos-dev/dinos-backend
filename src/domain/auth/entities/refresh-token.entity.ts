@@ -1,7 +1,7 @@
 import { BaseModel } from 'src/common/entities/base.entity';
-import { User } from 'src/domains/user/entities/user.entity';
+import { User } from 'src/domain/user/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PlatFormEnumType } from '../consts/platform.const';
+import { PlatFormEnumType } from '../helper/platform.const';
 
 @Entity()
 export class RefreshToken extends BaseModel {

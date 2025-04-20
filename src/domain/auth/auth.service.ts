@@ -1,15 +1,15 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { detectPlatform } from './utils/client.util';
-import { UserRepository } from 'src/domains/user/repositories/user.repository';
+import { UserRepository } from 'src/domain/user/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
-import { User } from 'src/domains/user/entities/user.entity';
+import { User } from 'src/domain/user/entities/user.entity';
 import { SocialUserDto } from '../user/dto/social-user.dto';
-import { LoginResponseDto } from './dtos/login-response.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { TokenPayLoad } from './interfaces/token-payload.interface';
+import { TokenPayLoad } from './interface/token-payload.interface';
 import { RefreshToken } from './entities/refresh-token.entity';
 import { DataSource, DeleteResult } from 'typeorm';
 
@@ -63,7 +63,7 @@ export class AuthService {
    */
   async rotateAccessToken(userId: number, token: string): Promise<string> {
     const parseToken = await this.validateBearerToken(token);
-    const user = await this.userRepository.findAllrefToken(userId);
+    const user = await this.userRepository.findAllRefToken(userId);
 
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
@@ -88,12 +88,12 @@ export class AuthService {
    */
   async issueToken(user: User, isRefreshToken: boolean) {
     const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
-    const accessTokeknSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
+    const accessTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
 
     const payload = await this.createPayload(user, isRefreshToken);
 
     return await this.jwtService.signAsync(payload, {
-      secret: isRefreshToken ? refreshTokenSecret : accessTokeknSecret,
+      secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
       expiresIn: isRefreshToken
         ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
         : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
@@ -101,9 +101,9 @@ export class AuthService {
   }
 
   /**
-   * BeaerToken 검증
+   * BearerToken 검증
    * @param rawToken
-   * @returns Seperated Token(AT, RT)
+   * @returns Separated Token(AT, RT)
    */
   async validateBearerToken(rawToken: string): Promise<string> {
     const bearerTokenSplit = rawToken.split(' ');
@@ -151,7 +151,7 @@ export class AuthService {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALID_SIGNATURE);
       }
     }
   }

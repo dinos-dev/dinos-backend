@@ -1,7 +1,7 @@
 import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entities/base.entity';
-import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
-import { RefreshToken } from 'src/domains/auth/entities/refresh-token.entity';
+import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
+import { RefreshToken } from 'src/domain/auth/entities/refresh-token.entity';
 import { Column, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfile } from './user-profile.entity';
 

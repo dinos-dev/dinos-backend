@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { IsRegexpPhoneNumber } from 'src/core/validators/regexp.phone-number';
-import { SocialAuthEnum } from 'src/domains/auth/consts/social-auth.enum';
+import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
 
 export class CreateUserDto {
   @IsEmail()

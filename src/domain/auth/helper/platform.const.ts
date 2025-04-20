@@ -4,7 +4,7 @@ export const PlatFormType = Object.freeze({
   WEB: 'web',
   IOS: 'ios',
   ANDROID: 'android',
-  UNKONWN: 'unknown',
+  UNKNOWN: 'unknown',
 } as const);
 
 type PlatFormType = (typeof PlatFormType)[keyof typeof PlatFormType];
@@ -14,5 +14,5 @@ export enum PlatFormEnumType {
   WEB = 'web',
   IOS = 'ios',
   ANDROID = 'android',
-  UNKONWN = 'unknown',
+  UNKNOWN = 'unknown',
 }

@@ -49,8 +49,8 @@ export const HttpErrorConstants = {
     message: '입력값이 유효하지 않습니다. 다시 확인해주세요.',
   } as HttpErrorFormat,
 
-  NOT_MACHTED: {
-    error: 'NOT_MACHTED',
+  NOT_MATCHED: {
+    error: 'NOT_MATCHED',
     message: '요청 코드와 일치하지 않습니다.',
   } as HttpErrorFormat,
 
@@ -84,8 +84,8 @@ export const HttpErrorConstants = {
     message: '토큰이 만료되었습니다.',
   } as HttpErrorFormat,
 
-  UNAUTHORIZED_INVALIE_SIGNATURE: {
-    error: 'UNAUTHORIZED_INVALIE',
+  UNAUTHORIZED_INVALID_SIGNATURE: {
+    error: 'UNAUTHORIZED_INVALID_SIGNATURE',
     message: '토큰의 시그니처가 불일치 합니다.',
   } as HttpErrorFormat,
 
@@ -124,7 +124,7 @@ export const HttpErrorConstants = {
     message: '가입된 유저가 아닙니다.',
   } as HttpErrorFormat,
 
-  COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Beaer Access Token Error Template)
+  COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Bearer Access Token Error Template)
 };
 
 HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR = [
@@ -132,5 +132,5 @@ HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR = [
   HttpErrorConstants.INVALID_TOKEN,
   HttpErrorConstants.EXPIRED_TOKEN,
   HttpErrorConstants.INVALID_TOKEN_FORMAT,
-  HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE,
+  HttpErrorConstants.UNAUTHORIZED_INVALID_SIGNATURE,
 ];

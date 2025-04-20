@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { RefreshToken } from '../entities/refresh-token.entity';
-import { User } from 'src/domains/user/entities/user.entity';
-import { PlatFormEnumType } from '../consts/platform.const';
+import { User } from 'src/domain/user/entities/user.entity';
+import { PlatFormEnumType } from '../helper/platform.const';
 
 @Injectable()
 export class RefreshTokenRepository extends Repository<RefreshToken> {

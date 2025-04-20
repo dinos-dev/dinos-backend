@@ -3,16 +3,16 @@ import { ApiBody, ApiCreatedResponse, ApiHeader, ApiOperation } from '@nestjs/sw
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
-import { CreatePresinedUrlDto } from '../dto/create.presined-url.dto';
+import { CreatePresignedUrlDto } from '../dto/create.presigned-url.dto';
 
-/**Presined-URL 발급*/
-export const CreatePresinedURLDocs = () => {
+/**Presigned-URL 발급*/
+export const CreatePresignedUrlDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: 'Presined-URL 발급',
+      summary: 'Presigned-URL 발급',
       description: `
-          - Presined-URL을 발급한다.
-          - Presined-URL의 유효기간은 300초로 지정(300초 이후 만료)
+          - Presigned-URL을 발급한다.
+          - Presigned-URL의 유효기간은 300초로 지정(300초 이후 만료)
           - 요청 Body에 들어가는 값 (filename, size, mimeType)은 프론트에서 추출후 요청
           `,
     }),
@@ -22,7 +22,7 @@ export const CreatePresinedURLDocs = () => {
       required: true,
     }),
     ApiBody({
-      type: CreatePresinedUrlDto,
+      type: CreatePresignedUrlDto,
     }),
     ApiCreatedResponse({
       description: 'Presigned-URL 발급 성공',

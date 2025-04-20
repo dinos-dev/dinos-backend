@@ -6,8 +6,8 @@ import { ENV_CONFIG } from '../core/config/env-keys.const';
 import { v4 as Uuid } from 'uuid';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { PRESINED_URL_EXPIRESIN } from '../core/config/common.const';
-import { CreatePresinedUrlDto } from './dto/create.presined-url.dto';
+import { CreatePresignedUrlDto } from './dto/create.presigned-url.dto';
+import { RESIGNED_URL_EXPIRES_IN } from 'src/core/config/common.const';
 
 @Injectable()
 export class CommonService {
@@ -22,15 +22,15 @@ export class CommonService {
   }
 
   /**
-   * presinedURL 생성
-   * @param dto CreatePresinedUrlDto
-   * @returns PresinedURL
+   * PresignedUrl 생성
+   * @param dto CreatePresignedUrlDto
+   * @returns PresignedUrl
    */
-  async createPresinedUrl(dto: CreatePresinedUrlDto): Promise<string> {
+  async createPresignedUrl(dto: CreatePresignedUrlDto): Promise<string> {
     const fileExtension = dto.filename.split('.').pop();
 
     const params = {
-      Bucket: this.configService.get<string>(ENV_CONFIG.AWS.BUKET_NAME),
+      Bucket: this.configService.get<string>(ENV_CONFIG.AWS.BUCKET_NAME),
       Key: `public/temp/${Date.now()}_${Uuid()}.${fileExtension}`,
       ACL: ObjectCannedACL.public_read,
       ContentType: dto.mimeType,
@@ -38,7 +38,7 @@ export class CommonService {
     };
     try {
       const url = await getSignedUrl(this.s3, new PutObjectCommand(params), {
-        expiresIn: PRESINED_URL_EXPIRESIN,
+        expiresIn: RESIGNED_URL_EXPIRES_IN,
       });
       return url;
     } catch (err) {

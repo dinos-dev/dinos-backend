@@ -47,7 +47,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALID_SIGNATURE);
       }
       next();
     }
@@ -70,7 +70,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
       }
       if (error.name === 'JsonWebTokenError') {
         // signature 불일치
-        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALIE_SIGNATURE);
+        throw new UnauthorizedException(HttpErrorConstants.UNAUTHORIZED_INVALID_SIGNATURE);
       }
     }
   }

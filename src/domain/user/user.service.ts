@@ -10,7 +10,7 @@ import { DataSource } from 'typeorm';
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly confgiService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
   ) {}
 

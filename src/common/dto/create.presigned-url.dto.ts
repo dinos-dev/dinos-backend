@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsIn, IsNotEmpty, IsNumber, IsString, Max } from 'class-validator';
 
-export class CreatePresinedUrlDto {
+export class CreatePresignedUrlDto {
   @ApiProperty({
     name: 'filename',
     description: '업로드 하고자 하는 파일명을 추출해서 포함',

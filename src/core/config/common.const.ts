@@ -1,1 +1,1 @@
-export const PRESINED_URL_EXPIRESIN = 300;
+export const RESIGNED_URL_EXPIRES_IN = 300;
