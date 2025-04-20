@@ -2,7 +2,7 @@ import { applyDecorators } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 
-/** 공용으로 사용하는 Common Error Response Hanlder*/
+/** 공용으로 사용하는 Common Error Response Handler*/
 export const ApiCommonErrorResponseTemplate = () => {
   return applyDecorators(
     ApiResponse({

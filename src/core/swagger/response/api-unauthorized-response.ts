@@ -1,7 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
-import { HttpErrorConstants } from '../http/http-error-objects';
+import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 
 // 로그인 필요시 반환하는 Error Response
 export const ApiUnauthorizedErrorResponse = () => {

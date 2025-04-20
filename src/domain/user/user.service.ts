@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { DataSource } from 'typeorm';
+// import { Transactional } from 'src/core/decorators/transaction.decorator';
 @Injectable()
 export class UserService {
   constructor(
