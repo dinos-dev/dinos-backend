@@ -1,9 +1,9 @@
 import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BearerAccessTokenMiddleware implements NestMiddleware {
