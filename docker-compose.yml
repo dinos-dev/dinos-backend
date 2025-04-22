@@ -1,24 +1,23 @@
 version: '3.8'
 services:
-  nestjs:
-    build: .
-    restart: always
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./.env.${NODE_ENV}  # NODE_ENV에 따라 동적으로 설정
-    depends_on:
-      - mysql
+  # nestjs:
+  #   build: .
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   env_file:
+  #     - ./.env.${NODE_ENV}  # NODE_ENV에 따라 동적으로 설정
+  #   depends_on:
+  #     - postgres  
       
-  mysql:
-    image: mysql:8.0.33
+  postgres:
+    image: postgres:16  
     restart: always
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - ./postgres-data:/var/lib/postgresql/data  
     ports:
-      - "3306:3306"
+      - "5432:5432" 
     environment:
-      MYSQL_DATABASE: dev
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: dev
-      MYSQL_ROOT_PASSWORD: dev
+      POSTGRES_DB: dev  
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev 

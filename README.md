@@ -16,14 +16,14 @@ $ pnpm install hpp
 $ pnpm install cross-env
 $ pnpm install compression
 $ pnpm install class-validator class-transformer
-# common dependecy
+# common dependency
 $ pnpm install -D @types/hpp
 
 # winston logging 
 $ pnpm install nest-winston winston winston-daily-rotate-file 
 
-# typeorm & mysql2 
-$ pnpm install @nestjs/typeorm typeorm mysql2
+# typeorm & postgres 
+$ pnpm install @nestjs/typeorm typeorm pg
 $ pnpm install typeorm-naming-strategies
 
 # bcrypt
@@ -53,7 +53,7 @@ $ pnpm install uuid
 
 > **DB Container Info**
 
-- MySQL version: 8.0.33
+- Postgres version: 16
 - Managed via Docker Compose
 
 > **Prerequisites**

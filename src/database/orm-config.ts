@@ -10,7 +10,7 @@ export class OrmConfig implements TypeOrmOptionsFactory {
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
-      type: 'mysql',
+      type: 'postgres',
       host: this.configService.get<string>(ENV_CONFIG.DB.HOST),
       port: parseInt(this.configService.get<string>(ENV_CONFIG.DB.PORT)),
       username: this.configService.get<string>(ENV_CONFIG.DB.USER),
