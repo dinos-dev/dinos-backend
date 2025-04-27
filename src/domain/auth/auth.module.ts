@@ -4,8 +4,8 @@ import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Token } from './entities/token.entity';
-import { RefreshTokenRepository } from './repositories/refresh-token.repository';
-import { UserRepository } from '../user/repositories/user.repository';
+import { RefreshTokenRepository } from './repository/refresh-token.repository';
+import { UserRepository } from '../user/repository/user.repository';
 
 @Module({
   imports: [JwtModule.register({}), TypeOrmModule.forFeature([Token])],

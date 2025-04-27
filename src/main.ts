@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { initSwagger } from './core/swagger/swagger-config';
 import { middleware } from './app.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { winstonLogger } from './core/utils/winston.logger';
+import { winstonLogger } from './core/util/winston.logger';
 import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpErrorConstants } from './core/http/http-error-objects';
 

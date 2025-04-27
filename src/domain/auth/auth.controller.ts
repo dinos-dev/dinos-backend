@@ -7,7 +7,7 @@ import { Request } from 'express';
 
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { RefreshTokenGuard } from './guard/refresh-token.guard';
 import { Authorization } from './decorator/authorization.decorator';
 import { HttpResponse } from 'src/core/http/http-response';
 import { UserId } from '../user/decorator/user-id.decorator';

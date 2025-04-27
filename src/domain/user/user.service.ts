@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 
-import { UserRepository } from './repositories/user.repository';
+import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';

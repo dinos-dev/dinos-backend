@@ -7,7 +7,7 @@ import { OrmConfig } from './database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './domain/auth/auth.module';
-import { BearerAccessTokenMiddleware } from './domain/auth/middlewares/bearer-access-token.middleware';
+import { BearerAccessTokenMiddleware } from './domain/auth/middleware/bearer-access-token.middleware';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTimeInterceptor } from './core/interceptor/response-time.interceptor';
 import { CommonModule } from './common/common.module';

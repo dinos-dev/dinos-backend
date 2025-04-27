@@ -1,13 +1,13 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { detectPlatform } from './utils/client.util';
-import { UserRepository } from 'src/domain/user/repositories/user.repository';
+import { UserRepository } from 'src/domain/user/repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { User } from 'src/domain/user/entities/user.entity';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { RefreshTokenRepository } from './repositories/refresh-token.repository';
+import { RefreshTokenRepository } from './repository/refresh-token.repository';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { TokenPayLoad } from './interface/token-payload.interface';
 import { Token } from './entities/token.entity';
