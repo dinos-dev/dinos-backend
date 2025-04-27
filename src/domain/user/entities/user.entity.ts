@@ -24,6 +24,7 @@ export class User extends BaseModel {
   @Column({
     type: 'varchar',
     length: 30,
+    nullable: true,
   })
   userName: string;
 
