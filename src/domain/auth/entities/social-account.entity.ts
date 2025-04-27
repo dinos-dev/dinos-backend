@@ -1,9 +1,10 @@
 import { BaseModel } from 'src/common/entities/base.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Provider } from '../helper/provider.enum';
 
 @Entity()
+@Index(['provider', 'providerId'])
 export class SocialAccount extends BaseModel {
   @PrimaryGeneratedColumn({
     comment: 'PK',

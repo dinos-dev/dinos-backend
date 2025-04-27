@@ -27,6 +27,7 @@ export class User extends BaseModel {
   })
   userName: string;
 
+  @Exclude()
   @Column({
     type: 'varchar',
     length: 255,

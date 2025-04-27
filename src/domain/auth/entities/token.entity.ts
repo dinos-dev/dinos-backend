@@ -1,6 +1,6 @@
 import { BaseModel } from 'src/common/entities/base.entity';
 import { User } from 'src/domain/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PlatFormEnumType } from '../helper/platform.const';
 
 @Entity()
@@ -12,10 +12,16 @@ export class Token extends BaseModel {
   })
   id: number;
 
+  @Index()
   @Column({
     type: 'varchar',
   })
   refToken: string;
+
+  @Column({
+    type: 'timestamp',
+  })
+  expiresAt: Date;
 
   @Column({
     type: 'enum',
