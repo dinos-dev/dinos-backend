@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { Provider } from 'src/domain/auth/helper/provider.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
 
 @Injectable()
@@ -28,10 +27,9 @@ export class UserRepository extends Repository<User> {
   /**
    * 이메일 & 인증타입에 따른 가입여부 체크
    * @param email
-   * @param authType
    * @returns boolean
    */
-  async existByEmailAndAuthType(email: string, authType: Provider): Promise<boolean> {
+  async existByEmailAndAuthType(email: string): Promise<boolean> {
     const isExistEmailAndAuthType = await this.exists({
       where: {
         email,
