@@ -4,7 +4,7 @@ import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { RefreshToken } from '../auth/entities/refresh-token.entity';
+import { Token } from '../auth/entities/token.entity';
 import { DataSource } from 'typeorm';
 // import { Transactional } from 'src/core/decorators/transaction.decorator';
 @Injectable()
@@ -37,7 +37,7 @@ export class UserService {
           isActive: false,
         },
       );
-      await qr.manager.delete(RefreshToken, {
+      await qr.manager.delete(Token, {
         user: { id: userId },
       });
       await qr.commitTransaction();

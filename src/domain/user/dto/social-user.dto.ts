@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
+import { Provider } from 'src/domain/auth/helper/provider.enum';
 
 export class SocialUserDto {
   @IsEmail()
@@ -21,12 +21,12 @@ export class SocialUserDto {
   })
   userName: string;
 
-  @IsEnum(SocialAuthEnum)
+  @IsEnum(Provider)
   @IsNotEmpty()
   @ApiProperty({
     description: '소셜 로그인 타입',
     example: 'google, naver, apple, kakao',
     required: true,
   })
-  authType: SocialAuthEnum;
+  authType: Provider;
 }

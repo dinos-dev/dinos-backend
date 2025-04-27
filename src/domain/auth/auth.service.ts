@@ -10,7 +10,7 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { TokenPayLoad } from './interface/token-payload.interface';
-import { RefreshToken } from './entities/refresh-token.entity';
+import { Token } from './entities/token.entity';
 import { DataSource, DeleteResult } from 'typeorm';
 
 @Injectable()
@@ -70,7 +70,7 @@ export class AuthService {
     }
 
     // 리프레시 항목과 일치하는 정보가 없는지 체크
-    const isValidToken = user.refToken.some((refToken: RefreshToken) => refToken.refToken === parseToken);
+    const isValidToken = user.tokens.some((refToken: Token) => refToken.refToken === parseToken);
 
     if (!isValidToken) {
       throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);

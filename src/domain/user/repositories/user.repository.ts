@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
+import { Provider } from 'src/domain/auth/helper/provider.enum';
 import { SocialUserDto } from '../dto/social-user.dto';
 
 @Injectable()
@@ -31,11 +31,10 @@ export class UserRepository extends Repository<User> {
    * @param authType
    * @returns boolean
    */
-  async existByEmailAndAuthType(email: string, authType: SocialAuthEnum): Promise<boolean> {
+  async existByEmailAndAuthType(email: string, authType: Provider): Promise<boolean> {
     const isExistEmailAndAuthType = await this.exists({
       where: {
         email,
-        authType,
       },
     });
     return isExistEmailAndAuthType;
@@ -52,18 +51,16 @@ export class UserRepository extends Repository<User> {
         id: true,
         email: true,
         userName: true,
-        authType: true,
       },
       where: {
         email: dto.email,
-        authType: dto.authType,
       },
     });
 
     if (user) {
       return user;
     } else {
-      const newUser = User.signup(dto);
+      const newUser = User.signupSocial(dto);
       await qr.manager.save(User, newUser);
       return newUser;
     }

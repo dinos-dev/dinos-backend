@@ -1,9 +1,9 @@
 import { Exclude } from 'class-transformer';
 import { BaseModel } from 'src/common/entities/base.entity';
-import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
-import { RefreshToken } from 'src/domain/auth/entities/refresh-token.entity';
+import { Token } from 'src/domain/auth/entities/token.entity';
 import { Column, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfile } from './user-profile.entity';
+import { SocialAccount } from '../../auth/entities/social-account.entity';
 
 @Entity()
 export class User extends BaseModel {
@@ -16,7 +16,7 @@ export class User extends BaseModel {
 
   @Column({
     type: 'varchar',
-    // unique: true,
+    unique: true,
     length: 255,
   })
   email: string;
@@ -27,13 +27,12 @@ export class User extends BaseModel {
   })
   userName: string;
 
-  @Exclude()
   @Column({
-    type: 'enum',
-    enum: Object.values(SocialAuthEnum),
-    comment: '소셜 가입 방식 유형',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
   })
-  authType: string;
+  password: string;
 
   @Exclude()
   @Column({
@@ -46,20 +45,35 @@ export class User extends BaseModel {
   @DeleteDateColumn({ default: null })
   deletedAt: Date | null;
 
+  /** 1 to 1 */
   @OneToOne(() => UserProfile, (userProfile) => userProfile.id, {
     cascade: true,
   })
   @JoinColumn()
   userProfile: UserProfile;
 
-  @OneToMany(() => RefreshToken, (refToken) => refToken.user)
-  refToken: RefreshToken[];
+  /** 1 to M */
+  @Exclude()
+  @OneToMany(() => Token, (token) => token.user)
+  tokens: Token[];
 
-  static signup({ email, userName, authType }: { email: string; userName: string; authType: SocialAuthEnum }) {
+  @OneToMany(() => SocialAccount, (socialAccount) => socialAccount.user)
+  socialAccounts: SocialAccount[];
+
+  /** Sign Up Local */
+  static signupLocal({ email, userName, password }: { email: string; userName: string; password: string }) {
     const user = new User();
     user.email = email;
     user.userName = userName;
-    user.authType = authType;
+    user.password = password;
+    return user;
+  }
+
+  /** Sign Up Social */
+  static signupSocial({ email, userName }: { email: string; userName: string }) {
+    const user = new User();
+    user.email = email;
+    user.userName = userName;
     return user;
   }
 }
