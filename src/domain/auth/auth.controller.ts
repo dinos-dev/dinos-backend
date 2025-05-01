@@ -1,22 +1,38 @@
 import { Body, Controller, HttpCode, Post, Req, UseGuards } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/response/api-error-common-response';
 
 import { Request } from 'express';
+import { AuthService } from './auth.service';
 
-import { SocialUserDto } from '../user/dto/social-user.dto';
+import { HttpResponse } from 'src/core/http/http-response';
 import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
-import { Authorization } from './decorator/authorization.decorator';
-import { HttpResponse } from 'src/core/http/http-response';
+import { SocialUserDto } from '../user/dto/social-user.dto';
 import { UserId } from '../user/decorator/user-id.decorator';
+import { Authorization } from './decorator/authorization.decorator';
+import { AuthGuard } from '@nestjs/passport';
+import { SocialToken } from './decorator/social-token.decorator';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Post('naver')
+  @UseGuards(AuthGuard('naver'))
+  async naverLogin(@SocialToken() token: string) {
+    console.log('naver login->', token);
+    return HttpResponse.ok();
+  }
+
+  @Post('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin(@SocialToken() token: string) {
+    console.log('google login->', token);
+    return HttpResponse.ok();
+  }
 
   // 소셜 가입 & 로그인
   @SocialLoginDocs()

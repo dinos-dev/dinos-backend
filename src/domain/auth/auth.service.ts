@@ -1,23 +1,28 @@
 import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { detectPlatform } from './utils/client.util';
 import { UserRepository } from 'src/domain/user/repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { User } from 'src/domain/user/entities/user.entity';
+
+import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+import { DataSource, DeleteResult } from 'typeorm';
+import { TokenRepository } from './repository/token.repository';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { RefreshTokenRepository } from './repository/refresh-token.repository';
-import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { TokenPayLoad } from './interface/token-payload.interface';
+import { detectPlatform } from './util/client.util';
 import { Token } from './entities/token.entity';
-import { DataSource, DeleteResult } from 'typeorm';
+import { TokenPayLoad } from './interface/token-payload.interface';
+import { SocialAccountRepository } from './repository/social-account.repository';
+import { getTransactionalRepository } from 'src/core/utils/transactional-repository.util';
+import { SocialAccount } from './entities/social-account.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly tokenRepository: TokenRepository,
+    private readonly socialAccountRepository: SocialAccountRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
@@ -35,13 +40,19 @@ export class AuthService {
     const qr = this.dataSource.createQueryRunner();
     await qr.connect();
     await qr.startTransaction();
+
+    // 트랜잭션 처리를 위한 Repository 조회
+    // const socialAccountTransaction = getTransactionalRepository(SocialAccountRepository, qr, SocialAccount);
+    // const userTransaction = getTransactionalRepository(UserRepository, qr, User);
+    // const tokenTransaction = getTransactionalRepository(TokenRepository, qr, Token);
+
     try {
       const user = await this.userRepository.findOrCreate(dto, qr);
       // 토큰 발급
       const { accessToken, refreshToken } = await this.generatedTokens(user);
 
       // 토큰 정보 추가 or 업데이트
-      await this.refreshTokenRepository.updateOrCreateRefToken(user, refreshToken, agent, qr);
+      await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent);
 
       await qr.commitTransaction();
 
@@ -162,7 +173,7 @@ export class AuthService {
    * @returns
    */
   async removeRefToken(userId: number): Promise<DeleteResult> {
-    return this.refreshTokenRepository.delete({
+    return await this.tokenRepository.delete({
       user: { id: userId },
     });
   }

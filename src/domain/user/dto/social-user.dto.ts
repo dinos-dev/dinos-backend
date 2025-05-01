@@ -1,8 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Provider } from 'src/domain/auth/helper/provider.enum';
 
 export class SocialUserDto {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    description: '소셜 로그인 아이디',
+    example: '1234567890',
+    required: true,
+  })
+  providerId: string;
+
   @IsEmail()
   @IsNotEmpty()
   @ApiProperty({
@@ -13,7 +22,7 @@ export class SocialUserDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     description: '유저의 이름',
     example: '아무개',
@@ -28,5 +37,5 @@ export class SocialUserDto {
     example: 'google, naver, apple, kakao',
     required: true,
   })
-  authType: Provider;
+  provider: Provider;
 }

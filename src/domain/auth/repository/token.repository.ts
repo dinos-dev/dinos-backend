@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Token } from '../entities/token.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/entities/user.entity';
 import { PlatFormEnumType } from '../helper/platform.const';
 
 @Injectable()
-export class RefreshTokenRepository extends Repository<Token> {
-  constructor(private dataSource: DataSource) {
-    super(Token, dataSource.createEntityManager());
+export class TokenRepository extends Repository<Token> {
+  constructor(
+    @InjectRepository(Token)
+    private readonly repository: Repository<Token>,
+  ) {
+    super(Token, repository.manager, repository.queryRunner);
   }
 
   /**
@@ -15,14 +19,11 @@ export class RefreshTokenRepository extends Repository<Token> {
    * @param user User
    * @param refToken refreshToken
    * @param platForm signup Platform
-   * @param qr QueryRunner
    * @returns
    */
-  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType, qr: QueryRunner) {
-    let userToken = await qr.manager.findOne(Token, {
-      where: {
-        user,
-      },
+  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType) {
+    let userToken = await this.findOne({
+      relations: ['user'],
     });
 
     if (userToken) {
@@ -34,6 +35,6 @@ export class RefreshTokenRepository extends Repository<Token> {
         platForm,
       });
     }
-    await qr.manager.save(Token, userToken);
+    await this.manager.save(Token, userToken);
   }
 }

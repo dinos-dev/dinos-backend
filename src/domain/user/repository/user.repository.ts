@@ -1,12 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, QueryRunner, Repository } from 'typeorm';
+import { QueryRunner, Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialUserDto } from '../dto/social-user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
-  constructor(private dataSource: DataSource) {
-    super(User, dataSource.createEntityManager());
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {
+    super(User, userRepository.manager, userRepository.queryRunner);
   }
 
   /**

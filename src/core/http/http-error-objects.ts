@@ -124,6 +124,16 @@ export const HttpErrorConstants = {
     message: '가입된 유저가 아닙니다.',
   } as HttpErrorFormat,
 
+  SOCIAL_TOKEN_REQUIRED: {
+    error: 'SOCIAL_TOKEN_REQUIRED',
+    message: '소셜 토큰이 필요합니다.',
+  } as HttpErrorFormat,
+
+  SOCIAL_TOKEN_INTERNAL_SERVER_ERROR: {
+    error: 'SOCIAL_TOKEN_INTERNAL_SERVER_ERROR',
+    message: '소셜 토큰 검증중 에러가 발생하였습니다.',
+  } as HttpErrorFormat,
+
   COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Bearer Access Token Error Template)
 };
 

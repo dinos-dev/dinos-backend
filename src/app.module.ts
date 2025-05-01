@@ -20,6 +20,7 @@ import { CommonModule } from './common/common.module';
         return new DataSource(options).initialize();
       },
     }),
+
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env.production',
@@ -48,6 +49,14 @@ export class AppModule implements NestModule {
         },
         {
           path: 'auth/token/access',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/naver',
+          method: RequestMethod.POST,
+        },
+        {
+          path: 'auth/google',
           method: RequestMethod.POST,
         },
       )
