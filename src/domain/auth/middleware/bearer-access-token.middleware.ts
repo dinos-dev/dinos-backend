@@ -4,15 +4,28 @@ import { NextFunction, Request, Response } from 'express';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ConfigService } from '@nestjs/config';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class BearerAccessTokenMiddleware implements NestMiddleware {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly reflector: Reflector,
   ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
+    // 핸들러 또는 컨트롤러에 @Public() 데코레이터가 있는지 확인
+    const isPublic = this.reflector.getAllAndOverride<boolean>('isPublic', [
+      req.route?.handler, // 핸들러 레벨
+      req.route?.controller, // 컨트롤러 레벨
+    ]);
+
+    // @Public() 데코레이터가 있으면 검증 스킵
+    if (isPublic) {
+      return next();
+    }
+
     // 헤더값 추출
     const authHeader = req.headers['authorization'];
     if (!authHeader) {
