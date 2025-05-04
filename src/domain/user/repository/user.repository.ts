@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { QueryRunner, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialUserDto } from '../dto/social-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -47,12 +47,12 @@ export class UserRepository extends Repository<User> {
    * @param dto SocialUserDto
    * @returns user
    */
-  async findOrCreate(dto: SocialUserDto, qr: QueryRunner): Promise<User> {
-    const user = await qr.manager.findOne(User, {
+  async findOrCreate(dto: SocialUserDto): Promise<User> {
+    const user = await this.findOne({
       select: {
         id: true,
         email: true,
-        userName: true,
+        name: true,
       },
       where: {
         email: dto.email,
@@ -63,7 +63,7 @@ export class UserRepository extends Repository<User> {
       return user;
     } else {
       const newUser = User.signupSocial(dto);
-      await qr.manager.save(User, newUser);
+      await this.save(newUser);
       return newUser;
     }
   }

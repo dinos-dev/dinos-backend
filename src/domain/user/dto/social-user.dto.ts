@@ -26,9 +26,9 @@ export class SocialUserDto {
   @ApiProperty({
     description: '유저의 이름',
     example: '아무개',
-    required: true,
+    required: false,
   })
-  userName: string;
+  name: string;
 
   @IsEnum(Provider)
   @IsNotEmpty()

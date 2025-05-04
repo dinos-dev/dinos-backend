@@ -1,4 +1,10 @@
-import { Injectable, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserRepository } from 'src/domain/user/repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -13,22 +19,24 @@ import { LoginResponseDto } from './dto/login-response.dto';
 import { detectPlatform } from './util/client.util';
 import { Token } from './entities/token.entity';
 import { TokenPayLoad } from './interface/token-payload.interface';
-import { SocialAccountRepository } from './repository/social-account.repository';
+// import { SocialAccountRepository } from './repository/social-account.repository';
 import { getTransactionalRepository } from 'src/core/utils/transactional-repository.util';
-import { SocialAccount } from './entities/social-account.entity';
+// import { SocialAccount } from './entities/social-account.entity';
+import { Provider } from './helper/provider.enum';
+import { DateUtils } from 'src/core/utils/date-util';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly tokenRepository: TokenRepository,
-    private readonly socialAccountRepository: SocialAccountRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
   ) {}
 
   /**
+   * 소셜 ( OAuth ) 로그인
    * @param userAgent
    * @param dto SocialUserDto
    * @returns Login Info
@@ -36,30 +44,54 @@ export class AuthService {
   async socialLogin(userAgent: string, dto: SocialUserDto): Promise<LoginResponseDto> {
     // 유저 Agent detect
     const agent = await detectPlatform(userAgent);
-    console.log('agent info: logging target->', agent);
+
     const qr = this.dataSource.createQueryRunner();
+
     await qr.connect();
     await qr.startTransaction();
 
-    // 트랜잭션 처리를 위한 Repository 조회
-    // const socialAccountTransaction = getTransactionalRepository(SocialAccountRepository, qr, SocialAccount);
-    // const userTransaction = getTransactionalRepository(UserRepository, qr, User);
-    // const tokenTransaction = getTransactionalRepository(TokenRepository, qr, Token);
+    // 트랜잭션 처리를 위한 Repository 초기화
+    const connectedUser = getTransactionalRepository(UserRepository, qr, User);
+    const connectedToken = getTransactionalRepository(TokenRepository, qr, Token);
 
     try {
-      const user = await this.userRepository.findOrCreate(dto, qr);
-      // 토큰 발급
-      const { accessToken, refreshToken } = await this.generatedTokens(user);
+      // 1) 가입된 소셜 계정 및 자체 로그인 정보가 있는지 조회
+      const existingUser = await connectedUser.findOne({
+        where: {
+          email: dto.email,
+        },
+      });
 
-      // 토큰 정보 추가 or 업데이트
-      await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent);
+      if (existingUser && existingUser.provider !== dto.provider) {
+        switch (existingUser.provider) {
+          case Provider.GOOGLE:
+            throw new ConflictException(HttpErrorConstants.EXIST_GOOGLE_ACCOUNT);
+          case Provider.NAVER:
+            throw new ConflictException(HttpErrorConstants.EXIST_NAVER_ACCOUNT);
+          case Provider.APPLE:
+            throw new ConflictException(HttpErrorConstants.EXIST_APPLE_ACCOUNT);
+          default:
+            throw new ConflictException(HttpErrorConstants.EXIST_LOCAL_ACCOUNT);
+        }
+      }
+
+      // 2) 유저 생성 or 조회
+      const user = await connectedUser.findOrCreate(dto);
+
+      // 3) 토큰 발급
+      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+
+      // 4) 토큰 정보 추가 or 업데이트
+      await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
       await qr.commitTransaction();
 
       return { accessToken, refreshToken };
     } catch (err) {
       await qr.rollbackTransaction();
-      console.log('error->', err);
+      if (err instanceof ConflictException) {
+        throw err;
+      }
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     } finally {
       await qr.release();
@@ -89,7 +121,7 @@ export class AuthService {
 
     const accessToken = await this.issueToken(user, false);
 
-    return accessToken;
+    return accessToken.token;
   }
 
   /**
@@ -97,18 +129,23 @@ export class AuthService {
    * @param user
    * @param isRefreshToken  true -> refresh, false -> access
    */
-  async issueToken(user: User, isRefreshToken: boolean) {
+  async issueToken(user: User, isRefreshToken: boolean): Promise<{ token: string; expiresAt: Date }> {
     const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
     const accessTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
+    const expiresIn = isRefreshToken
+      ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
+      : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK);
 
     const payload = await this.createPayload(user, isRefreshToken);
 
-    return await this.jwtService.signAsync(payload, {
+    const token = await this.jwtService.signAsync(payload, {
       secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
-      expiresIn: isRefreshToken
-        ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
-        : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK),
+      expiresIn,
     });
+
+    const expiresAt = DateUtils.calculateExpiresAt(expiresIn);
+
+    return { token, expiresAt };
   }
 
   /**
@@ -182,12 +219,14 @@ export class AuthService {
    * access & refresh Token 발행 메서드
    * @param user
    */
-  private async generatedTokens(user: User) {
+  private async generatedTokens(user: User): Promise<{ accessToken: string; refreshToken: string; expiresAt: Date }> {
     const accessToken = await this.issueToken(user, false);
     const refreshToken = await this.issueToken(user, true);
+
     return {
-      accessToken,
-      refreshToken,
+      accessToken: accessToken.token,
+      refreshToken: refreshToken.token,
+      expiresAt: refreshToken.expiresAt,
     };
   }
 
@@ -200,6 +239,6 @@ export class AuthService {
     if (isRefreshToken) {
       return { sub: user.id }; // 최소 정보만 포함
     }
-    return { sub: user.id, email: user.email, name: user.userName }; // 추가 정보 포함
+    return { sub: user.id, email: user.email, name: user.name }; // 추가 정보 포함
   }
 }

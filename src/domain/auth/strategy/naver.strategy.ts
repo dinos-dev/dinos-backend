@@ -6,6 +6,8 @@ import { Strategy } from 'passport-custom';
 import { firstValueFrom } from 'rxjs';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+import { Provider } from '../helper/provider.enum';
+import { OAuthPayLoad } from '../interface/token-payload.interface';
 
 @Injectable()
 export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
@@ -15,8 +17,11 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   ) {
     super();
   }
-  // request object validation
-  async validate(req: any): Promise<any> {
+  /**
+   * @todo request object type safety
+   * request object validation
+   * */
+  async validate(req: any): Promise<OAuthPayLoad> {
     const { token } = req.body;
     if (!token) {
       throw new UnauthorizedException(HttpErrorConstants.SOCIAL_TOKEN_REQUIRED);
@@ -30,8 +35,18 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
           },
         }),
       );
-      console.log('response->', response.data);
-      // 실제 Naver Token으로 검증
+      /**
+       * @todo
+       * 실제 Naver Token으로 검증필요
+       * 데이터 적합성이 일치하는지에 대해서도 판별 필요.
+       */
+      const payload = {
+        email: response.data.response.email,
+        name: response.data.response.name,
+        provider: Provider.NAVER,
+        providerId: response.data.response.id,
+      };
+      return payload;
     } catch (err) {
       console.log('error->', err);
       throw new InternalServerErrorException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);

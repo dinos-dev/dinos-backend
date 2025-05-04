@@ -21,18 +21,24 @@ export class TokenRepository extends Repository<Token> {
    * @param platForm signup Platform
    * @returns
    */
-  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType) {
+  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType, expiresAt: Date) {
     let userToken = await this.findOne({
-      relations: ['user'],
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
     });
 
     if (userToken) {
       userToken.refToken = refToken;
     } else {
+      console.log('hhh');
       userToken = this.create({
         refToken,
         user,
         platForm,
+        expiresAt,
       });
     }
     await this.manager.save(Token, userToken);

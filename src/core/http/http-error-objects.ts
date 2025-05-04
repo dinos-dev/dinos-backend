@@ -44,6 +44,26 @@ export const HttpErrorConstants = {
     message: '이미 가입된 이메일 정보가 존재합니다.',
   } as HttpErrorFormat,
 
+  EXIST_LOCAL_ACCOUNT: {
+    error: 'EXIST_LOCAL_ACCOUNT',
+    message: '가입된 이메일이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_NAVER_ACCOUNT: {
+    error: 'EXIST_NAVER_ACCOUNT',
+    message: '가입된 네이버 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_GOOGLE_ACCOUNT: {
+    error: 'EXIST_GOOGLE_ACCOUNT',
+    message: '가입된 구글 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_APPLE_ACCOUNT: {
+    error: 'EXIST_APPLE_ACCOUNT',
+    message: '가입된 애플 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
   VALIDATE_ERROR: {
     error: 'VALIDATE_ERROR',
     message: '입력값이 유효하지 않습니다. 다시 확인해주세요.',

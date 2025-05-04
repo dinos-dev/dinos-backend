@@ -11,22 +11,24 @@ import { NaverStrategy } from './strategy/naver.strategy';
 import { GoogleStrategy } from './strategy/google.strategy';
 import { AppleStrategy } from './strategy/apple.strategy';
 import { HttpModule } from '@nestjs/axios';
-import { SocialAccountRepository } from './repository/social-account.repository';
-import { SocialAccount } from './entities/social-account.entity';
 import { User } from '../user/entities/user.entity';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from './strategy/jwt.strategy';
+import { JwtRefreshStrategy } from './strategy/jwt-refresh.strategy';
 
 @Module({
-  imports: [JwtModule.register({}), TypeOrmModule.forFeature([Token, User, SocialAccount]), HttpModule.register({})],
+  imports: [JwtModule.register({}), TypeOrmModule.forFeature([Token, User]), HttpModule.register({}), PassportModule],
   controllers: [AuthController],
   providers: [
     AuthService,
     TokenRepository,
-    SocialAccountRepository,
     UserRepository,
     NaverStrategy,
     GoogleStrategy,
     AppleStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
   ],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, PassportModule, JwtStrategy, JwtRefreshStrategy],
 })
 export class AuthModule {}
