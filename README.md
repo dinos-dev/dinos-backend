@@ -16,6 +16,7 @@ $ pnpm install hpp
 $ pnpm install cross-env
 $ pnpm install compression
 $ pnpm install class-validator class-transformer
+$ pnpm install @js-joda/core @js-joda/timezone
 
 # common dependency
 $ pnpm install -D @types/hpp
