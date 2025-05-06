@@ -61,6 +61,7 @@ export const LocalLoginDocs = () => {
       - email은 unique 하며, 플랫폼 별로 email 값이 같을 경우 중복 가입을 방지한다.
       - conflict exception이 발생할 경우, 프론트엔드에서 다른 플랫폼에 가입된 정보로 바로 로그인을 시켜주던가, 화면 or 모달에서 별도로 표기해주어야한다.
       - 비밀번호는 영문, 숫자, 특수문자 조합 8자 이상으로 정의 -> 정확하게 입력을 하지 않을 경우 400 Validation Error Response
+      - 이름은 Nullable -> 회원가입 & 로그인에 대응되어 처리하기 위함.
       `,
     }),
     ApiBody({
