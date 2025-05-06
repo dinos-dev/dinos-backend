@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { AuthService } from './auth.service';
 
 import { HttpResponse } from 'src/core/http/http-response';
-import { LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
+import { LocalLoginDocs, LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
 import { SocialUserDto } from '../user/dto/social-user.dto';
 import { UserId } from '../user/decorator/user-id.decorator';
@@ -50,6 +50,7 @@ export class AuthController {
     return HttpResponse.created(data);
   }
 
+  @LocalLoginDocs()
   @Public()
   @Post('local')
   async localLogin(@Req() req: Request, @Body() dto: CreateUserDto) {

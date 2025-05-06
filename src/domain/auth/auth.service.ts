@@ -95,7 +95,7 @@ export class AuthService {
    * @param dto CreateUserDto
    * @returns Login Info
    */
-  async localLogin(userAgent: string, dto: CreateUserDto) {
+  async localLogin(userAgent: string, dto: CreateUserDto): Promise<LoginResponseDto> {
     const agent = await detectPlatform(userAgent);
 
     const qr = this.dataSource.createQueryRunner();
