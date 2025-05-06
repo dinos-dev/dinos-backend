@@ -3,6 +3,8 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { SocialUserDto } from '../dto/social-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from '../dto/create-user.dto';
+import { hashPassword } from 'src/core/helper/password.util';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -43,11 +45,11 @@ export class UserRepository extends Repository<User> {
   }
 
   /**
-   * FindOne User OR Create
+   * FindOne OR Create Social User
    * @param dto SocialUserDto
    * @returns user
    */
-  async findOrCreate(dto: SocialUserDto): Promise<User> {
+  async findOrCreateSocialUser(dto: SocialUserDto): Promise<User> {
     const user = await this.findOne({
       select: {
         id: true,
@@ -93,5 +95,31 @@ export class UserRepository extends Repository<User> {
         id: userId,
       },
     });
+  }
+
+  /**
+   * FindOne OR Create Local User
+   * @param dto CreateUserDto
+   * @returns
+   */
+  async findOrCreateLocalUser(dto: CreateUserDto) {
+    const user = await this.findOne({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+      where: {
+        email: dto.email,
+      },
+    });
+    if (user) {
+      return user;
+    } else {
+      const hashedPassword = hashPassword(dto.password);
+      const newUser = User.signupLocal({ ...dto, password: hashedPassword });
+      await this.save(newUser);
+      return newUser;
+    }
   }
 }

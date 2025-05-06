@@ -14,6 +14,11 @@ export const HttpErrorConstants = {
     message: '로그인이 필요합니다.',
   } as HttpErrorFormat,
 
+  INVALID_PASSWORD_REGEX: {
+    error: 'INVALID_PASSWORD_REGEX',
+    message: '패스워드 양식이 올바르지 않습니다.',
+  } as HttpErrorFormat,
+
   UNAUTHORIZED_USER: {
     error: 'UNAUTHORIZED_USER',
     message: '아이디 또는 비밀번호가 잘못 되었습니다.',
@@ -62,6 +67,11 @@ export const HttpErrorConstants = {
   EXIST_APPLE_ACCOUNT: {
     error: 'EXIST_APPLE_ACCOUNT',
     message: '가입된 애플 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_KAKAO_ACCOUNT: {
+    error: 'EXIST_KAKAO_ACCOUNT',
+    message: '가입된 카카오 계정이 존재합니다.',
   } as HttpErrorFormat,
 
   VALIDATE_ERROR: {

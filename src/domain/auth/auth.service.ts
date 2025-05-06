@@ -11,7 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { User } from 'src/domain/user/entities/user.entity';
 
-import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+import { HttpErrorConstants, HttpErrorFormat } from 'src/core/http/http-error-objects';
 import { DataSource, DeleteResult } from 'typeorm';
 import { TokenRepository } from './repository/token.repository';
 import { SocialUserDto } from '../user/dto/social-user.dto';
@@ -24,6 +24,7 @@ import { getTransactionalRepository } from 'src/core/utils/transactional-reposit
 // import { SocialAccount } from './entities/social-account.entity';
 import { Provider } from './helper/provider.enum';
 import { DateUtils } from 'src/core/utils/date-util';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -61,33 +62,75 @@ export class AuthService {
           email: dto.email,
         },
       });
-
+      // 2) 가입된 정보가 있을 경우 핸들링
       if (existingUser && existingUser.provider !== dto.provider) {
-        switch (existingUser.provider) {
-          case Provider.GOOGLE:
-            throw new ConflictException(HttpErrorConstants.EXIST_GOOGLE_ACCOUNT);
-          case Provider.NAVER:
-            throw new ConflictException(HttpErrorConstants.EXIST_NAVER_ACCOUNT);
-          case Provider.APPLE:
-            throw new ConflictException(HttpErrorConstants.EXIST_APPLE_ACCOUNT);
-          default:
-            throw new ConflictException(HttpErrorConstants.EXIST_LOCAL_ACCOUNT);
-        }
+        this.throwProviderConflictError(existingUser.provider);
       }
 
-      // 2) 유저 생성 or 조회
-      const user = await connectedUser.findOrCreate(dto);
+      // 3) 유저 생성 or 조회
+      const user = await connectedUser.findOrCreateSocialUser(dto);
 
-      // 3) 토큰 발급
+      // 4) 토큰 발급
       const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
 
-      // 4) 토큰 정보 추가 or 업데이트
+      // 5) 토큰 정보 추가 or 업데이트
       await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
       await qr.commitTransaction();
 
       return { accessToken, refreshToken };
     } catch (err) {
+      await qr.rollbackTransaction();
+      if (err instanceof ConflictException) {
+        throw err;
+      }
+      throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
+    } finally {
+      await qr.release();
+    }
+  }
+
+  /**
+   * 자체 ( Local ) 로그인
+   * @param dto CreateUserDto
+   * @returns Login Info
+   */
+  async localLogin(userAgent: string, dto: CreateUserDto) {
+    const agent = await detectPlatform(userAgent);
+
+    const qr = this.dataSource.createQueryRunner();
+    await qr.connect();
+    await qr.startTransaction();
+    try {
+      // 트랜잭션 처리를 위한 Repository 초기화
+      const connectedUser = getTransactionalRepository(UserRepository, qr, User);
+      const connectedToken = getTransactionalRepository(TokenRepository, qr, Token);
+
+      // 1) 가입된 이메일 체크
+      const existingUser = await connectedUser.findOne({
+        where: {
+          email: dto.email,
+        },
+      });
+      // 2) 가입된 정보가 있을 경우 핸들링
+      if (existingUser && existingUser.provider !== Provider.LOCAL) {
+        this.throwProviderConflictError(existingUser.provider);
+      }
+
+      // 3) 유저 생성 or 조회
+      const user = await connectedUser.findOrCreateLocalUser(dto);
+
+      // 4) 토큰 발급
+      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+
+      // 5) 토큰 정보 추가 or 업데이트
+      await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
+
+      await qr.commitTransaction();
+
+      return { accessToken, refreshToken };
+    } catch (err) {
+      console.log('error->', err);
       await qr.rollbackTransaction();
       if (err instanceof ConflictException) {
         throw err;
@@ -240,5 +283,21 @@ export class AuthService {
       return { sub: user.id }; // 최소 정보만 포함
     }
     return { sub: user.id, email: user.email, name: user.name }; // 추가 정보 포함
+  }
+
+  /**
+   * OAuth & Local 타입에 맞춰 에러를 통합으로 핸들링
+   * @param provider Provider
+   */
+  private throwProviderConflictError(provider: Provider): never {
+    const errorMap: Record<Provider, HttpErrorFormat> = {
+      [Provider.GOOGLE]: HttpErrorConstants.EXIST_GOOGLE_ACCOUNT,
+      [Provider.NAVER]: HttpErrorConstants.EXIST_NAVER_ACCOUNT,
+      [Provider.APPLE]: HttpErrorConstants.EXIST_APPLE_ACCOUNT,
+      [Provider.LOCAL]: HttpErrorConstants.EXIST_LOCAL_ACCOUNT,
+      [Provider.KAKAO]: HttpErrorConstants.EXIST_KAKAO_ACCOUNT,
+    };
+
+    throw new ConflictException(errorMap[provider]);
   }
 }

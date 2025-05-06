@@ -1,4 +1,4 @@
-import { Controller, HttpCode, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/response/api-error-common-response';
 
@@ -19,6 +19,7 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Public } from 'src/core/decorator/public-access.decorator';
+import { CreateUserDto } from '../user/dto/create-user.dto';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
@@ -32,7 +33,7 @@ export class AuthController {
   @UseGuards(AuthGuard('naver'))
   async naverLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
     console.log('naver login->', token);
-    return HttpResponse.ok();
+    return HttpResponse.created();
   }
 
   @SocialLoginDocs()
@@ -46,16 +47,15 @@ export class AuthController {
       throw new UnauthorizedException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
     }
     const data = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
-    return HttpResponse.ok(data);
+    return HttpResponse.created(data);
   }
 
-  // // 소셜 가입 & 로그인
-  // @SocialLoginDocs()
-  // @Post('social-login')
-  // async socialLogin(@Req() req: Request, @Body() dto: SocialUserDto) {
-  //   const token = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
-  //   return HttpResponse.created(token);
-  // }
+  @Public()
+  @Post('local')
+  async localLogin(@Req() req: Request, @Body() dto: CreateUserDto) {
+    const data = await this.authService.localLogin(req.get('user-agent').toLowerCase(), dto);
+    return HttpResponse.created(data);
+  }
 
   // 토큰 재발급
   @RotateAccessTokenDocs()
