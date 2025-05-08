@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/core/swagger/response/api-error-common-response';
 
@@ -70,7 +70,6 @@ export class AuthController {
   // 로그아웃
   @LogOutDocs()
   @Post('logout')
-  @HttpCode(204)
   async logOut(@UserId() userId: number) {
     await this.authService.removeRefToken(userId);
     return HttpResponse.noContent();

@@ -126,17 +126,13 @@ export const LogOutDocs = () => {
     ApiOperation({
       summary: '로그아웃',
       description: `
-      - 헤더에 authorization key로 Bearer AccessToken을 요청
+      - 헤더에 authorization key로 Bearer AccessToken을 요청 
       - 응답 성공시 204 noContent를 반환한다 
+      - 웹은 고려하지 않고 있기 때문에, 자체 RN에서 AsyncStorage에서 토큰을 제거
       `,
     }),
-    ApiHeader({
-      name: 'authorization',
-      description: 'access token in Bearer format',
-      required: true,
-    }),
     ApiNoContentResponse({
-      description: '로그아웃 성공 - 반환되는 데이터는 별도로 없다',
+      description: '로그아웃 성공',
     }),
     ApiErrorResponseTemplate([
       {
