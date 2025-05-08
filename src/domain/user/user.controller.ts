@@ -14,7 +14,7 @@ export class UserController {
 
   @WithdrawUserDocs()
   @Delete()
-  async remove(@UserId() userId: number) {
+  async withdrawUser(@UserId() userId: number) {
     await this.userService.withdrawUser(userId);
     return HttpResponse.noContent();
   }

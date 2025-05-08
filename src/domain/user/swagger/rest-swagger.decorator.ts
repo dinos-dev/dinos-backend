@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiHeader, ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
@@ -12,14 +12,9 @@ export const WithdrawUserDocs = () => {
     ApiOperation({
       summary: '회원탈퇴',
       description: `
-        - softDelete로 회원을 탈퇴시킨다.
-        - 탈퇴된 회원의 정보는 모두 제거하지 않고, 특정 기간 보유시킨다.
+        - 유저를 회원탈퇴 시킨다. 
+        - 유저와 연관된 데이터를 모두 제거한다. 
         `,
-    }),
-    ApiHeader({
-      name: 'authorization',
-      description: 'access token in Bearer format',
-      required: true,
     }),
     ApiNoContentResponse({
       description: '회원탈퇴 성공',
@@ -41,11 +36,6 @@ export const FindByIdDocs = () => {
       description: `
         - accessToken 값으로 유저 정보를 단일로 조회한다.
         `,
-    }),
-    ApiHeader({
-      name: 'authorization',
-      description: 'access token in Bearer format',
-      required: true,
     }),
     ApiOkResponseTemplate({
       description: '유저 단일 조회 성공',

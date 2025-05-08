@@ -2,16 +2,13 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 
 import { UserRepository } from './repository/user.repository';
 import { User } from './entities/user.entity';
-import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Token } from '../auth/entities/token.entity';
 import { DataSource } from 'typeorm';
-// import { Transactional } from 'src/core/decorators/transaction.decorator';
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -25,18 +22,9 @@ export class UserService {
     await qr.connect();
     await qr.startTransaction();
     try {
-      await qr.manager.softDelete(User, {
+      await qr.manager.delete(User, {
         id: userId,
       });
-      await qr.manager.update(
-        User,
-        {
-          id: userId,
-        },
-        {
-          isActive: false,
-        },
-      );
       await qr.manager.delete(Token, {
         user: { id: userId },
       });
@@ -55,7 +43,7 @@ export class UserService {
    * @param userId
    * @returns
    */
-  async findById(userId: number) {
+  async findById(userId: number): Promise<User> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
