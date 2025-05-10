@@ -23,6 +23,7 @@ import { getTransactionalRepository } from 'src/core/utils/transactional-reposit
 import { Provider } from './helper/provider.enum';
 import { DateUtils } from 'src/core/utils/date-util';
 import { CreateUserDto } from '../user/dto/create-user.dto';
+import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly dataSource: DataSource,
+    private readonly logger: WinstonLoggerService,
   ) {}
 
   /**
@@ -75,7 +77,7 @@ export class AuthService {
       await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
       await qr.commitTransaction();
-
+      this.logger.log(`[소셜 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
       return { accessToken, refreshToken };
     } catch (err) {
       await qr.rollbackTransaction();
@@ -125,6 +127,8 @@ export class AuthService {
       await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
       await qr.commitTransaction();
+
+      this.logger.log(`[로컬 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
 
       return { accessToken, refreshToken };
     } catch (err) {

@@ -6,11 +6,11 @@ import { OrmConfig } from './database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './domain/auth/auth.module';
-// import { BearerAccessTokenMiddleware } from './domain/auth/middleware/bearer-access-token.middleware';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTimeInterceptor } from './core/interceptor/response-time.interceptor';
 import { CommonModule } from './common/common.module';
 import { JwtAuthGuard } from './domain/auth/guard/jwt-auth.guard';
+import { TraceModule } from './core/logger/trace.module';
 
 @Module({
   imports: [
@@ -24,6 +24,7 @@ import { JwtAuthGuard } from './domain/auth/guard/jwt-auth.guard';
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env.production',
     }),
+    TraceModule,
     UserModule,
     AuthModule,
     CommonModule,
@@ -40,28 +41,3 @@ import { JwtAuthGuard } from './domain/auth/guard/jwt-auth.guard';
   ],
 })
 export class AppModule {}
-// implements NestModule {
-//   configure(consumer: MiddlewareConsumer) {
-//     consumer
-//       .apply(BearerAccessTokenMiddleware)
-//       // .exclude(
-//       //   {
-//       //     path: 'auth/social-login',
-//       //     method: RequestMethod.POST,
-//       //   },
-//       //   {
-//       //     path: 'auth/token/access',
-//       //     method: RequestMethod.POST,
-//       //   },
-//       //   {
-//       //     path: 'auth/naver',
-//       //     method: RequestMethod.POST,
-//       //   },
-//       //   {
-//       //     path: 'auth/google',
-//       //     method: RequestMethod.POST,
-//       //   },
-//       // )
-//       .forRoutes('*');
-//   }
-// }

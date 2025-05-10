@@ -164,6 +164,15 @@ export const HttpErrorConstants = {
     message: '소셜 토큰 검증중 에러가 발생하였습니다.',
   } as HttpErrorFormat,
 
+  NOT_BE_EMPTY: 'not be empty',
+
+  ERR_INVALID_PARAMS: '잘못된 파라미터 입니다.',
+
+  ERROR_INVALID_PARAMS: {
+    error: 'ERR_INVALID_PARAMS',
+    message: '잘못된 파라미터 입니다.',
+  } as HttpErrorFormat,
+
   COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Bearer Access Token Error Template)
 };
 

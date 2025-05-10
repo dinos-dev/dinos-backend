@@ -29,7 +29,7 @@ export const winstonLogger = WinstonModule.createLogger({
         : winston.format.combine(
             winston.format.timestamp(),
             winston.format.ms(),
-            nestWinstonModuleUtilities.format.nestLike('nestPlate', {
+            nestWinstonModuleUtilities.format.nestLike('dinos', {
               colors: true,
               prettyPrint: true,
             }),
