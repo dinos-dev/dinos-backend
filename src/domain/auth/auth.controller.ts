@@ -27,15 +27,22 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  // Naver OAuth Register & Login
   @SocialLoginDocs()
   @Public()
   @Post('naver')
   @UseGuards(AuthGuard('naver'))
   async naverLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
-    console.log('naver login->', token);
-    return HttpResponse.created();
+    const dto = plainToClass(SocialUserDto, token);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new UnauthorizedException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
+    }
+    const data = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
+    return HttpResponse.created(data);
   }
 
+  // Google OAuth Register & Login
   @SocialLoginDocs()
   @Public()
   @Post('google')
@@ -50,6 +57,15 @@ export class AuthController {
     return HttpResponse.created(data);
   }
 
+  // Apple OAuth Register & Login
+  @Post('apple')
+  async appleLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
+    console.log(req);
+    console.log(token);
+    return HttpResponse.created();
+  }
+
+  // Local Register & Login
   @LocalLoginDocs()
   @Public()
   @Post('local')
