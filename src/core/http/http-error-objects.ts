@@ -14,6 +14,11 @@ export const HttpErrorConstants = {
     message: '로그인이 필요합니다.',
   } as HttpErrorFormat,
 
+  INVALID_PASSWORD_REGEX: {
+    error: 'INVALID_PASSWORD_REGEX',
+    message: '패스워드 양식이 올바르지 않습니다.',
+  } as HttpErrorFormat,
+
   UNAUTHORIZED_USER: {
     error: 'UNAUTHORIZED_USER',
     message: '아이디 또는 비밀번호가 잘못 되었습니다.',
@@ -42,6 +47,31 @@ export const HttpErrorConstants = {
   EXIST_EMAIL: {
     error: 'EXIST_EMAIL',
     message: '이미 가입된 이메일 정보가 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_LOCAL_ACCOUNT: {
+    error: 'EXIST_LOCAL_ACCOUNT',
+    message: '가입된 이메일이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_NAVER_ACCOUNT: {
+    error: 'EXIST_NAVER_ACCOUNT',
+    message: '가입된 네이버 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_GOOGLE_ACCOUNT: {
+    error: 'EXIST_GOOGLE_ACCOUNT',
+    message: '가입된 구글 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_APPLE_ACCOUNT: {
+    error: 'EXIST_APPLE_ACCOUNT',
+    message: '가입된 애플 계정이 존재합니다.',
+  } as HttpErrorFormat,
+
+  EXIST_KAKAO_ACCOUNT: {
+    error: 'EXIST_KAKAO_ACCOUNT',
+    message: '가입된 카카오 계정이 존재합니다.',
   } as HttpErrorFormat,
 
   VALIDATE_ERROR: {
@@ -122,6 +152,25 @@ export const HttpErrorConstants = {
   NOT_REGISTER_USER: {
     error: 'NOT_REGISTER_USER',
     message: '가입된 유저가 아닙니다.',
+  } as HttpErrorFormat,
+
+  SOCIAL_TOKEN_REQUIRED: {
+    error: 'SOCIAL_TOKEN_REQUIRED',
+    message: '소셜 토큰이 필요합니다.',
+  } as HttpErrorFormat,
+
+  SOCIAL_TOKEN_INTERNAL_SERVER_ERROR: {
+    error: 'SOCIAL_TOKEN_INTERNAL_SERVER_ERROR',
+    message: '소셜 토큰 검증중 에러가 발생하였습니다.',
+  } as HttpErrorFormat,
+
+  NOT_BE_EMPTY: 'not be empty',
+
+  ERR_INVALID_PARAMS: '잘못된 파라미터 입니다.',
+
+  ERROR_INVALID_PARAMS: {
+    error: 'ERR_INVALID_PARAMS',
+    message: '잘못된 파라미터 입니다.',
   } as HttpErrorFormat,
 
   COMMON_UNAUTHORIZED_TOKEN_ERROR: [] as HttpErrorFormat[], // 공통(Bearer Access Token Error Template)

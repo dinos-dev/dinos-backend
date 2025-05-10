@@ -16,8 +16,11 @@ $ pnpm install hpp
 $ pnpm install cross-env
 $ pnpm install compression
 $ pnpm install class-validator class-transformer
+$ pnpm install @js-joda/core @js-joda/timezone
+
 # common dependency
 $ pnpm install -D @types/hpp
+$ pnpm install @nestjs/axios 
 
 # winston logging 
 $ pnpm install nest-winston winston winston-daily-rotate-file 
@@ -34,14 +37,16 @@ $ pnpm install -D @types/bcrypt
 $ pnpm install @nestjs/jwt
 
 # passport 
-$ pnpm install @nestjs/passport passport passport-local @types/passport-local
+$ pnpm install @nestjs/passport passport passport-local @types/passport-local passport-google-oauth20  passport-naver passport-custom
 $ pnpm install passport-jwt @types/passport-jwt
+$ pnpm install -D @types/passport-local @types/passport-naver
 
 # aws-sdk v3 
 $ pnpm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 
 # uuid module
 $ pnpm install uuid
+$ pnpm install -D @types/uuid
 
 ```
 

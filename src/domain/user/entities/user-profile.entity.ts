@@ -12,9 +12,16 @@ export class UserProfile extends BaseModel {
   id: number;
 
   @Column({
-    length: 45,
+    length: 20,
   })
   nickName: string;
+
+  @Column({
+    length: 50,
+    nullable: true,
+    comment: '프로필 소개 및 간단소개',
+  })
+  comment: string;
 
   @Column()
   profileName: string;

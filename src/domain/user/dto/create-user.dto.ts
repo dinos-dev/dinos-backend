@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { IsRegexpPhoneNumber } from 'src/core/validators/regexp.phone-number';
-import { SocialAuthEnum } from 'src/domain/auth/helper/social-auth.enum';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { PasswordRegex } from 'src/core/helper/password.util';
+import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 
 export class CreateUserDto {
   @IsEmail()
@@ -14,28 +14,23 @@ export class CreateUserDto {
   email: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     description: '유저의 이름',
     example: '아무개',
-    required: true,
+    required: false,
   })
-  userName: string;
-
-  @IsEnum(SocialAuthEnum)
-  @IsNotEmpty()
-  @ApiProperty({
-    description: '가입(인증) 유형',
-    example: 'google, naver, apple, kakao',
-    required: true,
-  })
-  authType: SocialAuthEnum;
+  name: string;
 
   @IsString()
+  @Matches(PasswordRegex, {
+    message: HttpErrorConstants.INVALID_BEARER_TOKEN.message,
+  })
   @IsNotEmpty()
+  @ApiProperty({
+    description: '패스워드',
+    example: 'abcd123!@',
+    required: true,
+  })
   password: string;
-
-  @IsRegexpPhoneNumber()
-  @IsNotEmpty()
-  phoneNumber: string;
 }

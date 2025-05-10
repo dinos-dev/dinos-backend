@@ -1,4 +1,5 @@
-export enum SocialAuthEnum {
+export enum Provider {
+  LOCAL = 'local',
   GOOGLE = 'google',
   APPLE = 'apple',
   NAVER = 'naver',
