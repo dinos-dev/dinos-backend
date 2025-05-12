@@ -1,3 +1,5 @@
+import './instrument';
+
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { initSwagger } from './core/swagger/swagger-config';

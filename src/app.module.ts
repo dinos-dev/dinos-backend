@@ -11,6 +11,7 @@ import { ResponseTimeInterceptor } from './core/interceptor/response-time.interc
 import { CommonModule } from './common/common.module';
 import { JwtAuthGuard } from './domain/auth/guard/jwt-auth.guard';
 import { TraceModule } from './core/logger/trace.module';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TraceModule } from './core/logger/trace.module';
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env.production',
     }),
+    SentryModule.forRoot(),
     TraceModule,
     UserModule,
     AuthModule,
