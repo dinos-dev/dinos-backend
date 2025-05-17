@@ -35,6 +35,8 @@ $ pnpm install -D @types/bcrypt
 
 # jwt 
 $ pnpm install @nestjs/jwt
+$ pnpm install jwks-rsa # get apple public access key
+$ pnpm install jsonwebtoken # decoded apple jwt token
 
 # passport 
 $ pnpm install @nestjs/passport passport passport-local @types/passport-local passport-google-oauth20  passport-naver passport-custom

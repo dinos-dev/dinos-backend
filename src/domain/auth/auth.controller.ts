@@ -58,7 +58,9 @@ export class AuthController {
   }
 
   // Apple OAuth Register & Login
+  @Public()
   @Post('apple')
+  @UseGuards(AuthGuard('apple'))
   async appleLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
     console.log(req);
     console.log(token);
