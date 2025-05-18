@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Token } from '../entities/token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/domain/user/entities/user.entity';
-import { PlatFormEnumType } from '../helper/platform.const';
+import { PlatFormEnumType } from '../constant/platform.const';
 
 @Injectable()
 export class TokenRepository extends Repository<Token> {

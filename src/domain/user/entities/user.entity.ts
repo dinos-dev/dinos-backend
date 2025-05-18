@@ -3,7 +3,7 @@ import { BaseModel } from 'src/common/entities/base.entity';
 import { Token } from 'src/domain/auth/entities/token.entity';
 import { Column, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfile } from './user-profile.entity';
-import { Provider } from 'src/domain/auth/helper/provider.enum';
+import { Provider } from 'src/domain/auth/constant/provider.enum';
 
 @Entity()
 export class User extends BaseModel {

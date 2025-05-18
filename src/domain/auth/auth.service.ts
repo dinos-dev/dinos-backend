@@ -20,7 +20,7 @@ import { detectPlatform } from './util/client.util';
 import { Token } from './entities/token.entity';
 import { TokenPayLoad } from './interface/token-payload.interface';
 import { getTransactionalRepository } from 'src/core/utils/transactional-repository.util';
-import { Provider } from './helper/provider.enum';
+import { Provider } from './constant/provider.enum';
 import { DateUtils } from 'src/core/utils/date-util';
 import { CreateUserDto } from '../user/dto/create-user.dto';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';

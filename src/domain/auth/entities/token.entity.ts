@@ -1,7 +1,7 @@
 import { BaseModel } from 'src/common/entities/base.entity';
 import { User } from 'src/domain/user/entities/user.entity';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PlatFormEnumType } from '../helper/platform.const';
+import { PlatFormEnumType } from '../constant/platform.const';
 
 @Entity()
 export class Token extends BaseModel {
