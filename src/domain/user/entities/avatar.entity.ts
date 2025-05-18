@@ -1,8 +1,9 @@
-import { BaseModel } from 'src/common/entities/base.entity';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { AvatarType } from '../constant/avatar.enum';
+import { UserProfile } from './user-profile.entity';
 
 @Entity()
-export class Avatar extends BaseModel {
+export class Avatar {
   @PrimaryGeneratedColumn({
     comment: 'PK',
     type: 'integer',
@@ -11,26 +12,23 @@ export class Avatar extends BaseModel {
   id: number;
 
   @Column({
-    type: 'smallint',
-    comment: '아바타의 헤더 이미지 경로값',
+    type: 'enum',
+    enum: AvatarType,
   })
-  header: number;
-
-  @Column({
-    type: 'smallint',
-    comment: '아바타의 바디 이미지 경로값',
-  })
-  body: number;
+  type: string;
 
   @Column({
     type: 'varchar',
-    comment: '아바타의 헤더 칼라 헥사 코드',
+    length: 255,
   })
-  headerColor: string;
+  filePath: string;
 
-  @Column({
-    type: 'varchar',
-    comment: '아바타의 바디 칼라 헥사 코드',
-  })
-  bodyColor: string;
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @OneToMany(() => UserProfile, (userProfile) => userProfile.avatarHeader)
+  userProfileHeader: UserProfile[];
+
+  @OneToMany(() => UserProfile, (userProfile) => userProfile.avatarBody)
+  userProfileBody: UserProfile[];
 }
