@@ -20,6 +20,22 @@ export class UserProfile extends BaseModel {
   userId: number;
 
   @Column({
+    type: 'integer',
+    unsigned: true,
+    comment: 'avatar header id',
+  })
+  avatarHeaderId: number;
+
+  @Column({
+    type: 'integer',
+    unsigned: true,
+    comment: 'avatar body id',
+  })
+  avatarBodyId: number;
+
+  // ------------------------------------------------------------------------ //
+
+  @Column({
     length: 20,
   })
   nickName: string;
@@ -30,15 +46,6 @@ export class UserProfile extends BaseModel {
     comment: '프로필 소개 및 간단소개',
   })
   comment: string;
-
-  @Column()
-  profileName: string;
-
-  @Column()
-  profilePath: string;
-
-  @OneToOne(() => User, (user) => user.id)
-  user: User;
 
   @Column({
     type: 'varchar',
@@ -55,6 +62,14 @@ export class UserProfile extends BaseModel {
     comment: 'avatar body color ( hex code )',
   })
   avatarBodyColor: string | null;
+
+  // 1-to-1 ------------------------------------------------------------------- //
+
+  @OneToOne(() => User, (user) => user.id)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
+
+  // M-to-M ------------------------------------------------------------------- //
 
   @ManyToOne(() => Avatar, { nullable: true })
   @JoinColumn({ name: 'avatar_header_id' })

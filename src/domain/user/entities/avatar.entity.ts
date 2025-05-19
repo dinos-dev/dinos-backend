@@ -11,6 +11,8 @@ export class Avatar {
   })
   id: number;
 
+  // ------------------------------------------------------------------------ //
+
   @Column({
     type: 'enum',
     enum: AvatarType,
@@ -25,6 +27,8 @@ export class Avatar {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  // 1-to-M ------------------------------------------------------------------- //
 
   @OneToMany(() => UserProfile, (userProfile) => userProfile.avatarHeader)
   userProfileHeader: UserProfile[];

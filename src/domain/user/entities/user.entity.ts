@@ -14,6 +14,8 @@ export class User extends BaseModel {
   })
   id: number;
 
+  // ------------------------------------------------------------------------ //
+
   @Column({
     type: 'varchar',
     unique: true,
@@ -56,20 +58,21 @@ export class User extends BaseModel {
     nullable: true,
     unique: true,
   })
+  @Exclude()
   providerId: string;
 
   @Exclude()
   @DeleteDateColumn({ default: null })
   deletedAt: Date | null;
 
-  /** 1 to 1 */
+  // 1-to-1 ------------------------------------------------------------------- //
   @OneToOne(() => UserProfile, (userProfile) => userProfile.id, {
     cascade: true,
   })
   @JoinColumn()
   userProfile: UserProfile;
 
-  /** 1 to M */
+  // 1-to-M ------------------------------------------------------------------- //
   @Exclude()
   @OneToMany(() => Token, (token) => token.user)
   tokens: Token[];

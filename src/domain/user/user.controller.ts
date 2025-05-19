@@ -20,7 +20,7 @@ export class UserController {
   }
 
   @FindByIdDocs()
-  @Get()
+  @Get('/mine')
   async findById(@UserId() userId: number) {
     const user = await this.userService.findById(userId);
     return HttpResponse.ok(user);

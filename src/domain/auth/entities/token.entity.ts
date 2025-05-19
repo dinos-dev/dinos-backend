@@ -12,6 +12,15 @@ export class Token extends BaseModel {
   })
   id: number;
 
+  @Column({
+    type: 'integer',
+    unsigned: true,
+    comment: '유저 id',
+  })
+  userId: number;
+
+  // ------------------------------------------------------------------------ //
+
   @Index()
   @Column({
     type: 'varchar',
@@ -28,6 +37,8 @@ export class Token extends BaseModel {
     enum: Object.values(PlatFormEnumType),
   })
   platForm: PlatFormEnumType;
+
+  // M-to-1------------------------------------------------------------------ //
 
   @ManyToOne(() => User, (user) => user.tokens, { onDelete: 'CASCADE' })
   @JoinColumn()

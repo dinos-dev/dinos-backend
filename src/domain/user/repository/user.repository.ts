@@ -94,6 +94,9 @@ export class UserRepository extends Repository<User> {
       where: {
         id: userId,
       },
+      relations: {
+        userProfile: true,
+      },
     });
   }
 

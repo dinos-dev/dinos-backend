@@ -5,10 +5,14 @@ import { User } from './entities/user.entity';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Token } from '../auth/entities/token.entity';
 import { DataSource } from 'typeorm';
+import { UserProfileRepository } from './repository/user-profile.repository';
+import { AvatarRepository } from './repository/avatar.repository';
 @Injectable()
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly userProfileRepository: UserProfileRepository,
+    private readonly avatarRepository: AvatarRepository,
     private readonly dataSource: DataSource,
   ) {}
 

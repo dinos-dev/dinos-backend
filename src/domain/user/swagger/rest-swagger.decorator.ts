@@ -34,7 +34,7 @@ export const FindByIdDocs = () => {
     ApiOperation({
       summary: '단일 유저 조회 ',
       description: `
-        - accessToken 값으로 유저 정보를 단일로 조회한다.
+        - token에 담긴 userId 값을 기반으로 유저 정보 조회
         `,
     }),
     ApiOkResponseTemplate({
