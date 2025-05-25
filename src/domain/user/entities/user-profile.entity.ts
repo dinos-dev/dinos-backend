@@ -1,7 +1,6 @@
 import { BaseModel } from 'src/common/entities/base.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { User } from './user.entity';
-import { Avatar } from './avatar.entity';
 
 @Entity()
 export class UserProfile extends BaseModel {
@@ -19,20 +18,6 @@ export class UserProfile extends BaseModel {
   })
   userId: number;
 
-  @Column({
-    type: 'integer',
-    unsigned: true,
-    comment: 'avatar header id',
-  })
-  avatarHeaderId: number;
-
-  @Column({
-    type: 'integer',
-    unsigned: true,
-    comment: 'avatar body id',
-  })
-  avatarBodyId: number;
-
   // ------------------------------------------------------------------------ //
 
   @Column({
@@ -48,12 +33,26 @@ export class UserProfile extends BaseModel {
   comment: string;
 
   @Column({
+    type: 'integer',
+    nullable: true,
+    comment: 'header front image id',
+  })
+  headerId: number | null;
+
+  @Column({
+    type: 'integer',
+    nullable: true,
+    comment: 'body front image id',
+  })
+  bodyId: number | null;
+
+  @Column({
     type: 'varchar',
     length: 8,
     nullable: true,
     comment: 'avatar header color ( hex code )',
   })
-  avatarHeaderColor: string | null;
+  headerColor: string | null;
 
   @Column({
     type: 'varchar',
@@ -61,21 +60,11 @@ export class UserProfile extends BaseModel {
     nullable: true,
     comment: 'avatar body color ( hex code )',
   })
-  avatarBodyColor: string | null;
+  bodyColor: string | null;
 
   // 1-to-1 ------------------------------------------------------------------- //
 
   @OneToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
-
-  // M-to-M ------------------------------------------------------------------- //
-
-  @ManyToOne(() => Avatar, { nullable: true })
-  @JoinColumn({ name: 'avatar_header_id' })
-  avatarHeader: Avatar;
-
-  @ManyToOne(() => Avatar, { nullable: true })
-  @JoinColumn({ name: 'avatar_body_id' })
-  avatarBody: Avatar;
 }

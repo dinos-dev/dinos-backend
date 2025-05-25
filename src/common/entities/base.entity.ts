@@ -6,11 +6,11 @@ export abstract class BaseModel {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Exclude()
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
-  @Exclude()
   @VersionColumn()
+  @Exclude()
   version: number;
 }

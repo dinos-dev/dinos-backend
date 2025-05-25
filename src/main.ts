@@ -18,7 +18,7 @@ async function bootstrap() {
   const logger = app.get(WinstonLoggerService);
   app.useLogger(logger);
 
-  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector), {}));
 
   app.useGlobalPipes(
     new ValidationPipe({

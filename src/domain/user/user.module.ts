@@ -6,12 +6,11 @@ import { User } from './entities/user.entity';
 import { UserRepository } from './repository/user.repository';
 import { UserProfile } from './entities/user-profile.entity';
 import { UserProfileRepository } from './repository/user-profile.repository';
-import { AvatarRepository } from './repository/avatar.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User, UserProfile])],
   controllers: [UserController],
-  providers: [UserService, UserRepository, UserProfileRepository, AvatarRepository],
+  providers: [UserService, UserRepository, UserProfileRepository],
   exports: [UserService, UserRepository],
 })
 export class UserModule {}
