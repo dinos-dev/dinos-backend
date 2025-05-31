@@ -6,7 +6,7 @@ import { ApiCreatedResponseTemplate } from 'src/core/swagger/response/api-create
 import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
 import { LoginResponseDto, RotateAccessTokenDto } from '../dto/login-response.dto';
 import { SocialLoginDto } from '../dto/social-login.dto';
-import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
+import { CreateUserDto } from 'src/domain/user/dto/request/create-user.dto';
 import { ApiNoContentResponseTemplate } from 'src/core/swagger/response/api-no-content-response';
 
 /**소셜 가입 & 로그인*/

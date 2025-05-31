@@ -7,9 +7,9 @@ import { Token } from '../auth/entities/token.entity';
 import { DataSource } from 'typeorm';
 import { UserProfileRepository } from './repository/user-profile.repository';
 import { UserProfile } from './entities/user-profile.entity';
-import { CreateUserProfileDto } from './dto/create-user-profile.dto';
+import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { HttpUserErrorConstants } from './helper/http-error-object';
-import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
+import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -100,9 +100,11 @@ export class UserService {
   /**
    * 유저 프로필 조회
    * @param userId
-   * @returns
+   * @returns UserProfile
    */
   async findByProfile(userId: number): Promise<UserProfile> {
-    return await this.userProfileRepository.findByUserId(userId);
+    const profile = await this.userProfileRepository.findByUserId(userId);
+    if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
+    return profile;
   }
 }

@@ -1,14 +1,15 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiNoContentResponse, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
-import { FindOneUserResponseDto } from '../dto/find-user.response.dto';
 import { ApiOkResponseTemplate } from 'src/core/swagger/response/api-ok-response';
-import { CreateUserProfileDto } from '../dto/create-user-profile.dto';
+import { CreateUserProfileDto } from '../dto/request/create-user-profile.dto';
 import { ApiCreatedResponseTemplate } from 'src/core/swagger/response/api-created-response';
 import { HttpUserErrorConstants } from '../helper/http-error-object';
-import { UpdateUserProfileDto } from '../dto/update-user-profile.dto';
+import { ApiNoContentResponseTemplate } from 'src/core/swagger/response/api-no-content-response';
+import { UpdateUserProfileDto } from '../dto/request/update-user-profile.dto';
+import { UserProfileResponseDto } from '../dto/response/user-profile-response.dto';
 
 //? Withdraw
 export const WithdrawUserDocs = () => {
@@ -20,7 +21,7 @@ export const WithdrawUserDocs = () => {
         - 유저와 연관된 데이터를 모두 제거한다. 
         `,
     }),
-    ApiNoContentResponse({
+    ApiNoContentResponseTemplate({
       description: '회원탈퇴 성공',
     }),
     ApiErrorResponseTemplate([
@@ -42,8 +43,8 @@ export const FindByProfileDocs = () => {
         `,
     }),
     ApiOkResponseTemplate({
-      description: '유저 단일 조회 성공',
-      type: FindOneUserResponseDto,
+      description: '유저 프로필 조회 성공',
+      type: UserProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -65,6 +66,7 @@ export const CreateUserProfileDocs = () => {
       summary: '유저 프로필 생성',
       description: `
         - 유저 프로필을 생성한다.
+        - 유저 프로필 생성시, nickName은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
         `,
     }),
     ApiBody({
@@ -72,6 +74,7 @@ export const CreateUserProfileDocs = () => {
     }),
     ApiCreatedResponseTemplate({
       description: '유저 프로필 생성 성공',
+      type: UserProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -93,6 +96,7 @@ export const UpdateUserProfileDocs = () => {
       summary: '유저 프로필 수정',
       description: `
         - 유저 프로필을 수정한다.
+        - 유저 프로필 수정시, nickName은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
         `,
     }),
     ApiParam({
@@ -107,6 +111,7 @@ export const UpdateUserProfileDocs = () => {
     }),
     ApiOkResponseTemplate({
       description: '유저 프로필 수정 성공',
+      type: UserProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {

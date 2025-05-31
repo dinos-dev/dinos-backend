@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateUserProfileDto {
@@ -8,12 +8,12 @@ export class CreateUserProfileDto {
     type: String,
     example: 'dinosaur',
     maxLength: 20,
-    required: false,
+    required: true,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   @MaxLength(20)
-  nickName?: string;
+  nickName: string;
 
   @ApiProperty({
     description: '프로필 간단 소개',

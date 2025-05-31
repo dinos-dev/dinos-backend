@@ -52,13 +52,13 @@ export class User extends BaseModel {
   })
   provider: Provider;
 
+  @Exclude()
   @Column({
     type: 'varchar',
     length: 255,
     nullable: true,
     unique: true,
   })
-  @Exclude()
   providerId: string;
 
   @Exclude()

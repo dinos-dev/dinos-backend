@@ -22,6 +22,7 @@ export class UserProfile extends BaseModel {
 
   @Column({
     length: 20,
+    comment: '프로필 닉네임',
   })
   nickName: string;
 
@@ -30,7 +31,7 @@ export class UserProfile extends BaseModel {
     nullable: true,
     comment: '프로필 소개 및 간단소개',
   })
-  comment: string;
+  comment: string | null;
 
   @Column({
     type: 'integer',

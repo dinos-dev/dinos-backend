@@ -10,8 +10,9 @@ import {
 } from './swagger/rest-swagger.decorator';
 import { HttpResponse } from 'src/core/http/http-response';
 import { UserId } from './decorator/user-id.decorator';
-import { CreateUserProfileDto } from './dto/create-user-profile.dto';
-import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
+import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
+import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
+import { UserProfileResponseDto } from './dto/response/user-profile-response.dto';
 
 @ApiTags('User - 회원관리')
 @ApiCommonErrorResponseTemplate()
@@ -26,7 +27,10 @@ export class UserController {
   //? 유저 프로필 생성
   @CreateUserProfileDocs()
   @Post('profile')
-  async createProfile(@UserId() userId: number, @Body() dto: CreateUserProfileDto) {
+  async createProfile(
+    @UserId() userId: number,
+    @Body() dto: CreateUserProfileDto,
+  ): Promise<HttpResponse<UserProfileResponseDto>> {
     const profile = await this.userService.createProfile(userId, dto);
     return HttpResponse.created(profile);
   }
@@ -38,7 +42,10 @@ export class UserController {
   //? 유저 프로필 수정
   @UpdateUserProfileDocs()
   @Patch('profile/:id')
-  async updateProfile(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserProfileDto) {
+  async updateProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateUserProfileDto,
+  ): Promise<HttpResponse<UserProfileResponseDto>> {
     const profile = await this.userService.updateProfile(id, dto);
     return HttpResponse.ok(profile);
   }
@@ -50,7 +57,7 @@ export class UserController {
   //? userId 기반 프로필 조회
   @FindByProfileDocs()
   @Get('/mine/profile')
-  async findByProfile(@UserId() userId: number) {
+  async findByProfile(@UserId() userId: number): Promise<HttpResponse<UserProfileResponseDto>> {
     const user = await this.userService.findByProfile(userId);
     return HttpResponse.ok(user);
   }
@@ -62,7 +69,7 @@ export class UserController {
   //? 회원탈퇴
   @WithdrawUserDocs()
   @Delete()
-  async withdrawUser(@UserId() userId: number) {
+  async withdrawUser(@UserId() userId: number): Promise<HttpResponse<void>> {
     await this.userService.withdrawUser(userId);
     return HttpResponse.noContent();
   }

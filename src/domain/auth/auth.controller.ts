@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 import { HttpResponse } from 'src/core/http/http-response';
 import { LocalLoginDocs, LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from './guard/refresh-token.guard';
-import { SocialUserDto } from '../user/dto/social-user.dto';
+import { SocialUserDto } from '../user/dto/request/social-user.dto';
 import { UserId } from '../user/decorator/user-id.decorator';
 import { Authorization } from './decorator/authorization.decorator';
 import { AuthGuard } from '@nestjs/passport';
@@ -19,7 +19,7 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Public } from 'src/core/decorator/public-access.decorator';
-import { CreateUserDto } from '../user/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/request/create-user.dto';
 import { LoginResponseDto, RotateAccessTokenDto } from './dto/login-response.dto';
 
 @ApiTags('Auth - 인증')

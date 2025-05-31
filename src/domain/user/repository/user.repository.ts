@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { SocialUserDto } from '../dto/social-user.dto';
+import { SocialUserDto } from '../dto/request/social-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateUserDto } from '../dto/create-user.dto';
+import { CreateUserDto } from '../dto/request/create-user.dto';
 import { hashPassword } from 'src/core/helper/password.util';
 
 @Injectable()

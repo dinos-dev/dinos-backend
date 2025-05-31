@@ -15,7 +15,7 @@ export class UserProfileRepository extends Repository<UserProfile> {
   /**
    * userId 기반 프로필 조회
    * @param userId
-   * @reutns UserProfile
+   * @returns UserProfile
    */
   async findByUserId(userId: number): Promise<UserProfile> {
     return this.findOne({
