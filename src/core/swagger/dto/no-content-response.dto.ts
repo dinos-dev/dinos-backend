@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ResponseDto<T> {
+export class NoContentResponseDto<T> {
   data: T;
   @ApiProperty({
-    default: 200,
+    default: 204,
   })
   status: number;
   @ApiProperty({
-    default: 'OK',
+    default: 'NO_CONTENT',
   })
   message: string;
 }

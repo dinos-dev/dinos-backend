@@ -6,7 +6,7 @@ import { Strategy } from 'passport-custom';
 import { firstValueFrom } from 'rxjs';
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
-import { Provider } from '../helper/provider.enum';
+import { Provider } from '../constant/provider.enum';
 import { OAuthPayLoad } from '../interface/token-payload.interface';
 
 @Injectable()

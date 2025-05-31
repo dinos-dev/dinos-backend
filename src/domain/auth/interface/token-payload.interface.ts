@@ -1,4 +1,4 @@
-import { Provider } from '../helper/provider.enum';
+import { Provider } from '../constant/provider.enum';
 
 export interface TokenPayLoad {
   sub?: number;

@@ -14,15 +14,15 @@ import { User } from 'src/domain/user/entities/user.entity';
 import { HttpErrorConstants, HttpErrorFormat } from 'src/core/http/http-error-objects';
 import { DataSource, DeleteResult } from 'typeorm';
 import { TokenRepository } from './repository/token.repository';
-import { SocialUserDto } from '../user/dto/social-user.dto';
+import { SocialUserDto } from '../user/dto/request/social-user.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { detectPlatform } from './util/client.util';
 import { Token } from './entities/token.entity';
 import { TokenPayLoad } from './interface/token-payload.interface';
 import { getTransactionalRepository } from 'src/core/utils/transactional-repository.util';
-import { Provider } from './helper/provider.enum';
+import { Provider } from './constant/provider.enum';
 import { DateUtils } from 'src/core/utils/date-util';
-import { CreateUserDto } from '../user/dto/create-user.dto';
+import { CreateUserDto } from '../user/dto/request/create-user.dto';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
 
 @Injectable()
