@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiNoContentResponse, ApiOperation } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiCreatedResponseTemplate } from 'src/core/swagger/response/api-created-response';
@@ -7,6 +7,7 @@ import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-re
 import { LoginResponseDto, RotateAccessTokenDto } from '../dto/login-response.dto';
 import { SocialLoginDto } from '../dto/social-login.dto';
 import { CreateUserDto } from 'src/domain/user/dto/create-user.dto';
+import { ApiNoContentResponseTemplate } from 'src/core/swagger/response/api-no-content-response';
 
 /**소셜 가입 & 로그인*/
 export const SocialLoginDocs = () => {
@@ -131,7 +132,7 @@ export const LogOutDocs = () => {
       - 웹은 고려하지 않고 있기 때문에, 자체 RN에서 AsyncStorage에서 토큰을 제거
       `,
     }),
-    ApiNoContentResponse({
+    ApiNoContentResponseTemplate({
       description: '로그아웃 성공',
     }),
     ApiErrorResponseTemplate([

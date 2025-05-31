@@ -20,6 +20,7 @@ import { validate } from 'class-validator';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Public } from 'src/core/decorator/public-access.decorator';
 import { CreateUserDto } from '../user/dto/create-user.dto';
+import { LoginResponseDto, RotateAccessTokenDto } from './dto/login-response.dto';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()
@@ -32,7 +33,7 @@ export class AuthController {
   @Public()
   @Post('naver')
   @UseGuards(AuthGuard('naver'))
-  async naverLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
+  async naverLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad): Promise<HttpResponse<LoginResponseDto>> {
     const dto = plainToClass(SocialUserDto, token);
     const errors = await validate(dto);
     if (errors.length > 0) {
@@ -47,7 +48,7 @@ export class AuthController {
   @Public()
   @Post('google')
   @UseGuards(AuthGuard('google'))
-  async googleLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
+  async googleLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad): Promise<HttpResponse<LoginResponseDto>> {
     const dto = plainToClass(SocialUserDto, token);
     const errors = await validate(dto);
     if (errors.length > 0) {
@@ -69,7 +70,7 @@ export class AuthController {
   @LocalLoginDocs()
   @Public()
   @Post('local')
-  async localLogin(@Req() req: Request, @Body() dto: CreateUserDto) {
+  async localLogin(@Req() req: Request, @Body() dto: CreateUserDto): Promise<HttpResponse<LoginResponseDto>> {
     const data = await this.authService.localLogin(req.get('user-agent').toLowerCase(), dto);
     return HttpResponse.created(data);
   }
@@ -78,7 +79,10 @@ export class AuthController {
   @RotateAccessTokenDocs()
   @UseGuards(RefreshTokenGuard)
   @Post('token/access')
-  async rotateAccessToken(@UserId() userId: number, @Authorization() token: string) {
+  async rotateAccessToken(
+    @UserId() userId: number,
+    @Authorization() token: string,
+  ): Promise<HttpResponse<RotateAccessTokenDto>> {
     const accessToken = await this.authService.rotateAccessToken(userId, token);
     return HttpResponse.created({ accessToken });
   }
@@ -86,7 +90,7 @@ export class AuthController {
   // 로그아웃
   @LogOutDocs()
   @Post('logout')
-  async logOut(@UserId() userId: number) {
+  async logOut(@UserId() userId: number): Promise<HttpResponse<void>> {
     await this.authService.removeRefToken(userId);
     return HttpResponse.noContent();
   }
