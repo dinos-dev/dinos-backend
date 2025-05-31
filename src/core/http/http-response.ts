@@ -28,22 +28,22 @@ export class HttpResponse<T> {
     this.error = error;
   }
 
-  // Getter methods
-  get _statusCode(): number {
-    return this.statusCode;
-  }
+  // // Getter methods
+  // get _statusCode(): number {
+  //   return this.statusCode;
+  // }
 
-  get _message(): string {
-    return this.message;
-  }
+  // get _message(): string {
+  //   return this.message;
+  // }
 
-  get _result(): T | undefined {
-    return this.result;
-  }
+  // get _result(): T | undefined {
+  //   return this.result;
+  // }
 
-  get _error(): ErrorResponse | undefined {
-    return this.error;
-  }
+  // get _error(): ErrorResponse | undefined {
+  //   return this.error;
+  // }
 
   // Success responses
   static ok<T>(result?: T, message: string = 'OK'): HttpResponse<T> {
