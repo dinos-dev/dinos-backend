@@ -39,6 +39,7 @@
     "@sentry/nestjs": "^9.17.0",
     "@sentry/node": "^9.17.0",
     "@sentry/profiling-node": "^9.17.0",
+    "@slack/web-api": "^7.9.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",

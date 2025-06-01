@@ -90,7 +90,6 @@ export class UserService {
     } catch (err) {
       await qr.rollbackTransaction();
       console.log('error->', err);
-
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     } finally {
       await qr.release();

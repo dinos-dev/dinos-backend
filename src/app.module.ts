@@ -6,12 +6,14 @@ import { OrmConfig } from './database/orm-config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './domain/auth/auth.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTimeInterceptor } from './core/interceptor/response-time.interceptor';
 import { CommonModule } from './common/common.module';
 import { JwtAuthGuard } from './domain/auth/guard/jwt-auth.guard';
 import { TraceModule } from './core/logger/trace.module';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { SlackModule } from './infrastructure/slack/slack.module';
+import { SlackErrorFilter } from './core/filter/slack-error.filter';
 
 @Module({
   imports: [
@@ -30,11 +32,16 @@ import { SentryModule } from '@sentry/nestjs/setup';
     UserModule,
     AuthModule,
     CommonModule,
+    SlackModule,
   ],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseTimeInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: SlackErrorFilter,
     },
     {
       provide: APP_GUARD,
