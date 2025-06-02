@@ -59,6 +59,7 @@ export class AuthController {
   }
 
   // Apple OAuth Register & Login
+  @SocialLoginDocs()
   @Public()
   @Post('apple')
   @UseGuards(AuthGuard('apple'))
