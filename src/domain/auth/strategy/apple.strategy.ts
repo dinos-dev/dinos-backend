@@ -7,9 +7,10 @@ import * as jwt from 'jsonwebtoken';
 import * as jwksClient from 'jwks-rsa';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { OAuthPayLoad } from '../interface/token-payload.interface';
-import { Provider } from '../helper/provider.enum';
+
 import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
+import { Provider } from '../constant/provider.enum';
 
 interface AppleJwtPayload {
   sub: string;
