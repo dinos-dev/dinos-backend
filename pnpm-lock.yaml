@@ -86,6 +86,12 @@ importers:
       http-status-codes:
         specifier: ^2.3.0
         version: 2.3.0
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
+      jwks-rsa:
+        specifier: ^3.2.0
+        version: 3.2.0
       nest-winston:
         specifier: ^1.10.2
         version: 1.10.2(@nestjs/common@11.0.20(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(winston@3.17.0)
@@ -2966,6 +2972,9 @@ packages:
       node-notifier:
         optional: true
 
+  jose@4.15.9:
+    resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
+
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -3018,6 +3027,10 @@ packages:
   jwa@1.4.1:
     resolution: {integrity: sha512-qiLX/xhEEFKUAJ6FiBMbes3w9ATzyk5W7Hvzpa/SLYdxNtng+gcurvrI7TbACjIXlsJyr05/S1oUhZrc63evQA==}
 
+  jwks-rsa@3.2.0:
+    resolution: {integrity: sha512-PwchfHcQK/5PSydeKCs1ylNym0w/SSv8a62DgHJ//7x2ZclCoinlsjAfDxAAbpoTPybOum/Jgy+vkvMmKz89Ww==}
+    engines: {node: '>=14'}
+
   jws@3.2.2:
     resolution: {integrity: sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==}
 
@@ -3042,6 +3055,9 @@ packages:
   libphonenumber-js@1.12.7:
     resolution: {integrity: sha512-0nYZSNj/QEikyhcM5RZFXGlCB/mr4PVamnT1C2sKBnDDTYndrvbybYjvg+PMqAndQHlLbwQ3socolnL3WWTUFA==}
 
+  limiter@1.1.5:
+    resolution: {integrity: sha512-FWWMIEOxz3GwUI4Ts/IvgVy6LPvoMPgjMdQ185nN6psJyBJ4yOpzqm695/h5umdLJg2vW3GR5iG11MAkR2AzJA==}
+
   lines-and-columns@1.2.4:
     resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
@@ -3060,6 +3076,9 @@ packages:
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
+
+  lodash.clonedeep@4.5.0:
+    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
@@ -3108,9 +3127,16 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
+  lru-cache@6.0.0:
+    resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
+    engines: {node: '>=10'}
+
   lru-cache@7.18.3:
     resolution: {integrity: sha512-jumlc0BIUrS3qJGgIkWZsyfAM7NCWiBcCDhnd+3NNM5KbBmLTgHVfWBcg6W+rLUsIpzpERPsvwUP7CckAQSOoA==}
     engines: {node: '>=12'}
+
+  lru-memoizer@2.3.0:
+    resolution: {integrity: sha512-GXn7gyHAMhO13WSKrIiNfztwxodVsP8IoZ3XfrJV4yH2x0/OeTO/FIaAHTY5YekdGgW94njfuKmyyt1E0mR6Ug==}
 
   lru.min@1.1.2:
     resolution: {integrity: sha512-Nv9KddBcQSlQopmBHXSsZVY5xsdlZkdH/Iey0BlcBYggMd4two7cZnKOK9vmy3nY0O5RGH99z1PCeTpPqszUYg==}
@@ -8222,6 +8248,8 @@ snapshots:
       - supports-color
       - ts-node
 
+  jose@4.15.9: {}
+
   js-tokens@4.0.0: {}
 
   js-yaml@3.14.1:
@@ -8276,6 +8304,17 @@ snapshots:
       ecdsa-sig-formatter: 1.0.11
       safe-buffer: 5.2.1
 
+  jwks-rsa@3.2.0:
+    dependencies:
+      '@types/express': 4.17.21
+      '@types/jsonwebtoken': 9.0.7
+      debug: 4.4.0
+      jose: 4.15.9
+      limiter: 1.1.5
+      lru-memoizer: 2.3.0
+    transitivePeerDependencies:
+      - supports-color
+
   jws@3.2.2:
     dependencies:
       jwa: 1.4.1
@@ -8298,6 +8337,8 @@ snapshots:
 
   libphonenumber-js@1.12.7: {}
 
+  limiter@1.1.5: {}
+
   lines-and-columns@1.2.4: {}
 
   load-esm@1.0.2: {}
@@ -8311,6 +8352,8 @@ snapshots:
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
+
+  lodash.clonedeep@4.5.0: {}
 
   lodash.includes@4.3.0: {}
 
@@ -8355,8 +8398,17 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
+  lru-cache@6.0.0:
+    dependencies:
+      yallist: 4.0.0
+
   lru-cache@7.18.3:
     optional: true
+
+  lru-memoizer@2.3.0:
+    dependencies:
+      lodash.clonedeep: 4.5.0
+      lru-cache: 6.0.0
 
   lru.min@1.1.2:
     optional: true

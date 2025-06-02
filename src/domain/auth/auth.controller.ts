@@ -59,11 +59,18 @@ export class AuthController {
   }
 
   // Apple OAuth Register & Login
+  @SocialLoginDocs()
+  @Public()
   @Post('apple')
+  @UseGuards(AuthGuard('apple'))
   async appleLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad) {
-    console.log(req);
-    console.log(token);
-    return HttpResponse.created();
+    const dto = plainToClass(SocialUserDto, token);
+    const errors = await validate(dto);
+    if (errors.length > 0) {
+      throw new UnauthorizedException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
+    }
+    const data = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), dto);
+    return HttpResponse.created(data);
   }
 
   // Local Register & Login
