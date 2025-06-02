@@ -1,4 +1,4 @@
-import { PlatFormEnumType, PlatFormType } from '../helper/platform.const';
+import { PlatFormEnumType, PlatFormType } from '../constant/platform.const';
 
 export async function detectPlatform(userAgent: string): Promise<PlatFormEnumType> {
   let currentOS;

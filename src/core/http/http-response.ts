@@ -1,72 +1,86 @@
 import { HttpStatus } from '@nestjs/common';
+import { Expose, Type } from 'class-transformer';
 
-/**
- * HTTP 응답 클래스
- * - 컨트롤러 함수에서 리턴을 하면 응답 데이터 형식에 맞게 응답한다.
- * - Serialization 호환 되도록 설정
- * @see TransformationInterceptor
- */
+interface ErrorResponse {
+  error?: string;
+  message: string | string[];
+  details?: Record<string, any>;
+}
 
-export class HttpResponse {
-  static ok<T>(body?: T): { statusCode: number; message: string; result?: T } {
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'OK',
-      result: body,
-    };
+export class HttpResponse<T> {
+  @Expose()
+  private readonly statusCode: number;
+
+  @Expose()
+  private readonly message: string;
+
+  @Expose()
+  @Type((options) => options.newObject.resultType)
+  private readonly result?: T;
+
+  @Expose()
+  private readonly error?: ErrorResponse;
+
+  private constructor(statusCode: number, message: string, result?: T, error?: ErrorResponse) {
+    this.statusCode = statusCode;
+    this.message = message;
+    this.result = result;
+    this.error = error;
   }
 
-  static created<T>(body?: T): { statusCode: number; message: string; result?: T } {
-    return {
-      statusCode: HttpStatus.CREATED,
-      message: 'Created',
-      result: body,
-    };
-  }
-  static noContent(): { statusCode: number; message: string } {
-    return {
-      statusCode: HttpStatus.NO_CONTENT,
-      message: 'No Content',
-    };
+  // // Getter methods
+  // get _statusCode(): number {
+  //   return this.statusCode;
+  // }
+
+  // get _message(): string {
+  //   return this.message;
+  // }
+
+  // get _result(): T | undefined {
+  //   return this.result;
+  // }
+
+  // get _error(): ErrorResponse | undefined {
+  //   return this.error;
+  // }
+
+  // Success responses
+  static ok<T>(result?: T, message: string = 'OK'): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.OK, message, result);
   }
 
-  static badRequest<T>(error?: T | Error): { statusCode: number; message: string; error?: T | Error } {
-    return {
-      statusCode: HttpStatus.BAD_REQUEST,
-      message: 'Bad Request',
-      error: error,
-    };
+  static created<T>(result?: T, message: string = 'Created'): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.CREATED, message, result);
   }
 
-  static unauthorized<T>(error?: T | Error): { statusCode: number; message: string; error?: T | Error } {
-    return {
-      statusCode: HttpStatus.UNAUTHORIZED,
-      message: 'Unauthorized',
-      error: error,
-    };
+  static noContent<T>(): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.NO_CONTENT, 'No Content');
   }
 
-  static notFound<T>(error?: T | Error): { statusCode: number; message: string; error?: T | Error } {
-    return {
-      statusCode: HttpStatus.NOT_FOUND,
-      message: 'Not Found',
-      error: error,
-    };
+  // Error responses
+  static badRequest<T>(message: string = 'Bad Request', error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.BAD_REQUEST, message, undefined, error);
   }
 
-  static unprocessableEntity<T>(error?: T | Error): { statusCode: number; message: string; error?: T | Error } {
-    return {
-      statusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-      message: 'Unprocessable Entity',
-      error: error,
-    };
+  static unauthorized<T>(message: string = 'Unauthorized', error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.UNAUTHORIZED, message, undefined, error);
   }
 
-  static internalServerError<T>(error?: T | Error): { statusCode: number; message: string; error?: T | Error } {
-    return {
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: 'Internal Server Error',
-      error: error,
-    };
+  static notFound<T>(message: string = 'Not Found', error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.NOT_FOUND, message, undefined, error);
+  }
+
+  static unprocessableEntity<T>(message: string = 'Unprocessable Entity', error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.UNPROCESSABLE_ENTITY, message, undefined, error);
+  }
+
+  static internalServerError<T>(message: string = 'Internal Server Error', error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(HttpStatus.INTERNAL_SERVER_ERROR, message, undefined, error);
+  }
+
+  // Generic error response with custom status code
+  static error<T>(statusCode: number, message: string, error?: ErrorResponse): HttpResponse<T> {
+    return new HttpResponse(statusCode, message, undefined, error);
   }
 }

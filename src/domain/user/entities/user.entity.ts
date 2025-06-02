@@ -3,7 +3,7 @@ import { BaseModel } from 'src/common/entities/base.entity';
 import { Token } from 'src/domain/auth/entities/token.entity';
 import { Column, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserProfile } from './user-profile.entity';
-import { Provider } from 'src/domain/auth/helper/provider.enum';
+import { Provider } from 'src/domain/auth/constant/provider.enum';
 
 @Entity()
 export class User extends BaseModel {
@@ -13,6 +13,8 @@ export class User extends BaseModel {
     unsigned: true,
   })
   id: number;
+
+  // ------------------------------------------------------------------------ //
 
   @Column({
     type: 'varchar',
@@ -50,6 +52,7 @@ export class User extends BaseModel {
   })
   provider: Provider;
 
+  @Exclude()
   @Column({
     type: 'varchar',
     length: 255,
@@ -62,14 +65,14 @@ export class User extends BaseModel {
   @DeleteDateColumn({ default: null })
   deletedAt: Date | null;
 
-  /** 1 to 1 */
+  // 1-to-1 ------------------------------------------------------------------- //
   @OneToOne(() => UserProfile, (userProfile) => userProfile.id, {
     cascade: true,
   })
   @JoinColumn()
   userProfile: UserProfile;
 
-  /** 1 to M */
+  // 1-to-M ------------------------------------------------------------------- //
   @Exclude()
   @OneToMany(() => Token, (token) => token.user)
   tokens: Token[];

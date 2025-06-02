@@ -50,6 +50,8 @@ $ pnpm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
 $ pnpm install uuid
 $ pnpm install -D @types/uuid
 
+# slack 
+$ pnpm install @slack/web-api
 ```
 
 </br>

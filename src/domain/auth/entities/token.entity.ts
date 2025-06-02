@@ -1,7 +1,7 @@
 import { BaseModel } from 'src/common/entities/base.entity';
 import { User } from 'src/domain/user/entities/user.entity';
 import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { PlatFormEnumType } from '../helper/platform.const';
+import { PlatFormEnumType } from '../constant/platform.const';
 
 @Entity()
 export class Token extends BaseModel {
@@ -11,6 +11,15 @@ export class Token extends BaseModel {
     unsigned: true,
   })
   id: number;
+
+  @Column({
+    type: 'integer',
+    unsigned: true,
+    comment: '유저 id',
+  })
+  userId: number;
+
+  // ------------------------------------------------------------------------ //
 
   @Index()
   @Column({
@@ -28,6 +37,8 @@ export class Token extends BaseModel {
     enum: Object.values(PlatFormEnumType),
   })
   platForm: PlatFormEnumType;
+
+  // M-to-1------------------------------------------------------------------ //
 
   @ManyToOne(() => User, (user) => user.tokens, { onDelete: 'CASCADE' })
   @JoinColumn()
