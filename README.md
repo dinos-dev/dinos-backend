@@ -88,3 +88,40 @@ $ NODE_ENV=production docker-compose up --build
 # Stop the docker container
 $ docker-compose down 
 ```
+
+
+</br>
+
+---
+
+> How to start local environment
+
+```bash
+# clone and path project 
+git clone https://github.com/dinos-dev/dinos-backend.git
+cd dinos-backend
+
+# !if you don't install pnpm, you must install pnpm
+pnpm install 
+
+# see .env.example 
+touch .env.production .env.development 
+
+# start docker compose 
+docker-compose up --build
+
+# start application 
+pnpm start:dev
+
+# production 
+pnpm start:prod
+
+```
+
+</br>
+
+---
+
+> See Swagger Docs 
+
+- swagger docs  -> [link](http://localhost/api-docs)
