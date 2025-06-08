@@ -25,9 +25,8 @@ $ pnpm install @nestjs/axios
 # winston logging 
 $ pnpm install nest-winston winston winston-daily-rotate-file 
 
-# typeorm & postgres 
-$ pnpm install @nestjs/typeorm typeorm pg
-$ pnpm install typeorm-naming-strategies
+# prisma 
+$ pnpm install prisma --save-dev @prisma/client
 
 # bcrypt
 $ pnpm install bcrypt
