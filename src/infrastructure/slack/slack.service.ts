@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
-import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
 
 @Injectable()
@@ -11,7 +10,7 @@ export class SlackService {
     private readonly configService: ConfigService,
     private readonly logger: WinstonLoggerService,
   ) {
-    this.webClient = new WebClient(this.configService.get<string>(ENV_CONFIG.SLACK.API_TOKEN));
+    this.webClient = new WebClient(this.configService.get<string>('SLACK_API_TOKEN'));
   }
 
   /**

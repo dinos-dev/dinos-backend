@@ -1,16 +1,25 @@
 import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { UserRepository } from './repository/user.repository';
-import { UserProfile } from './entities/user-profile.entity';
-import { UserProfileRepository } from './repository/user-profile.repository';
+import { PROFILE_REPOSITORY, USER_REPOSITORY } from 'src/core/config/common.const';
+import { ProfileRepository } from './repository/profile.repository';
+import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserProfile])],
   controllers: [UserController],
-  providers: [UserService, UserRepository, UserProfileRepository],
-  exports: [UserService, UserRepository],
+  providers: [
+    UserService,
+    {
+      provide: USER_REPOSITORY,
+      useClass: UserRepository,
+    },
+    {
+      provide: PROFILE_REPOSITORY,
+      useClass: ProfileRepository,
+    },
+    PrismaService,
+  ],
+  exports: [UserService, USER_REPOSITORY],
 })
 export class UserModule {}

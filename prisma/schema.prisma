@@ -1,0 +1,70 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DB_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique @db.VarChar(255)
+  name        String?      @db.VarChar(45)
+  password    String?      @db.VarChar(255)
+  isActive    Boolean      @default(true)
+  provider    Provider     @default(LOCAL)
+  providerId  String?      @unique @db.VarChar(255)
+  profile     Profile?
+  profileId   Int?         @unique
+  tokens      Token[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  version     Int          @default(0)
+}
+
+model Profile {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nickName    String    @db.VarChar(20)
+  comment     String?   @db.VarChar(50)
+  headerId    Int?
+  bodyId      Int?
+  headerColor String?   @db.VarChar(8)
+  bodyColor   String?   @db.VarChar(8)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  version     Int       @default(0)
+}
+
+model Token {
+  id         Int           @id @default(autoincrement())
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  refToken   String        @db.VarChar(255)
+  expiresAt  DateTime
+  platForm   PlatFormEnumType
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  version    Int           @default(0)
+
+  @@index([refToken])
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+  APPLE
+  NAVER
+  KAKAO
+}
+
+enum PlatFormEnumType {
+  WEB
+  IOS
+  ANDROID
+  UNKNOWN
+}

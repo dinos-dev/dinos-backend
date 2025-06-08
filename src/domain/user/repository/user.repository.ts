@@ -1,19 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+
 import { SocialUserDto } from '../dto/request/social-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dto/request/create-user.dto';
 import { hashPassword } from 'src/core/helper/password.util';
+import { IUserRepository } from '../interface/user.repository.interface';
+import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
+import { Prisma, User } from '@prisma/client';
 
 @Injectable()
-export class UserRepository extends Repository<User> {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {
-    super(User, userRepository.manager, userRepository.queryRunner);
-  }
+export class UserRepository implements IUserRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * 로컬 가입시 이메일 검증
@@ -21,13 +17,8 @@ export class UserRepository extends Repository<User> {
    * @returns boolean
    */
   async existByEmail(email: string): Promise<boolean> {
-    const existEmail = await this.exists({
-      where: {
-        email,
-      },
-    });
-
-    return existEmail;
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    return !!user;
   }
 
   /**
@@ -36,12 +27,8 @@ export class UserRepository extends Repository<User> {
    * @returns boolean
    */
   async existByEmailAndAuthType(email: string): Promise<boolean> {
-    const isExistEmailAndAuthType = await this.exists({
-      where: {
-        email,
-      },
-    });
-    return isExistEmailAndAuthType;
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    return !!user;
   }
 
   /**
@@ -50,37 +37,31 @@ export class UserRepository extends Repository<User> {
    * @returns user
    */
   async findOrCreateSocialUser(dto: SocialUserDto): Promise<User> {
-    const user = await this.findOne({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-      where: {
-        email: dto.email,
-      },
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
     });
 
-    if (user) {
-      return user;
-    } else {
-      const newUser = User.signupSocial(dto);
-      await this.save(newUser);
-      return newUser;
-    }
+    if (user) return user;
+
+    return this.prisma.user.create({
+      data: {
+        email: dto.email,
+        name: dto.name,
+        provider: dto.provider,
+        providerId: dto.providerId,
+      },
+    });
   }
 
   /**
    * get ref-token by user
    * @param userId
-   * @returns Auth
+   * @returns User
    */
-  async findAllRefToken(userId: number): Promise<User> {
-    return await this.findOne({
-      where: {
-        id: userId,
-      },
-      relations: ['refToken'],
+  async findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null> {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { tokens: true },
     });
   }
 
@@ -90,12 +71,12 @@ export class UserRepository extends Repository<User> {
    * @returns User
    */
   async findById(userId: number): Promise<User> {
-    return await this.findOne({
+    return await this.prisma.user.findUnique({
       where: {
         id: userId,
       },
-      relations: {
-        userProfile: true,
+      include: {
+        profile: true,
       },
     });
   }
@@ -105,24 +86,20 @@ export class UserRepository extends Repository<User> {
    * @param dto CreateUserDto
    * @returns
    */
-  async findOrCreateLocalUser(dto: CreateUserDto) {
-    const user = await this.findOne({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
+  async findOrCreateLocalUser(dto: CreateUserDto): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: {
         email: dto.email,
       },
     });
-    if (user) {
-      return user;
-    } else {
-      const hashedPassword = hashPassword(dto.password);
-      const newUser = User.signupLocal({ ...dto, password: hashedPassword });
-      await this.save(newUser);
-      return newUser;
-    }
+    if (user) return user;
+
+    return this.prisma.user.create({
+      data: {
+        email: dto.email,
+        name: dto.name,
+        password: hashPassword(dto.password),
+      },
+    });
   }
 }

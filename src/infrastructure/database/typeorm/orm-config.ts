@@ -1,6 +1,5 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
-import { ENV_CONFIG } from '../core/config/env-keys.const';
 import { Injectable } from '@nestjs/common';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
@@ -11,11 +10,11 @@ export class OrmConfig implements TypeOrmOptionsFactory {
   createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      host: this.configService.get<string>(ENV_CONFIG.DB.HOST),
-      port: parseInt(this.configService.get<string>(ENV_CONFIG.DB.PORT)),
-      username: this.configService.get<string>(ENV_CONFIG.DB.USER),
-      password: this.configService.get<string>(ENV_CONFIG.DB.PASSWORD),
-      database: this.configService.get<string>(ENV_CONFIG.DB.DATABASE),
+      host: this.configService.get<string>('DB_HOST'),
+      port: parseInt(this.configService.get<string>('DB_PORT')),
+      username: this.configService.get<string>('DB_USER'),
+      password: this.configService.get<string>('DB_PASSWORD'),
+      database: this.configService.get<string>('DB_DATABASE'),
       entities: ['dist/**/*.entity{.ts,.js}'],
       synchronize: process.env.ENV_NODE === 'production' ? false : true,
       logging: process.env.ENV_NODE === 'production' ? false : true,

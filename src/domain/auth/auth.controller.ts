@@ -20,7 +20,7 @@ import { validate } from 'class-validator';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Public } from 'src/core/decorator/public-access.decorator';
 import { CreateUserDto } from '../user/dto/request/create-user.dto';
-import { LoginResponseDto, RotateAccessTokenDto } from './dto/login-response.dto';
+import { LoginResponseDto, RotateAccessTokenDto } from './dto/response/login-response.dto';
 
 @ApiTags('Auth - 인증')
 @ApiCommonErrorResponseTemplate()

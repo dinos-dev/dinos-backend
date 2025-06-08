@@ -13,6 +13,7 @@ import { UserId } from './decorator/user-id.decorator';
 import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
 import { UserProfileResponseDto } from './dto/response/user-profile-response.dto';
+import { plainToClass } from 'class-transformer';
 
 @ApiTags('User - 회원관리')
 @ApiCommonErrorResponseTemplate()
@@ -32,7 +33,11 @@ export class UserController {
     @Body() dto: CreateUserProfileDto,
   ): Promise<HttpResponse<UserProfileResponseDto>> {
     const profile = await this.userService.createProfile(userId, dto);
-    return HttpResponse.created(profile);
+    return HttpResponse.created(
+      plainToClass(UserProfileResponseDto, profile, {
+        excludeExtraneousValues: true,
+      }),
+    );
   }
 
   //? ---------------------------------------------------------------------- ?//
@@ -47,7 +52,11 @@ export class UserController {
     @Body() dto: UpdateUserProfileDto,
   ): Promise<HttpResponse<UserProfileResponseDto>> {
     const profile = await this.userService.updateProfile(id, dto);
-    return HttpResponse.ok(profile);
+    return HttpResponse.ok(
+      plainToClass(UserProfileResponseDto, profile, {
+        excludeExtraneousValues: true,
+      }),
+    );
   }
 
   //? ---------------------------------------------------------------------- ?//
@@ -59,7 +68,11 @@ export class UserController {
   @Get('/mine/profile')
   async findByProfile(@UserId() userId: number): Promise<HttpResponse<UserProfileResponseDto>> {
     const user = await this.userService.findByProfile(userId);
-    return HttpResponse.ok(user);
+    return HttpResponse.ok(
+      plainToClass(UserProfileResponseDto, user, {
+        excludeExtraneousValues: true,
+      }),
+    );
   }
 
   //? ---------------------------------------------------------------------- ?//
