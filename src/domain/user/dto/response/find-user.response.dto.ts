@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 import { Provider } from 'src/domain/auth/constant/provider.enum';
 
 export class FindOneUserResponseDto {
+  @Expose()
   @ApiProperty({
     description: '유저 id number',
     example: 1,
@@ -10,6 +11,7 @@ export class FindOneUserResponseDto {
   })
   id: number;
 
+  @Expose()
   @ApiProperty({
     description: '이메일',
     example: 'cs12@cs.com',
@@ -17,6 +19,7 @@ export class FindOneUserResponseDto {
   })
   email: string;
 
+  @Expose()
   @ApiProperty({
     description: '이름',
     example: 'dino',

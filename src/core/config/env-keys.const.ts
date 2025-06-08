@@ -1,36 +1,34 @@
-/**
- * ENV 에서 관리하는 정보들을 관리하는 파일
- */
+import * as Joi from 'joi';
 
-export const ENV_CONFIG = {
-  DB: {
-    HOST: 'DB_HOST',
-    PORT: 'DB_PORT',
-    USER: 'DB_USER',
-    PASSWORD: 'DB_PASSWORD',
-    DATABASE: 'DB_DATABASE',
-  },
-  AWS: {
-    S3_ACCESS_KEY_ID: 'S3_ACCESS_KEY_ID',
-    S3_SECRET_KEY: 'S3_SECRET_KEY',
-    REGION: 'REGION',
-    BUCKET_NAME: 'BUCKET_NAME',
-  },
-  AUTH: {
-    HASH_ROUNDS: 'HASH_ROUNDS',
-    EXPOSE_ACCESS_TK: 'EXPOSE_ACCESS_TK',
-    EXPOSE_REFRESH_TK: 'EXPOSE_REFRESH_TK',
-    ACCESS_SECRET: 'ACCESS_SECRET',
-    REFRESH_SECRET: 'REFRESH_SECRET',
-  },
-  SOCIAL_AUTH: {
-    NAVER_AUTH_URL: 'NAVER_AUTH_URL',
-    GOOGLE_AUTH_URL: 'GOOGLE_AUTH_URL',
-    APPLE_AUTH_URL: 'APPLE_AUTH_URL',
-    APPLE_CLIENT_ID: 'APPLE_CLIENT_ID',
-  },
-  SLACK: {
-    WEBHOOK_URL: 'SLACK_WEB_HOOK',
-    API_TOKEN: 'SLACK_API_TOKEN',
-  },
-};
+export const envVariableKeys = Joi.object({
+  // DB 관련 환경 변수
+  DB_HOST: Joi.string().required(),
+  DB_PORT: Joi.number().required().default(5432),
+  DB_USER: Joi.string().required(),
+  DB_PASSWORD: Joi.string().required(),
+  DB_DATABASE: Joi.string().required(),
+  DB_URL: Joi.string().uri().required(),
+
+  // AWS S3 관련 환경 변수
+  S3_ACCESS_KEY_ID: Joi.string().required(),
+  S3_SECRET_KEY: Joi.string().required(),
+  REGION: Joi.string().required(),
+  BUCKET_NAME: Joi.string().required(),
+
+  // 인증 관련 환경 변수
+  HASH_ROUNDS: Joi.number().default(10),
+  EXPOSE_ACCESS_TK: Joi.string().required(),
+  EXPOSE_REFRESH_TK: Joi.string().required(),
+  ACCESS_SECRET: Joi.string().required(),
+  REFRESH_SECRET: Joi.string().required(),
+
+  // 소셜 인증 관련 환경 변수
+  NAVER_AUTH_URL: Joi.string().uri().required(),
+  GOOGLE_AUTH_URL: Joi.string().uri().required(),
+  APPLE_AUTH_URL: Joi.string().uri().required(),
+  APPLE_CLIENT_ID: Joi.string().required(),
+
+  // Slack 관련 환경 변수
+  SLACK_WEB_HOOK: Joi.string().uri().required(),
+  SLACK_API_TOKEN: Joi.string().required(),
+});

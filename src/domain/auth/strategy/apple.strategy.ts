@@ -8,7 +8,6 @@ import * as jwksClient from 'jwks-rsa';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { OAuthPayLoad } from '../interface/token-payload.interface';
 
-import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
 import { Provider } from '../constant/provider.enum';
 
@@ -66,7 +65,7 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
       // 3. IdentityToken 검증
       const payload = jwt.verify(token, publicKey, {
         issuer: 'https://appleid.apple.com',
-        audience: this.configService.get<string>(ENV_CONFIG.SOCIAL_AUTH.APPLE_CLIENT_ID),
+        audience: this.configService.get<string>('APPLE_CLIENT_ID'),
         algorithms: ['RS256'],
       }) as AppleJwtPayload;
 

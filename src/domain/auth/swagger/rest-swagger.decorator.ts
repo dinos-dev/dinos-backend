@@ -4,8 +4,8 @@ import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ApiCreatedResponseTemplate } from 'src/core/swagger/response/api-created-response';
 import { ApiErrorResponseTemplate } from 'src/core/swagger/response/api-error-response';
-import { LoginResponseDto, RotateAccessTokenDto } from '../dto/login-response.dto';
-import { SocialLoginDto } from '../dto/social-login.dto';
+import { LoginResponseDto, RotateAccessTokenDto } from '../dto/response/login-response.dto';
+import { SocialLoginDto } from '../dto/request/social-login.dto';
 import { CreateUserDto } from 'src/domain/user/dto/request/create-user.dto';
 import { ApiNoContentResponseTemplate } from 'src/core/swagger/response/api-no-content-response';
 

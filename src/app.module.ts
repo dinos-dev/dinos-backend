@@ -1,9 +1,5 @@
 import { Module } from '@nestjs/common';
-
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { OrmConfig } from './database/orm-config';
-import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './domain/auth/auth.module';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -14,18 +10,17 @@ import { TraceModule } from './core/logger/trace.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { SlackModule } from './infrastructure/slack/slack.module';
 import { SlackErrorFilter } from './core/filter/slack-error.filter';
+import { envVariableKeys } from './core/config/env-keys.const';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      useClass: OrmConfig,
-      dataSourceFactory: async (options: DataSourceOptions) => {
-        return new DataSource(options).initialize();
-      },
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: process.env.NODE_ENV === 'development' ? '.env.development' : '.env.production',
+      envFilePath: ['.env'],
+      validationSchema: envVariableKeys,
+      validationOptions: {
+        abortEarly: false,
+      },
     }),
     SentryModule.forRoot(),
     TraceModule,

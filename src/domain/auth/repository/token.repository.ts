@@ -1,18 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Token } from '../entities/token.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/domain/user/entities/user.entity';
 import { PlatFormEnumType } from '../constant/platform.const';
+import { ITokenRepository } from '../interface/token.repository.interface';
+import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
+import { Token, User } from '@prisma/client';
 
 @Injectable()
-export class TokenRepository extends Repository<Token> {
-  constructor(
-    @InjectRepository(Token)
-    private readonly repository: Repository<Token>,
-  ) {
-    super(Token, repository.manager, repository.queryRunner);
-  }
+export class TokenRepository implements ITokenRepository {
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * 상태에 따른 리프레시 값 변경
@@ -21,26 +15,30 @@ export class TokenRepository extends Repository<Token> {
    * @param platForm signup Platform
    * @returns
    */
-  async updateOrCreateRefToken(user: User, refToken: string, platForm: PlatFormEnumType, expiresAt: Date) {
-    let userToken = await this.findOne({
-      where: {
-        user: {
-          id: user.id,
-        },
-      },
+  async updateOrCreateRefToken(
+    user: User,
+    refToken: string,
+    platForm: PlatFormEnumType,
+    expiresAt: Date,
+  ): Promise<Token> {
+    const userToken = await this.prisma.token.findFirst({
+      where: { userId: user.id },
     });
 
     if (userToken) {
-      userToken.refToken = refToken;
+      return this.prisma.token.update({
+        where: { id: userToken.id },
+        data: { refToken },
+      });
     } else {
-      console.log('hhh');
-      userToken = this.create({
-        refToken,
-        user,
-        platForm,
-        expiresAt,
+      return this.prisma.token.create({
+        data: {
+          userId: user.id,
+          refToken,
+          platForm,
+          expiresAt,
+        },
       });
     }
-    await this.manager.save(Token, userToken);
   }
 }

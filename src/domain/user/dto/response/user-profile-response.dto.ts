@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 
 export class UserProfileResponseDto {
+  @Expose()
   @ApiProperty({
     description: '유저 프로필 아이디',
     example: 1,
@@ -8,6 +10,7 @@ export class UserProfileResponseDto {
   })
   id: number;
 
+  @Expose()
   @ApiProperty({
     description: '유저의 계정 아이디',
     example: 12,
@@ -15,6 +18,7 @@ export class UserProfileResponseDto {
   })
   userId: number;
 
+  @Expose()
   @ApiProperty({
     description: '프로필 닉네임 ',
     example: '그린다이노',
@@ -24,6 +28,7 @@ export class UserProfileResponseDto {
   })
   nickName: string;
 
+  @Expose()
   @ApiProperty({
     description: '프로필 설명 ',
     example: '안녕하세요. xx 다이노입니다.',
@@ -31,6 +36,7 @@ export class UserProfileResponseDto {
   })
   comment: string;
 
+  @Expose()
   @ApiProperty({
     description: '유저 프로필의 헤더 아이디(프론트에서 지정한 key 값)',
     example: 1,
@@ -38,6 +44,7 @@ export class UserProfileResponseDto {
   })
   headerId: number;
 
+  @Expose()
   @ApiProperty({
     description: '유저 프로필의 바디 아이디(프론트에서 지정한 key 값)',
     example: 1,
@@ -45,6 +52,7 @@ export class UserProfileResponseDto {
   })
   bodyId: number;
 
+  @Expose()
   @ApiProperty({
     description: '유저 프로필 헤더 색상 ( hex color )',
     example: '#FF5733',
@@ -52,6 +60,7 @@ export class UserProfileResponseDto {
   })
   headerColor: string;
 
+  @Expose()
   @ApiProperty({
     description: '유저 프로필 바디 색상 ( hex color )',
     example: '#FF5733',

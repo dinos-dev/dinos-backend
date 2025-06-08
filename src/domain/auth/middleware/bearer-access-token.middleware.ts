@@ -1,7 +1,6 @@
 import { Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { NextFunction, Request, Response } from 'express';
-import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
@@ -46,7 +45,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET),
+        secret: this.configService.get<string>('ACCESS_SECRET'),
       });
 
       req.user = payload;
@@ -73,7 +72,7 @@ export class BearerAccessTokenMiddleware implements NestMiddleware {
   async verifyAccessToken(accessToken: string) {
     try {
       return await this.jwtService.verifyAsync(accessToken, {
-        secret: this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET),
+        secret: this.configService.get<string>('ACCESS_SECRET'),
       });
     } catch (error) {
       console.error('token verify exception error ->', error.name);

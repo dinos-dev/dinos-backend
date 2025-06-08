@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';
 import { firstValueFrom } from 'rxjs';
-import { ENV_CONFIG } from 'src/core/config/env-keys.const';
 import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { Provider } from '../constant/provider.enum';
 import { OAuthPayLoad } from '../interface/token-payload.interface';
@@ -26,9 +25,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
     try {
       const response = await firstValueFrom(
-        this.httpService.get(
-          `${this.configService.get<string>(ENV_CONFIG.SOCIAL_AUTH.GOOGLE_AUTH_URL)}?id_token=${token}`,
-        ),
+        this.httpService.get(`${this.configService.get<string>('GOOGLE_AUTH_URL')}?id_token=${token}`),
       );
 
       // passport 모듈에 의해, 실제 decorator에서 받을 때, user 객체로 치환되어서 핸들링

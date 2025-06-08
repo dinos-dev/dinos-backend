@@ -1,38 +1,38 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { UserRepository } from 'src/domain/user/repository/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { ENV_CONFIG } from 'src/core/config/env-keys.const';
-import { User } from 'src/domain/user/entities/user.entity';
 
 import { HttpErrorConstants, HttpErrorFormat } from 'src/core/http/http-error-objects';
-import { DataSource, DeleteResult } from 'typeorm';
-import { TokenRepository } from './repository/token.repository';
 import { SocialUserDto } from '../user/dto/request/social-user.dto';
-import { LoginResponseDto } from './dto/login-response.dto';
+import { LoginResponseDto } from './dto/response/login-response.dto';
 import { detectPlatform } from './util/client.util';
-import { Token } from './entities/token.entity';
 import { TokenPayLoad } from './interface/token-payload.interface';
-import { getTransactionalRepository } from 'src/core/utils/transactional-repository.util';
-import { Provider } from './constant/provider.enum';
 import { DateUtils } from 'src/core/utils/date-util';
 import { CreateUserDto } from '../user/dto/request/create-user.dto';
 import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
+import { IUserRepository } from '../user/interface/user.repository.interface';
+import { ITokenRepository } from './interface/token.repository.interface';
+import { TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/core/config/common.const';
+import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
+import { Provider, Token, User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userRepository: UserRepository,
-    private readonly tokenRepository: TokenRepository,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
+    @Inject(TOKEN_REPOSITORY)
+    private readonly tokenRepository: ITokenRepository,
+    private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly dataSource: DataSource,
     private readonly logger: WinstonLoggerService,
   ) {}
 
@@ -43,50 +43,39 @@ export class AuthService {
    * @returns Login Info
    */
   async socialLogin(userAgent: string, dto: SocialUserDto): Promise<LoginResponseDto> {
-    // 유저 Agent detect
     const agent = await detectPlatform(userAgent);
 
-    const qr = this.dataSource.createQueryRunner();
-
-    await qr.connect();
-    await qr.startTransaction();
-
-    // 트랜잭션 처리를 위한 Repository 초기화
-    const connectedUser = getTransactionalRepository(UserRepository, qr, User);
-    const connectedToken = getTransactionalRepository(TokenRepository, qr, Token);
-
     try {
-      // 1) 가입된 소셜 계정 및 자체 로그인 정보가 있는지 조회
-      const existingUser = await connectedUser.findOne({
-        where: {
-          email: dto.email,
-        },
+      const result = await this.prisma.$transaction(async (tx) => {
+        // 1) 가입된 소셜 계정 및 자체 로그인 정보가 있는지 조회
+        const existingUser = await tx.user.findUnique({
+          where: { email: dto.email },
+        });
+
+        // 2) 가입된 정보가 있을 경우 핸들링
+        if (existingUser && existingUser.provider !== dto.provider) {
+          this.throwProviderConflictError(existingUser.provider);
+        }
+
+        // 3) 유저 생성 or 조회
+        const user = await this.userRepository.findOrCreateSocialUser(dto);
+
+        // 4) 토큰 발급
+        const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+
+        // 5) 토큰 정보 추가 or 업데이트
+        await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
+
+        return { accessToken, refreshToken };
       });
-      // 2) 가입된 정보가 있을 경우 핸들링
-      if (existingUser && existingUser.provider !== dto.provider) {
-        this.throwProviderConflictError(existingUser.provider);
-      }
 
-      // 3) 유저 생성 or 조회
-      const user = await connectedUser.findOrCreateSocialUser(dto);
-
-      // 4) 토큰 발급
-      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
-
-      // 5) 토큰 정보 추가 or 업데이트
-      await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
-
-      await qr.commitTransaction();
       this.logger.log(`[소셜 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
-      return { accessToken, refreshToken };
+      return result;
     } catch (err) {
-      await qr.rollbackTransaction();
       if (err instanceof ConflictException) {
         throw err;
       }
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
-    } finally {
-      await qr.release();
     }
   }
 
@@ -98,48 +87,38 @@ export class AuthService {
   async localLogin(userAgent: string, dto: CreateUserDto): Promise<LoginResponseDto> {
     const agent = await detectPlatform(userAgent);
 
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
     try {
-      // 트랜잭션 처리를 위한 Repository 초기화
-      const connectedUser = getTransactionalRepository(UserRepository, qr, User);
-      const connectedToken = getTransactionalRepository(TokenRepository, qr, Token);
+      const result = await this.prisma.$transaction(async (tx) => {
+        // 1) 가입된 이메일 체크
+        const existingUser = await tx.user.findUnique({
+          where: { email: dto.email },
+        });
 
-      // 1) 가입된 이메일 체크
-      const existingUser = await connectedUser.findOne({
-        where: {
-          email: dto.email,
-        },
+        // 2) 가입된 정보가 있을 경우 핸들링
+        if (existingUser && existingUser.provider !== Provider.LOCAL) {
+          this.throwProviderConflictError(existingUser.provider);
+        }
+
+        // 3) 유저 생성 or 조회
+        const user = await this.userRepository.findOrCreateLocalUser(dto);
+
+        // 4) 토큰 발급
+        const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+
+        // 5) 토큰 정보 추가 or 업데이트
+        await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
+
+        return { accessToken, refreshToken };
       });
-      // 2) 가입된 정보가 있을 경우 핸들링
-      if (existingUser && existingUser.provider !== Provider.LOCAL) {
-        this.throwProviderConflictError(existingUser.provider);
-      }
-
-      // 3) 유저 생성 or 조회
-      const user = await connectedUser.findOrCreateLocalUser(dto);
-
-      // 4) 토큰 발급
-      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
-
-      // 5) 토큰 정보 추가 or 업데이트
-      await connectedToken.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
-
-      await qr.commitTransaction();
 
       this.logger.log(`[로컬 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
-
-      return { accessToken, refreshToken };
+      return result;
     } catch (err) {
-      console.log('error->', err);
-      await qr.rollbackTransaction();
+      console.error('error->', err);
       if (err instanceof ConflictException) {
         throw err;
       }
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
-    } finally {
-      await qr.release();
     }
   }
 
@@ -175,11 +154,11 @@ export class AuthService {
    * @param isRefreshToken  true -> refresh, false -> access
    */
   async issueToken(user: User, isRefreshToken: boolean): Promise<{ token: string; expiresAt: Date }> {
-    const refreshTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET);
-    const accessTokenSecret = this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET);
+    const refreshTokenSecret = this.configService.get<string>('REFRESH_SECRET');
+    const accessTokenSecret = this.configService.get<string>('ACCESS_SECRET');
     const expiresIn = isRefreshToken
-      ? this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_REFRESH_TK)
-      : this.configService.get<string>(ENV_CONFIG.AUTH.EXPOSE_ACCESS_TK);
+      ? this.configService.get<string>('EXPOSE_REFRESH_TK')
+      : this.configService.get<string>('EXPOSE_ACCESS_TK');
 
     const payload = await this.createPayload(user, isRefreshToken);
 
@@ -233,8 +212,8 @@ export class AuthService {
     try {
       return await this.jwtService.verifyAsync(rawToken, {
         secret: isRefreshToken
-          ? this.configService.get<string>(ENV_CONFIG.AUTH.REFRESH_SECRET)
-          : this.configService.get<string>(ENV_CONFIG.AUTH.ACCESS_SECRET),
+          ? this.configService.get<string>('REFRESH_SECRET')
+          : this.configService.get<string>('ACCESS_SECRET'),
       });
     } catch (error) {
       console.error('token verify exception error ->', error.name);
@@ -254,9 +233,9 @@ export class AuthService {
    * @param userId
    * @returns
    */
-  async removeRefToken(userId: number): Promise<DeleteResult> {
-    return await this.tokenRepository.delete({
-      user: { id: userId },
+  async removeRefToken(userId: number): Promise<void> {
+    await this.prisma.token.deleteMany({
+      where: { userId },
     });
   }
 
