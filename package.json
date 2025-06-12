@@ -19,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:user": "jest --testPathPattern=src/domain/user",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "prisma:generate": "prisma generate"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.726.1",
@@ -33,7 +34,8 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.16",
-    "@nestjs/swagger": "^8.0.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/throttler": "^6.4.0",
     "@nestjs/typeorm": "^11.0.0",
     "@sentry/nestjs": "^9.17.0",
@@ -68,8 +70,8 @@
     "winston-daily-rotate-file": "^5.0.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.0.0",
-    "@nestjs/schematics": "^10.0.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.16",
     "@prisma/client": "^6.9.0",
     "@types/bcrypt": "^5.0.2",
