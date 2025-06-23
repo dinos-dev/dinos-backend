@@ -51,6 +51,10 @@ $ pnpm install -D @types/uuid
 
 # slack 
 $ pnpm install @slack/web-api
+
+# test library 
+$ pnpm install jest-mock-extended
+$ pnpm install --save-dev jest-mock-extended 
 ```
 
 </br>
