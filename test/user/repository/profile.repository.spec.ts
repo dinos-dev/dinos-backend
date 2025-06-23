@@ -29,6 +29,40 @@ describe('ProfileRepository', () => {
     jest.clearAllMocks();
   });
 
+  describe('findById', () => {
+    it('Profile id가 존재하면 유저의 프로필 정보를 반환한다.', async () => {
+      // 1. given
+      const id = 1;
+      const mockResult = createProfileMock();
+
+      prismaService.profile.findUnique.mockResolvedValue(mockResult);
+
+      // 2. when
+      const result = await repository.findById(id);
+
+      // 3. then
+      expect(prismaService.profile.findUnique).toHaveBeenCalledWith({
+        where: { id },
+      });
+      expect(result).toEqual(mockResult);
+    });
+
+    it('Profile id가 존재하지 않으면 null을 반환한다.', async () => {
+      // 1. given
+      const id = 999999;
+      prismaService.profile.findUnique.mockResolvedValue(null);
+
+      // 2. when
+      const result = await repository.findById(id);
+
+      // 3. then
+      expect(prismaService.profile.findUnique).toHaveBeenCalledWith({
+        where: { id },
+      });
+      expect(result).toBeNull();
+    });
+  });
+
   describe('findByUserId', () => {
     it('userId가 존재하면 프로필 정보를 반환한다.', async () => {
       // 1. given
