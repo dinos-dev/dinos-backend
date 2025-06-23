@@ -27,7 +27,7 @@ export class UserService {
    */
   async createProfile(userId: number, dto: CreateUserProfileDto): Promise<Profile> {
     // 1) 유저 조회
-    const user = await this.userRepository.findById(userId);
+    const user = await this.userRepository.findUserWithProfileById(userId);
 
     if (!user) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_USER);
 

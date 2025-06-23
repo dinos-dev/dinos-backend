@@ -21,15 +21,15 @@ export class UserRepository implements IUserRepository {
     return !!user;
   }
 
-  /**
-   * 이메일 & 인증타입에 따른 가입여부 체크
-   * @param email
-   * @returns boolean
-   */
-  async existByEmailAndAuthType(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
-    return !!user;
-  }
+  // /**
+  //  * 이메일 & 인증타입에 따른 가입여부 체크
+  //  * @param email
+  //  * @returns boolean
+  //  */
+  // async existByEmailAndAuthType(email: string): Promise<boolean> {
+  //   const user = await this.prisma.user.findUnique({ where: { email } });
+  //   return !!user;
+  // }
 
   /**
    * FindOne OR Create Social User
@@ -68,9 +68,9 @@ export class UserRepository implements IUserRepository {
   /**
    * payLoad sub based user find
    * @param userId
-   * @returns User
+   * @returns User & { profile: Profile }
    */
-  async findById(userId: number): Promise<User> {
+  async findUserWithProfileById(userId: number): Promise<User> {
     return await this.prisma.user.findUnique({
       where: {
         id: userId,
