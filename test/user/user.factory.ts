@@ -22,6 +22,26 @@ export function createMockUser(overrides: Partial<User> = {}): User {
 }
 
 /**
+ * Profile Mocking Factory
+ * */
+export function createProfileMock(overrides: Partial<Profile> = {}): Profile {
+  return {
+    id: 1,
+    userId: 1,
+    nickName: 'Mock User',
+    comment: 'Mock Comment',
+    headerId: 1,
+    bodyId: 1,
+    headerColor: '#123456',
+    bodyColor: '#123456',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    version: 1,
+    ...overrides,
+  };
+}
+
+/**
  * User Mocking Factory with Tokens
  */
 export function createMockUserWithTokens(
