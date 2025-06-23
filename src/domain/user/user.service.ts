@@ -48,14 +48,14 @@ export class UserService {
    */
   async updateProfile(id: number, dto: UpdateUserProfileDto): Promise<Profile> {
     // 1) 프로필 조회
-    const profile = await this.profileRepository.findByUserId(id);
+    const profile = await this.profileRepository.findById(id);
 
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
 
     // 2) 프로필 업데이트
     await this.profileRepository.update(id, dto);
 
-    return await this.profileRepository.findByUserId(id);
+    return await this.profileRepository.findById(id);
   }
 
   /**

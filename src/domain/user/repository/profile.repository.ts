@@ -10,6 +10,21 @@ export class ProfileRepository implements IProfileRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * @todo 추후 prisma 기본 메서드는 BaseRepository로 추상화 예정
+   *
+   * id 기반 프로필 조회
+   * @param id profileId
+   * @returns Profile
+   */
+  async findById(id: number): Promise<Profile> {
+    return this.prisma.profile.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  /**
    * userId 기반 프로필 조회
    * @param userId
    * @returns Profile
@@ -22,6 +37,14 @@ export class ProfileRepository implements IProfileRepository {
     });
   }
 
+  /**
+   * @todo 추후 prisma 기본 메서드는 BaseRepository로 추상화 예정
+   *
+   * 프로필 생성
+   * @param dto
+   * @param userId
+   * @returns Profile
+   */
   async create(dto: CreateUserProfileDto, userId: number): Promise<Profile> {
     return this.prisma.profile.create({
       data: {
@@ -36,6 +59,14 @@ export class ProfileRepository implements IProfileRepository {
     });
   }
 
+  /**
+   * @todo 추후 prisma 기본 메서드는 BaseRepository로 추상화 예정
+   *
+   * 프로필 업데이트
+   * @param id profileId
+   * @param dto
+   * @returns Profile
+   */
   async update(id: number, dto: UpdateUserProfileDto): Promise<Profile> {
     return this.prisma.profile.update({
       where: { id },
