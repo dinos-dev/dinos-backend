@@ -68,7 +68,7 @@ export class UserService {
       await this.prisma.$transaction(async (tx) => {
         await tx.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
         await tx.token.deleteMany({ where: { userId } });
-        await tx.profile.delete({ where: { userId } });
+        await tx.profile.deleteMany({ where: { userId } });
       });
     } catch (err) {
       console.error('Transaction error:', err);
