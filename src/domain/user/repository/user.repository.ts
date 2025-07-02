@@ -102,4 +102,14 @@ export class UserRepository implements IUserRepository {
       },
     });
   }
+
+  /**
+   * withdraw user by soft delete using transaction
+   * @param userId
+   * @param tx
+   * @returns
+   */
+  async softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User> {
+    return await tx.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+  }
 }

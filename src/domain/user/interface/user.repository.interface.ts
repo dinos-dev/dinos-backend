@@ -9,4 +9,5 @@ export interface IUserRepository {
   findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null>;
   findById(userId: number): Promise<User>;
   findOrCreateLocalUser(dto: CreateUserDto): Promise<User>;
+  softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User>;
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PlatFormEnumType } from '../constant/platform.const';
 import { ITokenRepository } from '../interface/token.repository.interface';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
-import { Token, User } from '@prisma/client';
+import { Prisma, Token, User } from '@prisma/client';
 
 @Injectable()
 export class TokenRepository implements ITokenRepository {
@@ -40,5 +40,14 @@ export class TokenRepository implements ITokenRepository {
         },
       });
     }
+  }
+
+  /**
+   * delete many token by user id
+   * @param userId
+   * @param tx
+   */
+  async deleteManyByUserId(userId: number, tx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> {
+    return await tx.token.deleteMany({ where: { userId } });
   }
 }

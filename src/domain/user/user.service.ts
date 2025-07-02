@@ -3,11 +3,12 @@ import { HttpErrorConstants } from 'src/core/http/http-error-objects';
 import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { HttpUserErrorConstants } from './helper/http-error-object';
 import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
-import { PROFILE_REPOSITORY, USER_REPOSITORY } from 'src/core/config/common.const';
+import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/core/config/common.const';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { Profile } from '@prisma/client';
 import { IUserRepository } from './interface/user.repository.interface';
 import { IProfileRepository } from './interface/profile.repository.interface';
+import { ITokenRepository } from '../auth/interface/token.repository.interface';
 
 @Injectable()
 export class UserService {
@@ -16,6 +17,8 @@ export class UserService {
     private readonly userRepository: IUserRepository,
     @Inject(PROFILE_REPOSITORY)
     private readonly profileRepository: IProfileRepository,
+    @Inject(TOKEN_REPOSITORY)
+    private readonly tokenRepository: ITokenRepository,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -66,9 +69,9 @@ export class UserService {
   async withdrawUser(userId: number): Promise<void> {
     try {
       await this.prisma.$transaction(async (tx) => {
-        await tx.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
-        await tx.token.deleteMany({ where: { userId } });
-        await tx.profile.deleteMany({ where: { userId } });
+        await this.userRepository.softDeleteUserInTransaction(userId, tx);
+        await this.tokenRepository.deleteManyByUserId(userId, tx);
+        await this.profileRepository.deleteManyByUserId(userId, tx);
       });
     } catch (err) {
       console.error('Transaction error:', err);

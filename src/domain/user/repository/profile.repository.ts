@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { IProfileRepository } from '../interface/profile.repository.interface';
-import { Profile } from '@prisma/client';
+import { Prisma, Profile } from '@prisma/client';
 import { CreateUserProfileDto } from '../dto/request/create-user-profile.dto';
 import { UpdateUserProfileDto } from '../dto/request/update-user-profile.dto';
 
@@ -79,5 +79,14 @@ export class ProfileRepository implements IProfileRepository {
         bodyColor: dto.bodyColor,
       },
     });
+  }
+
+  /**
+   * delete many profile by user id
+   * @param userId
+   * @param tx
+   */
+  async deleteManyByUserId(userId: number, tx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> {
+    return await tx.profile.deleteMany({ where: { userId } });
   }
 }
