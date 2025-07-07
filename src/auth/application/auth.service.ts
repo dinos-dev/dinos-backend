@@ -187,6 +187,10 @@ export class AuthService {
       throw new UnauthorizedException(HttpErrorConstants.INVALID_BEARER_TOKEN);
     }
 
+    if (!token || token.trim() === '') {
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN_FORMAT);
+    }
+
     return token;
   }
 
@@ -230,8 +234,13 @@ export class AuthService {
    * @param userId
    * @returns
    */
+<<<<<<< Updated upstream:src/auth/application/auth.service.ts
   async removeRefToken(userId: number): Promise<Prisma.BatchPayload> {
     return await this.tokenRepository.deleteManyByUserId(userId);
+=======
+  async removeRefToken(userId: number): Promise<void> {
+    await this.tokenRepository.deleteRefToken(userId);
+>>>>>>> Stashed changes:src/domain/auth/auth.service.ts
   }
 
   /**
