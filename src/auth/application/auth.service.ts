@@ -234,13 +234,8 @@ export class AuthService {
    * @param userId
    * @returns
    */
-<<<<<<< Updated upstream:src/auth/application/auth.service.ts
   async removeRefToken(userId: number): Promise<Prisma.BatchPayload> {
     return await this.tokenRepository.deleteManyByUserId(userId);
-=======
-  async removeRefToken(userId: number): Promise<void> {
-    await this.tokenRepository.deleteRefToken(userId);
->>>>>>> Stashed changes:src/domain/auth/auth.service.ts
   }
 
   /**
