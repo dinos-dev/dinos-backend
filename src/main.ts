@@ -2,12 +2,12 @@ import './instrument';
 
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { initSwagger } from './core/swagger/swagger-config';
+import { initSwagger } from './common/swagger/swagger-config';
 import { middleware } from './app.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { HttpErrorConstants } from './core/http/http-error-objects';
-import { WinstonLoggerService } from './core/logger/winston-logger.service';
+import { HttpErrorConstants } from './common/http/http-error-objects';
+import { WinstonLoggerService } from './infrastructure/logger/winston-logger.service';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';

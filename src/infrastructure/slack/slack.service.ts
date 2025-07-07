@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
-import { WinstonLoggerService } from 'src/core/logger/winston-logger.service';
+import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
 @Injectable()
 export class SlackService {
