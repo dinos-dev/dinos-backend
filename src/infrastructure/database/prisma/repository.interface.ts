@@ -1,6 +1,7 @@
 export interface IRepository<T, ID = number> {
   findAll(): Promise<T[]>;
   findById(id: ID): Promise<T | null>;
+  findByUnique<K extends keyof T>(key: K, value: T[K]): Promise<T | null>;
 
   create(entity: T): Promise<T>;
   updateById(id: ID, entity: Partial<T>): Promise<T>;

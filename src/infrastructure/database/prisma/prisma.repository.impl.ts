@@ -21,6 +21,14 @@ export class PrismaRepository<T, ID = number> implements IRepository<T, ID> {
     });
   }
 
+  /**
+   * 다른 ORM에서 귀속되지 않고 Prisma에서만 활용하기 위해서 정의한 메서드 IRepository에서 추상화 X
+   */
+  async findByUnique<K extends keyof T>(key: K, value: T[K], tx?: Prisma.TransactionClient): Promise<T | null> {
+    const model = this.getModel(tx ?? this.tx);
+    return model.findUnique({ where: { [key]: value } });
+  }
+
   async create(entity: Omit<T, 'id'>, tx?: Prisma.TransactionClient): Promise<T> {
     const model = this.getModel(tx ?? this.tx);
 

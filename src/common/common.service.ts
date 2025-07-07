@@ -4,9 +4,9 @@ import { ConfigService } from '@nestjs/config';
 
 import { v4 as Uuid } from 'uuid';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { HttpErrorConstants } from 'src/core/http/http-error-objects';
+import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { CreatePresignedUrlDto } from './dto/create.presigned-url.dto';
-import { RESIGNED_URL_EXPIRES_IN } from 'src/core/config/common.const';
+import { RESIGNED_URL_EXPIRES_IN } from 'src/common/config/common.const';
 
 @Injectable()
 export class CommonService {
