@@ -72,9 +72,9 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
   /**
    * payLoad sub based user find
    * @param userId
-   * @returns User
+   * @returns User & { profile: Profile }
    */
-  async findById(userId: number): Promise<User> {
+  async findUserWithProfileById(userId: number): Promise<User> {
     return await this.prisma.user.findUnique({
       where: {
         id: userId,

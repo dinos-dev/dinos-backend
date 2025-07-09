@@ -187,6 +187,10 @@ export class AuthService {
       throw new UnauthorizedException(HttpErrorConstants.INVALID_BEARER_TOKEN);
     }
 
+    if (!token || token.trim() === '') {
+      throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN_FORMAT);
+    }
+
     return token;
   }
 

@@ -18,9 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:user": "jest --testPathPattern=src/domain/user",
-    "prepare": "husky install",
-    "prisma:generate": "prisma generate"
+    "test:user": "jest --testPathPattern=test/user",
+    "test:auth": "jest --testPathPattern=test/auth",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.726.1",
@@ -91,6 +91,7 @@
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^9.1.7",
     "jest": "^29.5.0",
+    "jest-mock-extended": "^4.0.0",
     "prettier": "^3.0.0",
     "prisma": "^6.9.0",
     "source-map-support": "^0.5.21",
@@ -107,9 +108,7 @@
       "json",
       "ts"
     ],
-    "roots": [
-      "src"
-    ],
+    "roots": ["test"],
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
