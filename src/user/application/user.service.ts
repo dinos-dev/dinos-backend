@@ -35,7 +35,7 @@ export class UserService {
     if (!user) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_USER);
 
     // 2) 중첩 프로필 확인
-    const existingProfile = await this.profileRepository.findByUserId(userId);
+    const existingProfile = await this.profileRepository.findByUnique('userId', userId);
 
     if (existingProfile) throw new ConflictException(HttpUserErrorConstants.CONFLICT_USER_PROFILE);
 
@@ -56,7 +56,7 @@ export class UserService {
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
 
     // 2) 프로필 업데이트
-    await this.profileRepository.update(id, dto);
+    await this.profileRepository.updateById(id, dto);
 
     return await this.profileRepository.findById(id);
   }
@@ -85,7 +85,7 @@ export class UserService {
    * @returns UserProfile
    */
   async findByProfile(userId: number): Promise<Profile> {
-    const profile = await this.profileRepository.findByUserId(userId);
+    const profile = await this.profileRepository.findByUnique('userId', userId);
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
     return profile;
   }

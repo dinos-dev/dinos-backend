@@ -1,10 +1,10 @@
-// import { ProfileRepository } from 'src/domain/user/repository/profile.repository';
+// import { ProfileRepository } from 'src/user/infrastructure/repository/profile.repository';
 // import { mockPrismaService, MockPrismaService } from '../../__mocks__/prisma.service.mock';
 // import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 // import { Test, TestingModule } from '@nestjs/testing';
 // import { createProfileMock } from '../user.factory';
-// import { CreateUserProfileDto } from 'src/domain/user/dto/request/create-user-profile.dto';
-// import { UpdateUserProfileDto } from 'src/domain/user/dto/request/update-user-profile.dto';
+// import { CreateUserProfileDto } from 'src/user/presentation/dto/request/create-user-profile.dto';
+// import { UpdateUserProfileDto } from 'src/user/presentation/dto/request/update-user-profile.dto';
 
 // describe('ProfileRepository', () => {
 //   let repository: ProfileRepository;

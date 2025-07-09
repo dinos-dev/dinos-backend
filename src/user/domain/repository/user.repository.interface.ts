@@ -1,13 +1,13 @@
 import { Prisma, User } from '@prisma/client';
 import { SocialUserDto } from '../../presentation/dto/request/social-user.dto';
 import { CreateUserDto } from '../../presentation/dto/request/create-user.dto';
+import { IRepository } from 'src/infrastructure/database/prisma/repository.interface';
 
-export interface IUserRepository {
+export interface IUserRepository extends IRepository<User> {
   existByEmail(email: string): Promise<boolean>;
   existByEmailAndAuthType(email: string): Promise<boolean>;
   findOrCreateSocialUser(dto: SocialUserDto, tx?: Prisma.TransactionClient): Promise<User>;
   findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null>;
-  findById(userId: number): Promise<User>;
   findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<User>;
   softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User>;
   findByUnique<K extends keyof User>(key: K, value: User[K], tx?: Prisma.TransactionClient): Promise<User | null>;

@@ -6,7 +6,7 @@ import { Strategy } from 'passport-custom';
 import * as jwt from 'jsonwebtoken';
 import * as jwksClient from 'jwks-rsa';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
-import { OAuthPayLoad } from '../../domain/interface/token-payload.interface';
+import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 import { Provider } from '../../domain/constant/provider.enum';

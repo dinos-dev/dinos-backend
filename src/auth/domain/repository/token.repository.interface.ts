@@ -1,6 +1,7 @@
 import { PlatFormEnumType, Prisma, Token, User } from '@prisma/client';
+import { IRepository } from 'src/infrastructure/database/prisma/repository.interface';
 
-export interface ITokenRepository {
+export interface ITokenRepository extends IRepository<Token> {
   updateOrCreateRefToken(
     user: User,
     refToken: string,

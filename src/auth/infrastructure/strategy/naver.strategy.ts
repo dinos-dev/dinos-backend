@@ -6,7 +6,7 @@ import { Strategy } from 'passport-custom';
 import { firstValueFrom } from 'rxjs';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { Provider } from '../../domain/constant/provider.enum';
-import { OAuthPayLoad } from '../../domain/interface/token-payload.interface';
+import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 
 @Injectable()
 export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {

@@ -1,10 +1,10 @@
 // import { Test, TestingModule } from '@nestjs/testing';
-// import { TokenRepository } from 'src/domain/auth/repository/token.repository';
+// import { TokenRepository } from 'src/auth/infrastructure/repository/token.repository';
 // import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 // import { mockPrismaService, MockPrismaService } from '../../__mocks__/prisma.service.mock';
 // import { createMockUser } from '../../user/user.factory';
 // import { createMockToken } from '../token.factory';
-// import { PlatFormEnumType } from 'src/domain/auth/constant/platform.const';
+// import { PlatFormEnumType } from 'src/auth/domain/constant/platform.const';
 
 // describe('TokenRepository', () => {
 //   let repository: TokenRepository;

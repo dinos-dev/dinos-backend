@@ -29,7 +29,10 @@ export class PrismaRepository<T, ID = number> implements IRepository<T, ID> {
     return model.findUnique({ where: { [key]: value } });
   }
 
-  async create(entity: Omit<T, 'id'>, tx?: Prisma.TransactionClient): Promise<T> {
+  async create(
+    entity: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'>,
+    tx?: Prisma.TransactionClient,
+  ): Promise<T> {
     const model = this.getModel(tx ?? this.tx);
 
     return model.create({
