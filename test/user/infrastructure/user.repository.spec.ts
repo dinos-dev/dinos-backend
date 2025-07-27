@@ -78,13 +78,15 @@ describe('UserRepository', () => {
         providerId: dto.providerId,
       };
 
+      const isNew = false;
+
       prismaService.user.findUnique.mockResolvedValue(expectedUser as User);
 
       // 2. when ( 실행 )
       const result = await repository.findOrCreateSocialUser(dto);
 
       // 3. then ( 검증 )
-      expect(result).toEqual(expectedUser);
+      expect(result).toEqual({ user: expectedUser, isNew });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
       expect(prismaService.user.create).not.toHaveBeenCalled();
     });
@@ -105,6 +107,8 @@ describe('UserRepository', () => {
         providerId: dto.providerId,
       };
 
+      const isNew = true;
+
       // 사용자가 없다고 가정
       prismaService.user.findUnique.mockResolvedValue(null);
 
@@ -124,7 +128,7 @@ describe('UserRepository', () => {
           providerId: dto.providerId,
         },
       });
-      expect(result).toEqual(createdUser);
+      expect(result).toEqual({ user: createdUser, isNew });
     });
   });
 
@@ -213,6 +217,8 @@ describe('UserRepository', () => {
         name: 'existingUser',
       };
 
+      const isNew = false;
+
       const mockResult = createMockUser();
 
       prismaService.user.findUnique.mockResolvedValue(mockResult);
@@ -221,7 +227,7 @@ describe('UserRepository', () => {
       const result = await repository.findOrCreateLocalUser(dto);
 
       // 3. then
-      expect(result).toEqual(mockResult);
+      expect(result).toEqual({ user: mockResult, isNew });
       expect(prismaService.user.findUnique).toHaveBeenCalledWith({
         where: {
           email: dto.email,
@@ -236,6 +242,8 @@ describe('UserRepository', () => {
         password: 'password',
         name: 'newUser',
       };
+
+      const isNew = true;
 
       const mockResult = createMockUser();
 
@@ -259,7 +267,7 @@ describe('UserRepository', () => {
           password: expect.any(String),
         },
       });
-      expect(result).toEqual(mockResult);
+      expect(result).toEqual({ user: mockResult, isNew });
     });
   });
 });

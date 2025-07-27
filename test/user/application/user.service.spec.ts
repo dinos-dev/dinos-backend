@@ -128,16 +128,16 @@ describe('UserService', () => {
   });
 
   describe('withdrawUser', () => {
-    it('prisma transaction 기반 유저를 소프트 delete 처리한다.', async () => {
+    it('prisma transaction 기반 사용자 정보를 삭제 처리한다.', async () => {
       const userId = 1;
 
       // 1. 각 repository의 메서드 mock
-      const softDeleteUserInTransaction = jest.fn();
+      const deleteById = jest.fn();
       const deleteManyToken = jest.fn();
       const deleteManyProfile = jest.fn();
 
       // 2. repository mock 메서드 주입
-      service['userRepository'].softDeleteUserInTransaction = softDeleteUserInTransaction;
+      service['userRepository'].deleteById = deleteById;
       service['tokenRepository'].deleteManyByUserId = deleteManyToken;
       service['profileRepository'].deleteManyByUserId = deleteManyProfile;
 
@@ -151,7 +151,7 @@ describe('UserService', () => {
       await expect(service.withdrawUser(userId)).resolves.toBeUndefined();
 
       // 6. 각 repository가 tx를 받아 호출됐는지 체크
-      expect(softDeleteUserInTransaction).toHaveBeenCalledWith(userId, mockTx);
+      expect(deleteById).toHaveBeenCalledWith(userId, mockTx);
       expect(deleteManyToken).toHaveBeenCalledWith(userId, mockTx);
       expect(deleteManyProfile).toHaveBeenCalledWith(userId, mockTx);
     });

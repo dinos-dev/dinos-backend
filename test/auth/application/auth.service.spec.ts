@@ -7,7 +7,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
 
 import { AuthService } from 'src/auth/application/auth.service';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
@@ -27,6 +27,11 @@ import { Provider } from 'src/auth/domain/constant/provider.enum';
 import { DateUtils } from 'src/common/utils/date-util';
 import { detectPlatform } from 'src/auth/application/util/client.util';
 import { mockDeep } from 'jest-mock-extended';
+import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
+import { SlackService } from 'src/infrastructure/slack/slack.service';
+import { SERVICE_CHANNEL } from 'src/infrastructure/slack/constant/channel.const';
+
+import * as profileFactory from 'src/user/application/helper/profile.factory';
 
 // Mock external dependencies
 jest.mock('src/auth/application/util/client.util');
@@ -41,9 +46,11 @@ describe('AuthService', () => {
 
   const userRepository: jest.Mocked<IUserRepository> = mockDeep<IUserRepository>();
   const tokenRepository: jest.Mocked<ITokenRepository> = mockDeep<ITokenRepository>();
+  const profileRepository: jest.Mocked<IProfileRepository> = mockDeep<IProfileRepository>();
   let jwtService: jest.Mocked<JwtService>;
   let configService: jest.Mocked<ConfigService>;
   let logger: jest.Mocked<WinstonLoggerService>;
+  let slackService: jest.Mocked<SlackService>;
 
   beforeEach(async () => {
     jwtService = {
@@ -60,6 +67,10 @@ describe('AuthService', () => {
       error: jest.fn(),
     } as any;
 
+    slackService = {
+      sendMessage: jest.fn(),
+    } as any;
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -70,6 +81,10 @@ describe('AuthService', () => {
         {
           provide: TOKEN_REPOSITORY,
           useValue: tokenRepository,
+        },
+        {
+          provide: PROFILE_REPOSITORY,
+          useValue: profileRepository,
         },
         {
           provide: PrismaService,
@@ -86,6 +101,10 @@ describe('AuthService', () => {
         {
           provide: WinstonLoggerService,
           useValue: logger,
+        },
+        {
+          provide: SlackService,
+          useValue: slackService,
         },
       ],
     }).compile();
@@ -153,7 +172,7 @@ describe('AuthService', () => {
       const tx = {} as any;
 
       userRepository.findByUnique.mockResolvedValue(null);
-      userRepository.findOrCreateSocialUser.mockResolvedValue(mockUser);
+      userRepository.findOrCreateSocialUser.mockResolvedValue({ user: mockUser, isNew: true });
       tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
 
       prismaService.$transaction.mockImplementation(async (cb) => {
@@ -176,9 +195,7 @@ describe('AuthService', () => {
         mockTokens.expiresAt,
         tx,
       );
-      expect(logger.log).toHaveBeenCalledWith(
-        `[소셜 로그인 & 가입]${mockSocialUserDto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`,
-      );
+      expect(logger.log).toHaveBeenCalledWith(`[소셜] ${mockSocialUserDto.email} 유저가 로그인 하였습니다 🎉`);
     });
 
     it('기존 사용자가 다른 provider로 가입되어 있으면 ConflictException을 발생시킨다.', async () => {
@@ -199,7 +216,7 @@ describe('AuthService', () => {
       const existingUser = createMockUser({ provider: Provider.GOOGLE });
 
       userRepository.findByUnique.mockResolvedValue(existingUser);
-      userRepository.findOrCreateSocialUser.mockResolvedValue(existingUser);
+      userRepository.findOrCreateSocialUser.mockResolvedValue({ user: existingUser, isNew: false });
       tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
 
       prismaService.$transaction.mockImplementation(async (cb) => {
@@ -221,6 +238,45 @@ describe('AuthService', () => {
         'WEB',
         mockTokens.expiresAt,
         tx,
+      );
+    });
+
+    it('최초 소셜 가입을 했을 경우 SlackWebhook 발송과 Default Profile을 생성한다.', async () => {
+      const tx = {} as any;
+
+      const mockDefaultProfileDto = {
+        nickName: 'test-nick',
+        comment: '소개를 작성해주세요',
+        headerId: 1,
+        bodyId: 2,
+        headerColor: '#FFFFFF',
+        bodyColor: '#000000',
+      };
+
+      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfileDto);
+
+      userRepository.findByUnique.mockResolvedValue(null);
+      userRepository.findOrCreateSocialUser.mockResolvedValue({ user: mockUser, isNew: true });
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
+      profileRepository.createProfile.mockResolvedValue(undefined);
+      slackService.sendMessage.mockResolvedValue(undefined);
+
+      prismaService.$transaction.mockImplementation(async (cb) => {
+        return await cb(tx);
+      });
+
+      const result = await service.socialLogin('Mozilla', mockSocialUserDto);
+
+      expect(result).toEqual({
+        accessToken: mockTokens.accessToken,
+        refreshToken: mockTokens.refreshToken,
+      });
+
+      // 프로필 생성 및 슬랙 호출 여부 확인
+      expect(profileRepository.createProfile).toHaveBeenCalledWith(mockDefaultProfileDto, mockUser.id, tx);
+      expect(slackService.sendMessage).toHaveBeenCalledWith(
+        SERVICE_CHANNEL,
+        `[소셜 가입] ${mockSocialUserDto.email} 유저가 회원가입 하였습니다 🎉`,
       );
     });
 
@@ -250,7 +306,7 @@ describe('AuthService', () => {
       prismaService.$transaction.mockImplementation(async (cb) => cb(tx as any));
 
       userRepository.findByUnique.mockResolvedValue(null);
-      userRepository.findOrCreateLocalUser.mockResolvedValue(mockUser);
+      userRepository.findOrCreateLocalUser.mockResolvedValue({ user: mockUser, isNew: true });
       tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
 
       jest.spyOn(service as any, 'generatedTokens').mockResolvedValue(mockTokens);
@@ -272,9 +328,7 @@ describe('AuthService', () => {
         mockTokens.expiresAt,
         tx,
       );
-      expect(logger.log).toHaveBeenCalledWith(
-        `[로컬 로그인 & 가입]${mockCreateUserDto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`,
-      );
+      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCreateUserDto.email} 유저가 로그인 하였습니다 🎉`);
     });
 
     it('기존 사용자가 다른 provider로 가입되어 있으면 ConflictException을 발생시킨다.', async () => {
@@ -283,6 +337,62 @@ describe('AuthService', () => {
       userRepository.findByUnique.mockResolvedValue(existingUser);
 
       await expect(service.localLogin('Mozilla', mockCreateUserDto)).rejects.toThrow(ConflictException);
+    });
+
+    it('최초 로컬 가입 시 슬랙 알림 및 디폴트 프로필을 생성한다.', async () => {
+      const mockTx = {};
+      const mockUser = createMockUser({ provider: Provider.LOCAL });
+      const mockTokens = {
+        accessToken: 'access.token',
+        refreshToken: 'refresh.token',
+        expiresAt: new Date('2024-12-31'),
+      };
+
+      const mockDefaultProfileDto = {
+        nickName: 'test-nick',
+        comment: '소개를 작성해주세요',
+        headerId: 1,
+        bodyId: 2,
+        headerColor: '#FFFFFF',
+        bodyColor: '#000000',
+      };
+
+      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfileDto);
+
+      // Prisma 트랜잭션 mock
+      prismaService.$transaction.mockImplementation(async (cb) => cb(mockTx as any));
+
+      // 유저는 없고 -> 신규 가입
+      userRepository.findByUnique.mockResolvedValue(null);
+      userRepository.findOrCreateLocalUser.mockResolvedValue({ user: mockUser, isNew: true });
+
+      // 토큰 생성 mock
+      jest.spyOn(service as any, 'generatedTokens').mockResolvedValue(mockTokens);
+
+      // 토큰 저장 mock
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
+
+      // 프로필 생성 mock
+      profileRepository.createProfile.mockResolvedValue({ id: 1 } as any);
+
+      // SlackService mock
+      slackService.sendMessage = jest.fn();
+
+      const result = await service.localLogin('Mozilla', mockCreateUserDto);
+
+      expect(result).toEqual({
+        accessToken: mockTokens.accessToken,
+        refreshToken: mockTokens.refreshToken,
+      });
+
+      expect(slackService.sendMessage).toHaveBeenCalledWith(
+        SERVICE_CHANNEL,
+        `[로컬 가입] ${mockCreateUserDto.email} 유저가 회원가입 하였습니다 🎉`,
+      );
+
+      expect(profileRepository.createProfile).toHaveBeenCalledWith(mockDefaultProfileDto, mockUser.id, tx);
+
+      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCreateUserDto.email} 유저가 로그인 하였습니다 🎉`);
     });
   });
 

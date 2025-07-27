@@ -62,14 +62,14 @@ export class UserService {
   }
 
   /**
-   * 회원탈퇴 ( soft delete )
+   * 회원탈퇴 - 현 정책상 softDelete 하지 않고 Delete 처리
    * @param userId
    * @returns
    */
   async withdrawUser(userId: number): Promise<void> {
     try {
       await this.prisma.$transaction(async (tx) => {
-        await this.userRepository.softDeleteUserInTransaction(userId, tx);
+        await this.userRepository.deleteById(userId, tx);
         await this.tokenRepository.deleteManyByUserId(userId, tx);
         await this.profileRepository.deleteManyByUserId(userId, tx);
       });

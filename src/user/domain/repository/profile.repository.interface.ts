@@ -4,7 +4,7 @@ import { UpdateUserProfileDto } from '../../presentation/dto/request/update-user
 import { IRepository } from 'src/infrastructure/database/prisma/repository.interface';
 
 export interface IProfileRepository extends IRepository<Profile> {
-  createProfile(dto: CreateUserProfileDto, userId: number): Promise<Profile>;
+  createProfile(dto: CreateUserProfileDto, userId: number, tx?: Prisma.TransactionClient): Promise<Profile>;
   updateById(id: number, dto: UpdateUserProfileDto): Promise<Profile>;
   deleteManyByUserId(userId: number, tx: Prisma.TransactionClient): Promise<Prisma.BatchPayload>;
 }
