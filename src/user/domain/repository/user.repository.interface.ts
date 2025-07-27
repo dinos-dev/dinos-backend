@@ -11,4 +11,5 @@ export interface IUserRepository extends IRepository<User> {
   findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<{ user: User; isNew: boolean }>;
   softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User>;
   findByUnique<K extends keyof User>(key: K, value: User[K], tx?: Prisma.TransactionClient): Promise<User | null>;
+  deleteById(id: number, tx?: Prisma.TransactionClient): Promise<User>;
 }
