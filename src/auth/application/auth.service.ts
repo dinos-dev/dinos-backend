@@ -138,7 +138,6 @@ export class AuthService {
         return { accessToken, refreshToken };
       });
 
-      this.logger.log(`[로컬 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
       return result;
     } catch (err) {
       console.error('error->', err);
