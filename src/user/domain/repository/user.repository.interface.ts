@@ -6,9 +6,9 @@ import { IRepository } from 'src/infrastructure/database/prisma/repository.inter
 export interface IUserRepository extends IRepository<User> {
   existByEmail(email: string): Promise<boolean>;
   existByEmailAndAuthType(email: string): Promise<boolean>;
-  findOrCreateSocialUser(dto: SocialUserDto, tx?: Prisma.TransactionClient): Promise<User>;
+  findOrCreateSocialUser(dto: SocialUserDto, tx?: Prisma.TransactionClient): Promise<{ user: User; isNew: boolean }>;
   findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null>;
-  findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<User>;
+  findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<{ user: User; isNew: boolean }>;
   softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User>;
   findByUnique<K extends keyof User>(key: K, value: User[K], tx?: Prisma.TransactionClient): Promise<User | null>;
 }

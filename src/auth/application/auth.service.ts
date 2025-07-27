@@ -18,11 +18,15 @@ import { DateUtils } from 'src/common/utils/date-util';
 import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
-import { TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { Prisma, Provider, Token, User } from '@prisma/client';
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
+import { SlackService } from 'src/infrastructure/slack/slack.service';
+import { SERVICE_CHANNEL } from 'src/infrastructure/slack/constant/channel.const';
+import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
+import { buildDefaultProfile } from 'src/user/application/helper/profile.factory';
 
 @Injectable()
 export class AuthService {
@@ -31,10 +35,13 @@ export class AuthService {
     private readonly userRepository: IUserRepository,
     @Inject(TOKEN_REPOSITORY)
     private readonly tokenRepository: ITokenRepository,
+    @Inject(PROFILE_REPOSITORY)
+    private readonly profileRepository: IProfileRepository,
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: WinstonLoggerService,
+    private readonly slackService: SlackService,
   ) {}
 
   /**
@@ -57,7 +64,7 @@ export class AuthService {
         }
 
         // 3) 유저 생성 or 조회
-        const user = await this.userRepository.findOrCreateSocialUser(dto, tx);
+        const { user, isNew } = await this.userRepository.findOrCreateSocialUser(dto, tx);
 
         // 4) 토큰 발급
         const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
@@ -65,10 +72,21 @@ export class AuthService {
         // 5) 토큰 정보 추가 or 업데이트
         await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt, tx);
 
+        // 6) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
+        if (isNew) {
+          // slack webhook notification
+          this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${dto.email} 유저가 회원가입 하였습니다 🎉`);
+
+          // create default profile
+          const defaultProfileDto = buildDefaultProfile();
+          await this.profileRepository.createProfile(defaultProfileDto, user.id, tx);
+        }
+
+        this.logger.log(`[소셜] ${dto.email} 유저가 로그인 하였습니다 🎉`);
+
         return { accessToken, refreshToken };
       });
 
-      this.logger.log(`[소셜 로그인 & 가입]${dto.email} 유저가 회원가입 or 로그인을 완료했습니다 🎉`);
       return result;
     } catch (err) {
       if (err instanceof ConflictException) {
@@ -97,13 +115,25 @@ export class AuthService {
         }
 
         // 3) 유저 생성 or 조회
-        const user = await this.userRepository.findOrCreateLocalUser(dto, tx);
+        const { user, isNew } = await this.userRepository.findOrCreateLocalUser(dto, tx);
 
         // 4) 토큰 발급
         const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
 
         // 5) 토큰 정보 추가 or 업데이트
         await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt, tx);
+
+        // 6) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
+        if (isNew) {
+          // slack webhook notification
+          this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${dto.email} 유저가 회원가입 하였습니다 🎉`);
+
+          // create default profile
+          const defaultProfileDto = buildDefaultProfile();
+          await this.profileRepository.createProfile(defaultProfileDto, user.id, tx);
+        }
+
+        this.logger.log(`[로컬] ${dto.email} 유저가 로그인 하였습니다 🎉`);
 
         return { accessToken, refreshToken };
       });

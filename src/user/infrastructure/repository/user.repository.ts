@@ -39,15 +39,18 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param dto SocialUserDto
    * @returns user
    */
-  async findOrCreateSocialUser(dto: SocialUserDto, tx?: Prisma.TransactionClient): Promise<User> {
+  async findOrCreateSocialUser(
+    dto: SocialUserDto,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ user: User; isNew: boolean }> {
     const client = tx ?? this.prisma;
     const user = await client.user.findUnique({
       where: { email: dto.email },
     });
 
-    if (user) return user;
+    if (user) return { user, isNew: false };
 
-    return client.user.create({
+    const newUser = await client.user.create({
       data: {
         email: dto.email,
         name: dto.name,
@@ -55,6 +58,8 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
         providerId: dto.providerId,
       },
     });
+
+    return { user: newUser, isNew: true };
   }
 
   /**
@@ -90,22 +95,27 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param dto CreateUserDto
    * @returns
    */
-  async findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<User> {
+  async findOrCreateLocalUser(
+    dto: CreateUserDto,
+    tx?: Prisma.TransactionClient,
+  ): Promise<{ user: User; isNew: boolean }> {
     const client = tx ?? this.prisma;
     const user = await client.user.findUnique({
       where: {
         email: dto.email,
       },
     });
-    if (user) return user;
+    if (user) return { user, isNew: false };
 
-    return client.user.create({
+    const newUser = await client.user.create({
       data: {
         email: dto.email,
         name: dto.name,
         password: hashPassword(dto.password),
       },
     });
+
+    return { user: newUser, isNew: true };
   }
 
   /**

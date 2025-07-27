@@ -13,9 +13,11 @@ import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'src/auth/infrastructure/strategy/jwt.strategy';
 import { JwtRefreshStrategy } from 'src/auth/infrastructure/strategy/jwt-refresh.strategy';
-import { TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { UserRepository } from 'src/user/infrastructure/repository/user.repository';
+import { SlackService } from 'src/infrastructure/slack/slack.service';
+import { ProfileRepository } from 'src/user/infrastructure/repository/profile.repository';
 
 @Module({
   imports: [JwtModule.register({}), HttpModule.register({}), PassportModule],
@@ -30,12 +32,17 @@ import { UserRepository } from 'src/user/infrastructure/repository/user.reposito
       provide: USER_REPOSITORY,
       useClass: UserRepository,
     },
+    {
+      provide: PROFILE_REPOSITORY,
+      useClass: ProfileRepository,
+    },
     NaverStrategy,
     GoogleStrategy,
     AppleStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
     PrismaService,
+    SlackService,
   ],
   exports: [AuthService, JwtModule, PassportModule, JwtStrategy, JwtRefreshStrategy],
 })

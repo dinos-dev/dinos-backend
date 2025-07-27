@@ -18,8 +18,9 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @param userId
    * @returns Profile
    */
-  async createProfile(dto: CreateUserProfileDto, userId: number): Promise<Profile> {
-    return this.prisma.profile.create({
+  async createProfile(dto: CreateUserProfileDto, userId: number, tx?: Prisma.TransactionClient): Promise<Profile> {
+    const client = tx ?? this.prisma;
+    return client.profile.create({
       data: {
         userId,
         nickName: dto.nickName,
