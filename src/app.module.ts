@@ -13,6 +13,8 @@ import { envVariableKeys } from './common/config/env-keys.const';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/presentation/guard/jwt-auth.guard';
+import { FeedModule } from './feed/feed.module';
+import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
 
 @Module({
   imports: [
@@ -24,12 +26,14 @@ import { JwtAuthGuard } from './auth/presentation/guard/jwt-auth.guard';
         abortEarly: false,
       },
     }),
+    MongoDatabaseModule,
     SentryModule.forRoot(),
     TraceModule,
     UserModule,
     AuthModule,
     CommonModule,
     SlackModule,
+    FeedModule,
   ],
   providers: [
     {
