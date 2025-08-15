@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { IFeedRepository } from '../domain/repository/feed.repository.interface';
 import { Feed } from '../domain/entities/feed.entity';
 import { FEED_REPOSITORY } from 'src/common/config/common.const';
-// import { HomeFeedDto } from './dto/home-feed.dto';
 
 @Injectable()
 export class FeedService {
@@ -14,7 +13,6 @@ export class FeedService {
   /** 메인 홈 피드 조회 */
   async findByHomeFeeds(): Promise<Feed[]> {
     return await this.feedRepository.findByHomeFeeds();
-    // return homeFeeds.map((feed) => HomeFeedDto.fromDomain(feed));
   }
 
   /** 전체 피드 컬렉션 조회 -> Admin에서 적용 */

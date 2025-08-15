@@ -1,4 +1,3 @@
-// presentation/feed/dto/response/feed.response.dto.ts
 import { Feed } from 'src/feed/domain/entities/feed.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';

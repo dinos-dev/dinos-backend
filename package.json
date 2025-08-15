@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:user": "jest --testPathPattern=test/user",
     "test:auth": "jest --testPathPattern=test/auth",
+    "test:feed": "jest --testPathPattern=test/feed",
     "prepare": "husky install"
   },
   "dependencies": {
