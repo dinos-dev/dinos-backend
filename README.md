@@ -52,6 +52,9 @@ $ pnpm install -D @types/uuid
 # slack 
 $ pnpm install @slack/web-api
 
+# mongoose
+$ pnpm install mongoose @nestjs/mongoose
+
 # test library 
 $ pnpm install jest-mock-extended
 $ pnpm install --save-dev jest-mock-extended 
