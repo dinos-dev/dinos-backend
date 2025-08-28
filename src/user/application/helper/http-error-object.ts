@@ -23,4 +23,10 @@ export const HttpUserErrorConstants = {
     error: 'CONFLICT_USER_PROFILE',
     message: '이미 등록된 프로필이 존재합니다.',
   } as HttpErrorFormat,
+
+  FORBIDDEN_USER_PROFILE: {
+    status: HttpStatus.FORBIDDEN,
+    error: 'FORBIDDEN_USER_PROFILE',
+    message: '해당 프로필을 수정할 권한이 없습니다.',
+  } as HttpErrorFormat,
 };

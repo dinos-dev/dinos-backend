@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { Prisma, Profile } from '@prisma/client';
-import { CreateUserProfileDto } from 'src/user/presentation/dto/request/create-user-profile.dto';
-import { UpdateUserProfileDto } from 'src/user/presentation/dto/request/update-user-profile.dto';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
+import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
+import { ProfileMapper } from '../mapper/user-profile.mapper';
 
 @Injectable()
 export class ProfileRepository extends PrismaRepository<Profile> implements IProfileRepository {
@@ -18,19 +18,22 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @param userId
    * @returns Profile
    */
-  async createProfile(dto: CreateUserProfileDto, userId: number, tx?: Prisma.TransactionClient): Promise<Profile> {
+  async createProfile(entity: ProfileEntity, tx?: Prisma.TransactionClient): Promise<ProfileEntity> {
     const client = tx ?? this.prisma;
-    return client.profile.create({
+    const profile = await client.profile.create({
       data: {
-        userId,
-        nickName: dto.nickName,
-        comment: dto.comment,
-        headerId: dto.headerId,
-        bodyId: dto.bodyId,
-        headerColor: dto.headerColor,
-        bodyColor: dto.bodyColor,
+        nickName: entity.nickName,
+        comment: entity.comment,
+        headerId: entity.headerId,
+        bodyId: entity.bodyId,
+        headerColor: entity.headerColor,
+        bodyColor: entity.bodyColor,
+        user: {
+          connect: { id: entity.userId },
+        },
       },
     });
+    return ProfileMapper.toDomain(profile);
   }
 
   /**
@@ -39,18 +42,30 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @param dto
    * @returns Profile
    */
-  async updateById(id: number, dto: UpdateUserProfileDto): Promise<Profile> {
-    return this.prisma.profile.update({
+  async updateById(id: number, entity: ProfileEntity): Promise<ProfileEntity> {
+    const profile = await this.prisma.profile.update({
       where: { id },
       data: {
-        nickName: dto.nickName,
-        comment: dto.comment,
-        headerId: dto.headerId,
-        bodyId: dto.bodyId,
-        headerColor: dto.headerColor,
-        bodyColor: dto.bodyColor,
+        nickName: entity.nickName,
+        comment: entity.comment,
+        headerId: entity.headerId,
+        bodyId: entity.bodyId,
+        headerColor: entity.headerColor,
+        bodyColor: entity.bodyColor,
       },
     });
+
+    return ProfileMapper.toDomain(profile);
+  }
+
+  /**
+   * find profile by user id
+   * @param userId
+   * @returns Profile | null
+   */
+  async findByUserId(userId: number): Promise<ProfileEntity | null> {
+    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    return profile ? ProfileMapper.toDomain(profile) : null;
   }
 
   /**

@@ -13,7 +13,7 @@ import { UserId } from './decorator/user-id.decorator';
 import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
 import { UserProfileResponseDto } from './dto/response/user-profile-response.dto';
-import { plainToClass } from 'class-transformer';
+import { UserProfileMapper } from './dto/mapper/user-profile.mapper';
 
 @ApiTags('User - 회원관리')
 @ApiCommonErrorResponseTemplate()
@@ -28,39 +28,39 @@ export class UserController {
     @UserId() userId: number,
     @Body() dto: CreateUserProfileDto,
   ): Promise<HttpResponse<UserProfileResponseDto>> {
-    const profile = await this.userService.createProfile(userId, dto);
-    return HttpResponse.created(
-      plainToClass(UserProfileResponseDto, profile, {
-        excludeExtraneousValues: true,
-      }),
-    );
+    const command = UserProfileMapper.toCreateCommand(userId, dto);
+    const profile = await this.userService.createProfile(command);
+
+    const result = UserProfileResponseDto.fromResult(profile);
+
+    return HttpResponse.created(result);
   }
 
   //? 유저 프로필 수정
   @UpdateUserProfileDocs()
   @Patch('profile/:id')
   async updateProfile(
+    @UserId() userId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserProfileDto,
   ): Promise<HttpResponse<UserProfileResponseDto>> {
-    const profile = await this.userService.updateProfile(id, dto);
-    return HttpResponse.ok(
-      plainToClass(UserProfileResponseDto, profile, {
-        excludeExtraneousValues: true,
-      }),
-    );
+    const command = UserProfileMapper.toUpdateCommand(userId, dto);
+
+    const profile = await this.userService.updateProfile(id, command);
+
+    const result = UserProfileResponseDto.fromResult(profile);
+    return HttpResponse.ok(result);
   }
 
   //? userId 기반 프로필 조회
   @FindByProfileDocs()
   @Get('/mine/profile')
   async findByProfile(@UserId() userId: number): Promise<HttpResponse<UserProfileResponseDto>> {
-    const user = await this.userService.findByProfile(userId);
-    return HttpResponse.ok(
-      plainToClass(UserProfileResponseDto, user, {
-        excludeExtraneousValues: true,
-      }),
-    );
+    const profile = await this.userService.findByProfile(userId);
+
+    const result = UserProfileResponseDto.fromResult(profile);
+
+    return HttpResponse.ok(result);
   }
 
   //? 회원탈퇴

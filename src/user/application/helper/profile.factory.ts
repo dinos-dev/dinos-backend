@@ -1,4 +1,4 @@
-import { CreateUserProfileDto } from 'src/user/presentation/dto/request/create-user-profile.dto';
+import { UserProfileCommand } from '../command/user-profile.command';
 
 const generateNickName = (): string => {
   const adjectives = ['happy', 'lazy', 'blue', 'fuzzy', 'quick'];
@@ -18,8 +18,9 @@ const generateHexColor = (): string => {
     .toUpperCase()}`;
 };
 
-export const buildDefaultProfile = (input?: Partial<CreateUserProfileDto>): CreateUserProfileDto => {
+export const buildDefaultProfile = (userId: number, input?: Partial<UserProfileCommand>): UserProfileCommand => {
   return {
+    userId,
     nickName: input?.nickName ?? generateNickName(),
     comment: input?.comment ?? '소개를 작성해주세요',
     headerId: input?.headerId ?? generateRandomInt(1, 5),

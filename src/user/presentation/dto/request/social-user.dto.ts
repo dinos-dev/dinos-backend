@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { Provider } from 'src/auth/domain/constant/provider.enum';
+import { Provider } from 'src/user/domain/const/provider.enum';
 
 export class SocialUserDto {
   @IsString()

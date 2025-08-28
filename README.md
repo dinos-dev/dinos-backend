@@ -58,6 +58,9 @@ $ pnpm install mongoose @nestjs/mongoose
 # test library 
 $ pnpm install jest-mock-extended
 $ pnpm install --save-dev jest-mock-extended 
+
+# cls module 
+$ pnpm install nestjs-cls @nestjs-cls @nestjs-cls/transactional @nestjs-cls/transactional-adapter-prisma
 ```
 
 </br>

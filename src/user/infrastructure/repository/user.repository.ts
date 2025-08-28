@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { SocialUserDto } from 'src/user/presentation/dto/request/social-user.dto';
-import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
 import { hashPassword } from 'src/common/helper/password.util';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { Prisma, User } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
+import { UserMapper } from '../mapper/user.mapper';
 
 @Injectable()
 export class UserRepository extends PrismaRepository<User> implements IUserRepository {
@@ -40,26 +40,27 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @returns user
    */
   async findOrCreateSocialUser(
-    dto: SocialUserDto,
+    entity: UserEntity,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ user: User; isNew: boolean }> {
+  ): Promise<{ user: UserEntity; isNew: boolean }> {
     const client = tx ?? this.prisma;
+
     const user = await client.user.findUnique({
-      where: { email: dto.email },
+      where: { email: entity.email },
     });
 
-    if (user) return { user, isNew: false };
+    if (user) return { user: UserMapper.toDomain(user), isNew: false };
 
     const newUser = await client.user.create({
       data: {
-        email: dto.email,
-        name: dto.name,
-        provider: dto.provider,
-        providerId: dto.providerId,
+        email: entity.email,
+        name: entity.name,
+        provider: entity.provider,
+        providerId: entity.providerId,
       },
     });
 
-    return { user: newUser, isNew: true };
+    return { user: UserMapper.toDomain(newUser), isNew: true };
   }
 
   /**
@@ -67,11 +68,13 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param userId
    * @returns User
    */
-  async findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null> {
-    return this.prisma.user.findUnique({
+  async findAllRefToken(userId: number): Promise<UserEntity | null> {
+    const userByToken = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { tokens: true },
     });
+
+    return UserMapper.toDomain(userByToken);
   }
 
   /**
@@ -96,26 +99,39 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @returns
    */
   async findOrCreateLocalUser(
-    dto: CreateUserDto,
+    entity: UserEntity,
     tx?: Prisma.TransactionClient,
-  ): Promise<{ user: User; isNew: boolean }> {
+  ): Promise<{ user: UserEntity; isNew: boolean }> {
     const client = tx ?? this.prisma;
     const user = await client.user.findUnique({
       where: {
-        email: dto.email,
+        email: entity.email,
       },
     });
-    if (user) return { user, isNew: false };
+    if (user) return { user: UserMapper.toDomain(user), isNew: false };
 
     const newUser = await client.user.create({
       data: {
-        email: dto.email,
-        name: dto.name,
-        password: hashPassword(dto.password),
+        email: entity.email,
+        name: entity.name,
+        password: hashPassword(entity.password),
       },
     });
 
-    return { user: newUser, isNew: true };
+    return { user: UserMapper.toDomain(newUser), isNew: true };
+  }
+
+  /**
+   * findByEmail
+   * @param email
+   * @param tx
+   */
+  async findByEmail(email: string, tx: Prisma.TransactionClient): Promise<UserEntity | null> {
+    const client = tx ?? this.prisma;
+    const user = await client.user.findUnique({ where: { email } });
+
+    if (!user) return null;
+    return UserMapper.toDomain(user);
   }
 
   /**
@@ -126,5 +142,30 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    */
   async softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User> {
     return await tx.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+  }
+
+  /**
+   * findByUserId
+   * @param id
+   * @returns UserEntity | null
+   */
+  async findByUserId(id: number): Promise<UserEntity | null> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user) return null;
+    return UserMapper.toDomain(user);
+  }
+
+  /**
+   * user id based delete
+   * @param id
+   * @param tx
+   * @returns deleted userId
+   */
+  async deleteByUser(id: number, tx?: Prisma.TransactionClient): Promise<number> {
+    const client = tx ?? this.prisma;
+    const user = await client.user.delete({ where: { id } });
+
+    return user.id;
   }
 }

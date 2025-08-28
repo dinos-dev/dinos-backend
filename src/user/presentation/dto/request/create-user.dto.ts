@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsOptional, IsString, Matches } from 'class-validator';
+import { LocalUserCommand } from 'src/auth/application/command/local-user.command';
 import { PasswordRegex } from 'src/common/helper/password.util';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 
@@ -33,4 +34,8 @@ export class CreateUserDto {
     required: true,
   })
   password: string;
+
+  toCommand(): LocalUserCommand {
+    return new LocalUserCommand(this.email, this.name, this.password);
+  }
 }

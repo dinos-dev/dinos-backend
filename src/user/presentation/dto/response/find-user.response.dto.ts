@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
-import { Provider } from 'src/auth/domain/constant/provider.enum';
+import { Provider } from 'src/user/domain/const/provider.enum';
 
 export class FindOneUserResponseDto {
   @Expose()

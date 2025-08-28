@@ -5,8 +5,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-custom';
 import { firstValueFrom } from 'rxjs';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
-import { Provider } from '../../domain/constant/provider.enum';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
+import { Provider } from 'src/user/domain/const/provider.enum';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
