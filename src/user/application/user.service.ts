@@ -10,12 +10,12 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { HttpUserErrorConstants } from './helper/http-error-object';
 
 import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { ITokenRepository } from '../../auth/domain/repository/token.repository.interface';
 import { UserProfileCommand } from './command/user-profile.command';
 import { ProfileEntity } from '../domain/entities/user-profile.entity';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,6 @@ export class UserService {
     private readonly profileRepository: IProfileRepository,
     @Inject(TOKEN_REPOSITORY)
     private readonly tokenRepository: ITokenRepository,
-    private readonly prisma: PrismaService,
   ) {}
 
   /**
@@ -80,13 +79,12 @@ export class UserService {
    * @param userId
    * @returns
    */
+  @Transactional()
   async withdrawUser(userId: number): Promise<void> {
     try {
-      await this.prisma.$transaction(async (tx) => {
-        await this.userRepository.deleteByUser(userId, tx);
-        await this.tokenRepository.deleteManyByUserId(userId, tx);
-        await this.profileRepository.deleteManyByUserId(userId, tx);
-      });
+      await this.userRepository.deleteByUser(userId);
+      await this.tokenRepository.deleteManyByUserId(userId);
+      await this.profileRepository.deleteManyByUserId(userId);
     } catch (err) {
       console.error('Transaction error:', err);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);

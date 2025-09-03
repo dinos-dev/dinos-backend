@@ -16,7 +16,6 @@ import { DateUtils } from 'src/common/utils/date-util';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
 import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { SlackService } from 'src/infrastructure/slack/slack.service';
@@ -29,6 +28,7 @@ import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { TokenEntity } from '../domain/entities/token.entity';
 import { Provider } from 'src/user/domain/const/provider.enum';
 import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
+import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +39,6 @@ export class AuthService {
     private readonly tokenRepository: ITokenRepository,
     @Inject(PROFILE_REPOSITORY)
     private readonly profileRepository: IProfileRepository,
-    private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: WinstonLoggerService,
@@ -52,6 +51,7 @@ export class AuthService {
    * @param command SocialUserCommand
    * @returns Login Info
    */
+  @Transactional()
   async socialLogin(
     userAgent: string,
     command: SocialUserCommand,
@@ -59,46 +59,42 @@ export class AuthService {
     const agent = await detectPlatform(userAgent);
 
     try {
-      const result = await this.prisma.$transaction(async (tx) => {
-        // 1) 가입된 소셜 계정 및 자체 로그인 정보가 있는지 조회
-        const existingUser = await this.userRepository.findByEmail(command.email, tx);
+      // 1) 가입된 소셜 계정 및 자체 로그인 정보가 있는지 조회
+      const existingUser = await this.userRepository.findByEmail(command.email);
 
-        // 2) 가입된 정보가 있을 경우 핸들링
-        if (existingUser && existingUser.provider !== command.provider) {
-          this.throwProviderConflictError(existingUser.provider);
-        }
-        // 3) 유저 정보 Instance 생성
-        const userEntity = UserEntity.create(command);
+      // 2) 가입된 정보가 있을 경우 핸들링
+      if (existingUser && existingUser.provider !== command.provider) {
+        this.throwProviderConflictError(existingUser.provider);
+      }
+      // 3) 유저 정보 Instance 생성
+      const userEntity = UserEntity.create(command);
 
-        // 4) 유저 생성 or 조회
-        const { user, isNew } = await this.userRepository.findOrCreateSocialUser(userEntity, tx);
+      // 4) 유저 생성 or 조회
+      const { user, isNew } = await this.userRepository.findOrCreateSocialUser(userEntity);
 
-        // 5) 토큰 발급
-        const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+      // 5) 토큰 발급
+      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
 
-        // 6) 토큰 정보 추가 or 업데이트
-        await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt, tx);
+      // 6) 토큰 정보 추가 or 업데이트
+      await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
-        // 7) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
-        if (isNew) {
-          // slack webhook notification
-          this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
+      // 7) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
+      if (isNew) {
+        // slack webhook notification
+        this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
 
-          // create default profile
-          const defaultProfile = buildDefaultProfile(user.id);
+        // create default profile
+        const defaultProfile = buildDefaultProfile(user.id);
 
-          // create profile instance
-          const profileEntity = ProfileEntity.create(defaultProfile);
+        // create profile instance
+        const profileEntity = ProfileEntity.create(defaultProfile);
 
-          await this.profileRepository.createProfile(profileEntity, tx);
-        }
+        await this.profileRepository.createProfile(profileEntity);
+      }
 
-        this.logger.log(`[소셜] ${command.email} 유저가 로그인 하였습니다 🎉`);
+      this.logger.log(`[소셜] ${command.email} 유저가 로그인 하였습니다 🎉`);
 
-        return { accessToken, refreshToken };
-      });
-
-      return result;
+      return { accessToken, refreshToken };
     } catch (err) {
       if (err instanceof ConflictException) {
         throw err;
@@ -112,6 +108,7 @@ export class AuthService {
    * @param command LocalUserCommand
    * @returns Login Info
    */
+  @Transactional()
   async localLogin(
     userAgent: string,
     command: LocalUserCommand,
@@ -119,46 +116,42 @@ export class AuthService {
     const agent = await detectPlatform(userAgent);
 
     try {
-      const result = await this.prisma.$transaction(async (tx) => {
-        // 1) 가입된 이메일 체크
-        const existingUser = await this.userRepository.findByEmail(command.email, tx);
+      // 1) 가입된 이메일 체크
+      const existingUser = await this.userRepository.findByEmail(command.email);
 
-        // 2) 가입된 정보가 있을 경우 핸들링
-        if (existingUser && existingUser.provider !== Provider.LOCAL) {
-          this.throwProviderConflictError(existingUser.provider);
-        }
+      // 2) 가입된 정보가 있을 경우 핸들링
+      if (existingUser && existingUser.provider !== Provider.LOCAL) {
+        this.throwProviderConflictError(existingUser.provider);
+      }
 
-        const userEntity = UserEntity.create(command);
+      const userEntity = UserEntity.create(command);
 
-        // 3) 유저 생성 or 조회
-        const { user, isNew } = await this.userRepository.findOrCreateLocalUser(userEntity, tx);
+      // 3) 유저 생성 or 조회
+      const { user, isNew } = await this.userRepository.findOrCreateLocalUser(userEntity);
 
-        // 4) 토큰 발급
-        const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
+      // 4) 토큰 발급
+      const { accessToken, refreshToken, expiresAt } = await this.generatedTokens(user);
 
-        // 5) 토큰 정보 추가 or 업데이트
-        await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt, tx);
+      // 5) 토큰 정보 추가 or 업데이트
+      await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
-        // 6) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
-        if (isNew) {
-          // slack webhook notification
-          this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
+      // 6) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
+      if (isNew) {
+        // slack webhook notification
+        this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
 
-          // create default profile
+        // create default profile
 
-          const defaultProfile = buildDefaultProfile(user.id);
+        const defaultProfile = buildDefaultProfile(user.id);
 
-          // create profile instance
-          const profileEntity = ProfileEntity.create(defaultProfile);
-          await this.profileRepository.createProfile(profileEntity, tx);
-        }
+        // create profile instance
+        const profileEntity = ProfileEntity.create(defaultProfile);
+        await this.profileRepository.createProfile(profileEntity);
+      }
 
-        this.logger.log(`[로컬] ${command.email} 유저가 로그인 하였습니다 🎉`);
+      this.logger.log(`[로컬] ${command.email} 유저가 로그인 하였습니다 🎉`);
 
-        return { accessToken, refreshToken };
-      });
-
-      return result;
+      return { accessToken, refreshToken };
     } catch (err) {
       console.error('error->', err);
       if (err instanceof ConflictException) {

@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
-import { Prisma, Profile } from '@prisma/client';
+import { Profile } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
 import { ProfileMapper } from '../mapper/user-profile.mapper';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Injectable()
 export class ProfileRepository extends PrismaRepository<Profile> implements IProfileRepository {
-  constructor(private readonly prisma: PrismaService) {
-    super(prisma, (client) => client.profile);
+  constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
+    super(txHost, (client) => client.profile);
   }
 
   /**
@@ -18,9 +19,8 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @param userId
    * @returns Profile
    */
-  async createProfile(entity: ProfileEntity, tx?: Prisma.TransactionClient): Promise<ProfileEntity> {
-    const client = tx ?? this.prisma;
-    const profile = await client.profile.create({
+  async createProfile(entity: ProfileEntity): Promise<ProfileEntity> {
+    const profile = await this.model.create({
       data: {
         nickName: entity.nickName,
         comment: entity.comment,
@@ -43,7 +43,7 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @returns Profile
    */
   async updateById(id: number, entity: ProfileEntity): Promise<ProfileEntity> {
-    const profile = await this.prisma.profile.update({
+    const profile = await this.model.update({
       where: { id },
       data: {
         nickName: entity.nickName,
@@ -64,16 +64,16 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
    * @returns Profile | null
    */
   async findByUserId(userId: number): Promise<ProfileEntity | null> {
-    const profile = await this.prisma.profile.findUnique({ where: { userId } });
+    const profile = await this.model.findUnique({ where: { userId } });
     return profile ? ProfileMapper.toDomain(profile) : null;
   }
 
   /**
    * delete many profile by user id
    * @param userId
-   * @param tx
    */
-  async deleteManyByUserId(userId: number, tx: Prisma.TransactionClient): Promise<Prisma.BatchPayload> {
-    return await tx.profile.deleteMany({ where: { userId } });
+  async deleteManyByUserId(userId: number): Promise<number> {
+    const deleteProfile = await this.model.deleteMany({ where: { userId } });
+    return deleteProfile.count;
   }
 }
