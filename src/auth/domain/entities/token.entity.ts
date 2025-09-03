@@ -1,46 +1,23 @@
-import { BaseModel } from 'src/common/entities/base.entity';
-import { Column, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PlatFormEnumType } from '../constant/platform.const';
-import { User } from 'src/user/domain/entities/user.entity';
 
-@Entity()
-export class Token extends BaseModel {
-  @PrimaryGeneratedColumn({
-    comment: 'PK',
-    type: 'integer',
-    unsigned: true,
-  })
-  id: number;
+export class TokenEntity {
+  constructor(
+    public readonly id: number | null,
+    public readonly userId: number,
+    public refToken: string,
+    public expiresAt: Date,
+    public platForm: PlatFormEnumType,
+    public readonly createdAt: Date | null,
+    public readonly updatedAt: Date | null,
+    public version: number | null,
+  ) {}
 
-  @Column({
-    type: 'integer',
-    unsigned: true,
-    comment: '유저 id',
-  })
-  userId: number;
-
-  // ------------------------------------------------------------------------ //
-
-  @Index()
-  @Column({
-    type: 'varchar',
-  })
-  refToken: string;
-
-  @Column({
-    type: 'timestamp',
-  })
-  expiresAt: Date;
-
-  @Column({
-    type: 'enum',
-    enum: Object.values(PlatFormEnumType),
-  })
-  platForm: PlatFormEnumType;
-
-  // M-to-1------------------------------------------------------------------ //
-
-  @ManyToOne(() => User, (user) => user.tokens, { onDelete: 'CASCADE' })
-  @JoinColumn()
-  user: User;
+  static create(params: {
+    userId: number;
+    refToken: string;
+    expiresAt: Date;
+    platForm: PlatFormEnumType;
+  }): TokenEntity {
+    return new TokenEntity(null, params.userId, params.refToken, params.expiresAt, params.platForm, null, null, null);
+  }
 }

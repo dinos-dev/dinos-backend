@@ -1,13 +1,13 @@
-import { PlatFormEnumType, Prisma, Token, User } from '@prisma/client';
-import { IRepository } from 'src/infrastructure/database/prisma/repository.interface';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
+import { TokenEntity } from '../entities/token.entity';
+import { PlatFormEnumType } from '../constant/platform.const';
 
-export interface ITokenRepository extends IRepository<Token> {
+export interface ITokenRepository {
   updateOrCreateRefToken(
-    user: User,
+    user: UserEntity,
     refToken: string,
     platForm: PlatFormEnumType,
     expiresAt: Date,
-    tx?: Prisma.TransactionClient,
-  ): Promise<Token>;
-  deleteManyByUserId(userId: number, tx?: Prisma.TransactionClient): Promise<Prisma.BatchPayload>;
+  ): Promise<TokenEntity>;
+  deleteManyByUserId(userId: number): Promise<number>;
 }

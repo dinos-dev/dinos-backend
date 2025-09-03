@@ -1,15 +1,13 @@
-import { Prisma, User } from '@prisma/client';
-import { SocialUserDto } from '../../presentation/dto/request/social-user.dto';
-import { CreateUserDto } from '../../presentation/dto/request/create-user.dto';
-import { IRepository } from 'src/infrastructure/database/prisma/repository.interface';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
 
-export interface IUserRepository extends IRepository<User> {
+export interface IUserRepository {
   existByEmail(email: string): Promise<boolean>;
   existByEmailAndAuthType(email: string): Promise<boolean>;
-  findOrCreateSocialUser(dto: SocialUserDto, tx?: Prisma.TransactionClient): Promise<{ user: User; isNew: boolean }>;
-  findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null>;
-  findOrCreateLocalUser(dto: CreateUserDto, tx?: Prisma.TransactionClient): Promise<{ user: User; isNew: boolean }>;
-  softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User>;
-  findByUnique<K extends keyof User>(key: K, value: User[K], tx?: Prisma.TransactionClient): Promise<User | null>;
-  deleteById(id: number, tx?: Prisma.TransactionClient): Promise<User>;
+  findOrCreateSocialUser(user: UserEntity): Promise<{ user: UserEntity; isNew: boolean }>;
+  findOrCreateLocalUser(dto: UserEntity): Promise<{ user: UserEntity; isNew: boolean }>;
+  findAllRefToken(userId: number): Promise<UserEntity | null>;
+  softDeleteUserInTransaction(userId: number): Promise<UserEntity>;
+  findByEmail(email: string): Promise<UserEntity | null>;
+  findByUserId(id: number): Promise<UserEntity | null>;
+  deleteByUser(id: number): Promise<number>;
 }

@@ -1,42 +1,19 @@
-import { DataSource, QueryRunner } from 'typeorm';
+// import { SetMetadata } from '@nestjs/common';
+import { TransactionalPrismaService } from 'src/infrastructure/database/prisma/transactional-prisma.service';
 
-// 제네릭 타입 정의
-type Constructor<T> = new (...args: any[]) => T; // 클래스 생성자 타입
-type MethodResult = Promise<any>; // 메서드 반환 타입
+export const TRANSACTIONAL_KEY = Symbol('TRANSACTIONAL');
 
 /**
- * @Transactional 데코레이터
- * @param T - dataSource 속성을 가진 클래스
- * @param A - 메서드 인수 배열
- * @returns 데코레이터 함수
- *
- * Service Layer에서 트랜잭션을 관리하기 위한 데코레이터
- * 메서드가 호출될 때마다 새로운 QueryRunner를 생성 및 시작
+ * 메서드를 트랜잭션으로 래핑하는 데코레이터
+ * 기존 tx 파라미터 방식을 완전히 대체
  */
-export function Transactional<T extends { dataSource: DataSource }, A extends any[]>() {
-  return function (
-    target: Constructor<T>, // 클래스 생성자
-    propertyName: string,
-    descriptor: TypedPropertyDescriptor<(...args: [QueryRunner, ...A]) => MethodResult>, // 메서드 디스크립터
-  ) {
-    const originalMethod = descriptor.value!; // 메서드 존재 보장
-
-    descriptor.value = async function (this: T, ...args: [QueryRunner, ...A]): MethodResult {
-      const { dataSource } = this;
-      const queryRunner = dataSource.createQueryRunner();
-      await queryRunner.connect();
-      await queryRunner.startTransaction();
-
-      try {
-        const result = await originalMethod.apply(this, [queryRunner, ...args.slice(1)]);
-        await queryRunner.commitTransaction();
-        return result;
-      } catch (error) {
-        await queryRunner.rollbackTransaction();
-        throw error;
-      } finally {
-        await queryRunner.release();
-      }
+export const Transactional = (): MethodDecorator => {
+  return (target, propertyKey, descriptor: PropertyDescriptor) => {
+    const original = descriptor.value;
+    descriptor.value = async function (...args: any[]) {
+      const txService: TransactionalPrismaService = this['transactionalPrismaService'];
+      return txService.runInTransaction(() => original.apply(this, args));
     };
   };
-}
+  // return SetMetadata(TRANSACTIONAL_KEY, true);
+};

@@ -15,6 +15,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/presentation/guard/jwt-auth.guard';
 import { FeedModule } from './feed/feed.module';
 import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
+import { ClsModule } from './infrastructure/cls/cls.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose
     CommonModule,
     SlackModule,
     FeedModule,
+    ClsModule,
   ],
   providers: [
     {

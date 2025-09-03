@@ -1,12 +1,25 @@
 import { Global, Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
-import { CommonService } from './common.service';
 import { LoggerContextMiddleware } from './middleware/logger-context.middleware';
-import { CommonController } from './common.controller';
+import { ClsModule } from 'nestjs-cls';
+import { PrismaModule } from 'src/infrastructure/database/prisma/prisma.module';
 
 @Global()
 @Module({
-  providers: [CommonService, Logger],
-  controllers: [CommonController],
+  imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: { mount: true },
+    }),
+    PrismaModule,
+  ],
+  providers: [
+    Logger,
+    // {
+    //   provide: 'TransactionalAdapter',
+    //   useClass: TransactionalAdapterPrisma,
+    // },
+  ],
+  exports: [ClsModule],
 })
 export class CommonModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {

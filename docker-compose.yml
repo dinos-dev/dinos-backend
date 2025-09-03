@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   # nestjs:
   #   build: .
@@ -9,15 +10,25 @@ services:
   #     - ./.env.${NODE_ENV}  # NODE_ENV에 따라 동적으로 설정
   #   depends_on:
   #     - postgres  
-      
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db  # MongoDB 데이터 지속성 보장
+
   postgres:
-    image: postgres:16  
+    image: postgres:16
     restart: always
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data  
+      - ./postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432" 
+      - "5432:5432"
     environment:
-      POSTGRES_DB: dev  
+      POSTGRES_DB: dev
       POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev 
+      POSTGRES_PASSWORD: dev
+
+volumes:
+  mongo-data:
+  postgres-data:

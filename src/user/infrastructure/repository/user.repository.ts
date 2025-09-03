@@ -1,26 +1,27 @@
 import { Injectable } from '@nestjs/common';
 
-import { SocialUserDto } from 'src/user/presentation/dto/request/social-user.dto';
-import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
 import { hashPassword } from 'src/common/helper/password.util';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
-import { Prisma, User } from '@prisma/client';
+import { User } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
+import { UserMapper } from '../mapper/user.mapper';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Injectable()
 export class UserRepository extends PrismaRepository<User> implements IUserRepository {
-  constructor(private readonly prisma: PrismaService) {
-    super(prisma, (client) => client.user);
+  constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
+    // TransactionHost와 모델 접근 함수를 부모 클래스에 전달
+    super(txHost, (client) => client.user);
   }
-
   /**
    * 로컬 가입시 이메일 검증
    * @param email
    * @returns boolean
    */
   async existByEmail(email: string): Promise<boolean> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.model.findUnique({ where: { email } });
     return !!user;
   }
 
@@ -39,27 +40,23 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param dto SocialUserDto
    * @returns user
    */
-  async findOrCreateSocialUser(
-    dto: SocialUserDto,
-    tx?: Prisma.TransactionClient,
-  ): Promise<{ user: User; isNew: boolean }> {
-    const client = tx ?? this.prisma;
-    const user = await client.user.findUnique({
-      where: { email: dto.email },
+  async findOrCreateSocialUser(entity: UserEntity): Promise<{ user: UserEntity; isNew: boolean }> {
+    const user = await this.model.findUnique({
+      where: { email: entity.email },
     });
 
-    if (user) return { user, isNew: false };
+    if (user) return { user: UserMapper.toDomain(user), isNew: false };
 
-    const newUser = await client.user.create({
+    const newUser = await this.model.create({
       data: {
-        email: dto.email,
-        name: dto.name,
-        provider: dto.provider,
-        providerId: dto.providerId,
+        email: entity.email,
+        name: entity.name,
+        provider: entity.provider,
+        providerId: entity.providerId,
       },
     });
 
-    return { user: newUser, isNew: true };
+    return { user: UserMapper.toDomain(newUser), isNew: true };
   }
 
   /**
@@ -67,11 +64,13 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param userId
    * @returns User
    */
-  async findAllRefToken(userId: number): Promise<Prisma.UserGetPayload<{ include: { tokens: true } }> | null> {
-    return this.prisma.user.findUnique({
+  async findAllRefToken(userId: number): Promise<UserEntity | null> {
+    const userByToken = await this.model.findUnique({
       where: { id: userId },
       include: { tokens: true },
     });
+
+    return UserMapper.toDomain(userByToken);
   }
 
   /**
@@ -80,7 +79,7 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @returns User & { profile: Profile }
    */
   async findUserWithProfileById(userId: number): Promise<User> {
-    return await this.prisma.user.findUnique({
+    return await this.model.findUnique({
       where: {
         id: userId,
       },
@@ -95,36 +94,66 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param dto CreateUserDto
    * @returns
    */
-  async findOrCreateLocalUser(
-    dto: CreateUserDto,
-    tx?: Prisma.TransactionClient,
-  ): Promise<{ user: User; isNew: boolean }> {
-    const client = tx ?? this.prisma;
-    const user = await client.user.findUnique({
+  async findOrCreateLocalUser(entity: UserEntity): Promise<{ user: UserEntity; isNew: boolean }> {
+    const user = await this.model.findUnique({
       where: {
-        email: dto.email,
+        email: entity.email,
       },
     });
-    if (user) return { user, isNew: false };
+    if (user) return { user: UserMapper.toDomain(user), isNew: false };
 
-    const newUser = await client.user.create({
+    const newUser = await this.model.create({
       data: {
-        email: dto.email,
-        name: dto.name,
-        password: hashPassword(dto.password),
+        email: entity.email,
+        name: entity.name,
+        password: hashPassword(entity.password),
       },
     });
 
-    return { user: newUser, isNew: true };
+    return { user: UserMapper.toDomain(newUser), isNew: true };
+  }
+
+  /**
+   * findByEmail
+   * @param email
+   */
+  async findByEmail(email: string): Promise<UserEntity | null> {
+    const user = await this.model.findUnique({ where: { email } });
+
+    if (!user) return null;
+    return UserMapper.toDomain(user);
   }
 
   /**
    * withdraw user by soft delete using transaction
    * @param userId
-   * @param tx
    * @returns
    */
-  async softDeleteUserInTransaction(userId: number, tx: Prisma.TransactionClient): Promise<User> {
-    return await tx.user.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+  async softDeleteUserInTransaction(userId: number): Promise<UserEntity> {
+    const user = await this.model.update({ where: { id: userId }, data: { deletedAt: new Date() } });
+    return UserMapper.toDomain(user);
+  }
+
+  /**
+   * findByUserId
+   * @param id
+   * @returns UserEntity | null
+   */
+  async findByUserId(id: number): Promise<UserEntity | null> {
+    const user = await this.model.findUnique({ where: { id } });
+
+    if (!user) return null;
+    return UserMapper.toDomain(user);
+  }
+
+  /**
+   * user id based delete
+   * @param id
+   * @returns deleted userId
+   */
+  async deleteByUser(id: number): Promise<number> {
+    const user = await this.model.delete({ where: { id } });
+
+    return user.id;
   }
 }

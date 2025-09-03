@@ -9,7 +9,7 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
-import { Provider } from '../../domain/constant/provider.enum';
+import { Provider } from 'src/user/domain/const/provider.enum';
 
 interface AppleJwtPayload {
   sub: string;

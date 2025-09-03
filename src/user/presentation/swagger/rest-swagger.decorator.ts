@@ -96,6 +96,7 @@ export const UpdateUserProfileDocs = () => {
       summary: '유저 프로필 수정',
       description: `
         - 유저 프로필을 수정한다.
+        - 사용자의 Header의 Bearer AccessToken을 기반으로 검증을하고, 사용자가 요청을 보낸 parameter id 값과 대조하여, 값이 불일치할 경우 403 에러를 반환한다.
         - 유저 프로필 수정시, nickName은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
         `,
     }),
@@ -117,6 +118,10 @@ export const UpdateUserProfileDocs = () => {
       {
         status: StatusCodes.NOT_FOUND,
         errorFormatList: [HttpUserErrorConstants.NOT_FOUND_PROFILE],
+      },
+      {
+        status: StatusCodes.FORBIDDEN,
+        errorFormatList: [HttpUserErrorConstants.FORBIDDEN_USER_PROFILE],
       },
     ]),
   );
