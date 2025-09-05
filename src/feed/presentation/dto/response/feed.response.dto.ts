@@ -14,6 +14,10 @@ export class MenuDto {
 
 export class SectionDto {
   @Expose()
+  @ApiProperty({ description: '가게의 참조 Id', example: '68b952d78f23d69589331a66', type: String })
+  restaurantId: string;
+
+  @Expose()
   @ApiProperty({ description: '가게 이름', example: '한남동 맛집1', type: String })
   storeName: string;
 
@@ -51,6 +55,14 @@ export class SectionDto {
     example: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'],
   })
   imageUrls: string[];
+
+  @Expose()
+  @ApiProperty({ description: '가게의 위도', example: 37.559503986, type: Number })
+  latitude: number;
+
+  @Expose()
+  @ApiProperty({ description: '가게의 경도', example: 1127.005068637, type: Number })
+  longitude: number;
 }
 
 export class FeedResponseDto {
@@ -91,6 +103,7 @@ export class FeedResponseDto {
     dto.character = feed.getCharacter();
     dto.title = feed.getTitle();
     dto.sections = feed.getSections().map((section) => ({
+      restaurantId: section.restaurantId,
       storeName: section.storeName,
       description: section.description,
       summary: section.summary,
@@ -101,6 +114,8 @@ export class FeedResponseDto {
         price: m.price,
       })),
       imageUrls: section.imageUrls,
+      latitude: section.latitude,
+      longitude: section.longitude,
     }));
     return dto;
   }
