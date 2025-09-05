@@ -12,6 +12,7 @@ const MenuSchema = new Schema(
 // Section 서브스키마 (section1~section5 공통 구조)
 const SectionSchema = new Schema(
   {
+    restaurantId: { type: String, required: true },
     storeName: { type: String, required: true },
     description: { type: String, required: true },
     summary: { type: String, required: true },
@@ -19,6 +20,8 @@ const SectionSchema = new Schema(
     businessHours: { type: String, required: true },
     menus: { type: [MenuSchema], default: [] },
     imageUrls: { type: [String], default: [] },
+    latitude: { type: Number, required: true },
+    longitude: { type: Number, required: true },
   },
   { _id: false },
 );
@@ -38,6 +41,7 @@ export const FeedSchema = new Schema(
 );
 
 export interface SectionDocument {
+  restaurantId: string;
   storeName: string;
   description: string;
   summary: string;
@@ -45,6 +49,8 @@ export interface SectionDocument {
   businessHours: string;
   menus: { name: string; price: string }[];
   imageUrls: string[];
+  latitude: number;
+  longitude: number;
 }
 
 export interface FeedDocument extends Document {
