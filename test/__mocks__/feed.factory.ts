@@ -29,6 +29,7 @@ export class FeedFactory {
 
   static createSection(overrides: Partial<SectionProps> = {}): Section {
     const defaultProps: SectionProps = {
+      restaurantId: '68b952d78f23d69589331a66',
       storeName: 'Coffee Shop',
       description: 'A cozy coffee shop',
       summary: '맛있는 다이노스 음식점',
@@ -36,6 +37,8 @@ export class FeedFactory {
       businessHours: '09:00~10:00',
       menus: [{ name: 'Latte', price: '5.00' }],
       imageUrls: ['http://example.com/image.jpg'],
+      latitude: 37.123456,
+      longitude: 127.123456,
     };
 
     return Section.create({ ...defaultProps, ...overrides });
