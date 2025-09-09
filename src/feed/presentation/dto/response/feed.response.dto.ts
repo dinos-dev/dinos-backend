@@ -83,6 +83,10 @@ export class FeedResponseDto {
   character: string;
 
   @Expose()
+  @ApiProperty({ description: '피드 소개글', example: '한남동의 숨겨진 맛집들을 소개합니다.', type: String })
+  intro: string;
+
+  @Expose()
   @ApiProperty({ description: '피드 제목', example: '맛있는 음식점 추천', type: String })
   title: string;
 
@@ -101,6 +105,7 @@ export class FeedResponseDto {
     dto.inputKeyword = feed.getInputKeyword();
     dto.persona = feed.getPersona();
     dto.character = feed.getCharacter();
+    dto.intro = feed.getIntro();
     dto.title = feed.getTitle();
     dto.sections = feed.getSections().map((section) => ({
       restaurantId: section.restaurantId,
