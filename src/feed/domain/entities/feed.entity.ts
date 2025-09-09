@@ -11,6 +11,7 @@ export class Feed {
     private readonly character: string,
     private readonly title: string,
     private readonly intro: string,
+    private readonly thumbnailUrl: string,
     private readonly sections: Section[],
     private readonly createdAt: Date,
   ) {}
@@ -37,6 +38,10 @@ export class Feed {
 
   getIntro(): string {
     return this.intro;
+  }
+
+  getThumbnailUrl(): string {
+    return this.thumbnailUrl;
   }
 
   getSections(): Section[] {

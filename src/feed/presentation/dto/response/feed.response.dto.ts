@@ -92,6 +92,14 @@ export class FeedResponseDto {
 
   @Expose()
   @ApiProperty({
+    description: '상세 피드 썸네일 이미지 URL',
+    example: 'https://example.com/thumbnail.jpg',
+    type: String,
+  })
+  thumbnailUrl: string;
+
+  @Expose()
+  @ApiProperty({
     description: '각 주제별로 생성된 음식점 정보 및 AI 피드',
     type: [SectionDto],
   })
@@ -107,6 +115,7 @@ export class FeedResponseDto {
     dto.character = feed.getCharacter();
     dto.intro = feed.getIntro();
     dto.title = feed.getTitle();
+    dto.thumbnailUrl = feed.getThumbnailUrl();
     dto.sections = feed.getSections().map((section) => ({
       restaurantId: section.restaurantId,
       storeName: section.storeName,

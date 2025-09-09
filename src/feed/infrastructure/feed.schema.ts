@@ -35,6 +35,7 @@ export const FeedSchema = new Schema(
     title: { type: String, required: true },
     intro: { type: String, required: true },
     sections: { type: [SectionSchema], required: true },
+    thumbnailUrl: { type: String, required: true },
     createdAt: { type: Date, required: true, default: Date.now },
   },
   { collection: 'feeds', timestamps: false },
@@ -59,6 +60,7 @@ export interface FeedDocument extends Document {
   character: string;
   title: string;
   intro: string;
+  thumbnailUrl: string;
   sections: SectionDocument[];
   createdAt: Date;
 }

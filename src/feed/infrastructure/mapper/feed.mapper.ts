@@ -14,6 +14,7 @@ export class FeedMapper {
       doc.character,
       doc.title,
       doc.intro,
+      doc.thumbnailUrl,
       sections,
       doc.createdAt,
     );

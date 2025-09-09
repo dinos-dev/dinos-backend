@@ -21,6 +21,7 @@ export class FeedFactory {
       props.persona,
       props.character,
       props.title,
+      props.thumbnailUrl,
       props.intro,
       props.sections,
       props.createdAt,
@@ -66,6 +67,7 @@ interface FeedProps {
   character: string;
   title: string;
   intro: string;
+  thumbnailUrl?: string;
   sections: Section[];
   createdAt: Date;
 }
