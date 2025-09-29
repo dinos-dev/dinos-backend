@@ -14,7 +14,7 @@ import { IUserRepository } from 'src/user/domain/repository/user.repository.inte
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { ITokenRepository } from '../../auth/domain/repository/token.repository.interface';
 import { UserProfileCommand } from './command/user-profile.command';
-import { ProfileEntity } from '../domain/entities/user-profile.entity';
+import { ProfileEntity } from '../domain/entities/profile.entity';
 import { Transactional } from '@nestjs-cls/transactional';
 
 @Injectable()

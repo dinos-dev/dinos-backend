@@ -15,7 +15,6 @@ export class UserEntity {
     public deletedAt: Date | null,
     public version: number | null,
     public readonly tokens: TokenEntity[],
-    public profileId?: number | null,
   ) {}
 
   static create(params: {

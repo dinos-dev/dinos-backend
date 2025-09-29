@@ -1,5 +1,5 @@
 import { Profile as ProfilePrisma } from '@prisma/client';
-import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
+import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 
 export class ProfileMapper {
   static toDomain(prismaProfile: ProfilePrisma): ProfileEntity {

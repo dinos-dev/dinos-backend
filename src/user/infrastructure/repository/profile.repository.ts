@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { Profile } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
-import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
-import { ProfileMapper } from '../mapper/user-profile.mapper';
+import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
+import { ProfileMapper } from '../mapper/profile.mapper';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 

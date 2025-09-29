@@ -2,7 +2,7 @@ import { User as PrismaUser, Token as PrismaToken, Provider as PrismaProvider } 
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { TokenEntity } from 'src/auth/domain/entities/token.entity';
 import { Provider } from 'src/user/domain/const/provider.enum';
-import { PlatFormEnumType } from 'src/auth/domain/constant/platform.const';
+import { PlatformEnumType } from 'src/auth/domain/constant/platform.const';
 
 export class UserMapper {
   static toDomain(prismaUser: PrismaUser & { tokens?: PrismaToken[] }): UserEntity {
@@ -31,7 +31,6 @@ export class UserMapper {
       isActive: user.isActive,
       provider: user.provider as unknown as PrismaProvider,
       providerId: user.providerId,
-      profileId: null,
       createdAt: user.createdAt!,
       updatedAt: user.updatedAt!,
       deletedAt: user.deletedAt,
@@ -45,7 +44,7 @@ export class UserMapper {
       prismaToken.userId,
       prismaToken.refToken,
       prismaToken.expiresAt,
-      prismaToken.platForm as unknown as PlatFormEnumType,
+      prismaToken.platform as unknown as PlatformEnumType,
       prismaToken.createdAt,
       prismaToken.updatedAt,
       prismaToken.version,
