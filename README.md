@@ -61,6 +61,9 @@ $ pnpm install --save-dev jest-mock-extended
 
 # cls module 
 $ pnpm install nestjs-cls @nestjs-cls @nestjs-cls/transactional @nestjs-cls/transactional-adapter-prisma
+
+# crypto
+$ pnpm install crypto
 ```
 
 </br>
@@ -134,3 +137,17 @@ pnpm start:prod
 > See Swagger Docs 
 
 - swagger docs  -> [link](http://localhost/api-docs)
+
+
+</br>
+
+---
+
+### prisma setup
+
+```bash
+# 최초 세팅에서만 적용
+$ npx prisma init
+# 스키마가 변경되었을 때, migration 파일 생성 및 generate
+$ npx prisma migrate dev --name init
+```
