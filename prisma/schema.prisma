@@ -8,50 +8,145 @@ generator client {
 }
 
 
+// 유저 정보
 model User {
   id          Int          @id @default(autoincrement())
+
   email       String       @unique @db.VarChar(255)
   name        String?      @db.VarChar(45)
   password    String?      @db.VarChar(255)
-  isActive    Boolean      @default(true)
+  isActive    Boolean      @default(true) @map("is_active")
   provider    Provider     @default(LOCAL)
-  providerId  String?      @unique @db.VarChar(255)
-  profile     Profile?
-  profileId   Int?         @unique
-  tokens      Token[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
+  providerId  String?      @unique @db.VarChar(255) @map("provider_id")
+
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  deletedAt   DateTime?    @map("deleted_at")
   version     Int          @default(0)
+
+  //? 1:1 
+  profile     Profile?
+  inviteCode InviteCode? 
+  
+  //? 1:N
+  tokens      Token[]
+  sentFriendRequests     FriendRequest[] @relation("RequestSender")    
+  receivedFriendRequests FriendRequest[] @relation("RequestReceiver")  
+  friendshipsAsRequester Friendship[]    @relation("FriendshipRequester") 
+  friendshipsAsAddressee Friendship[]    @relation("FriendshipAddressee") 
+
+  @@map("users")
 }
 
+// 친구 요청 테이블
+model FriendRequest {
+  id           Int                    @id @default(autoincrement())
+  senderId     Int                    @map("sender_id")    // 요청을 보낸 사용자 ID
+  receiverId   Int                    @map("receiver_id")  // 요청을 받은 사용자 ID
+
+  status       FriendRequestStatus    @default(PENDING)
+  respondedAt  DateTime?              @map("responded_at") // 응답한 시간
+  expiresAt    DateTime?              @map("expires_at")   // 요청 만료 시간 (선택적)
+  
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+  version      Int                    @default(0)
+
+  //?? Relations
+  sender       User                   @relation("RequestSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver     User                   @relation("RequestReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  //? constraint: 같은 사용자 간에는 하나의 pending 요청만 존재
+  @@unique([senderId, receiverId], map: "unique_sender_receiver")
+  @@index([receiverId, status], map: "idx_receiver_status") 
+  @@index([senderId, status], map: "idx_sender_status")    
+
+  @@map("friend_requests")
+}
+
+// 친구 관계 테이블 (승인된 친구 관계)
+model Friendship {
+  id           Int      @id @default(autoincrement())
+  requesterId  Int      @map("requester_id")  // 친구 요청을 먼저 보낸 사용자
+  addresseeId  Int      @map("addressee_id")  // 친구 요청을 받은 사용자
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  version      Int      @default(0)
+
+  //? N:1
+  // 친구 요청을 먼저 보낸 사람
+  requester    User     @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  // 친구 요청을 받고 승인한 사람
+  addressee    User     @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  // 제약 조건: 중복 친구 관계 방지
+  @@unique([requesterId, addresseeId], map: "unique_requester_addressee")
+  @@index([requesterId], map: "idx_requester_id")
+  @@index([addresseeId], map: "idx_addressee_id")
+
+  @@map("friendships")
+}
+
+
+// 유저의 프로필 정보 
 model Profile {
   id          Int       @id @default(autoincrement())
-  userId      Int       @unique
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  nickName    String    @db.VarChar(20)
+  userId      Int       @unique @map("user_id")
+
+  nickName    String    @db.VarChar(20) @map("nick_name")
   comment     String?   @db.VarChar(50)
-  headerId    Int?
-  bodyId      Int?
-  headerColor String?   @db.VarChar(8)
-  bodyColor   String?   @db.VarChar(8)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  headerId    Int?      @map("header_id")
+  bodyId      Int?      @map("body_id")
+  headerColor String?   @db.VarChar(8) @map("header_color")
+  bodyColor   String?   @db.VarChar(8) @map("body_color")
+
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
   version     Int       @default(0)
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
 }
 
+
+// user의 auth 토큰 정보 
 model Token {
   id         Int           @id @default(autoincrement())
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId     Int
-  refToken   String        @db.VarChar(255)
-  expiresAt  DateTime
-  platForm   PlatFormEnumType
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
+  userId     Int           @map("user_id")
+
+  refToken   String        @db.VarChar(255) @map("ref_token")
+  expiresAt  DateTime      @map("expires_at")
+  platform   PlatformEnumType
+
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
   version    Int           @default(0)
 
+  //? N:1
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([refToken])
+
+  @@map("tokens")
+}
+
+// user의 친구 초대 코드
+model InviteCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique @map("user_id")
+
+  code      String   @unique @db.VarChar(11) 
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  //? 1:1
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("invite_codes")
+
 }
 
 enum Provider {
@@ -62,9 +157,24 @@ enum Provider {
   KAKAO
 }
 
-enum PlatFormEnumType {
+enum PlatformEnumType {
   WEB
   IOS
   ANDROID
   UNKNOWN
+}
+
+/* 친구 요청 상태 enum
+  @param PENDING 대기중
+  @param ACCEPTED 승인됨
+  @param REJECTED 거절됨
+  @param CANCELLED 취소됨 (보낸 사람이 취소)
+  @param EXPIRED 만료됨
+*/
+enum FriendRequestStatus {
+  PENDING   
+  ACCEPTED  
+  REJECTED  
+  CANCELLED 
+  EXPIRED   
 }
