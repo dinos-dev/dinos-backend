@@ -46,7 +46,7 @@ model FriendRequest {
 
   status       FriendRequestStatus    @default(PENDING)
   respondedAt  DateTime?              @map("responded_at") // 응답한 시간
-  expiresAt    DateTime?              @map("expires_at")   // 요청 만료 시간 (선택적)
+  expiresAt    DateTime?              @map("expires_at")   // 요청 만료 시간
   
   createdAt    DateTime               @default(now()) @map("created_at")
   updatedAt    DateTime               @updatedAt @map("updated_at")
@@ -79,6 +79,8 @@ model Friendship {
   requester    User     @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   // 친구 요청을 받고 승인한 사람
   addressee    User     @relation("FriendshipAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+  // 친구와 활동 기록 정보
+  activities   FriendshipActivity[]
 
   // 제약 조건: 중복 친구 관계 방지
   @@unique([requesterId, addresseeId], map: "unique_requester_addressee")
@@ -146,7 +148,30 @@ model InviteCode {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("invite_codes")
+}
 
+//? 친구 관계 활동 정보 (확장성을 고려하여 아래와 같이 설계)
+model FriendshipActivity {
+  id           Int          @id @default(autoincrement())
+  friendshipId Int          @map("friendship_id")
+  
+  activityType ActivityType @default(MEAL_TOGETHER) @map("activity_type")
+  activityDate DateTime     @default(now()) @map("activity_date")
+  
+  // 확장성 고려한 필드 ( 추후 추가 가능 )
+  location     String?      @db.VarChar(150)  // 장소
+  
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  version      Int          @default(0)
+
+  //? N:1
+  friendship   Friendship   @relation(fields: [friendshipId], references: [id], onDelete: Cascade)
+
+  @@index([friendshipId, activityType], map: "idx_friendship_activity_type")
+  @@index([activityDate], map: "idx_activity_date")
+
+  @@map("friendship_activities")
 }
 
 enum Provider {
@@ -177,4 +202,14 @@ enum FriendRequestStatus {
   REJECTED  
   CANCELLED 
   EXPIRED   
+}
+
+/**
+ * 친구와 활동 유형 ( 확장성을 고려하여 아래와 같이 ENUM으로 지정 )
+ * @param MEAL_TOGETHER ( 함께 식사 )
+ * @param OTHER ( 기타 )
+ */
+enum ActivityType {
+  MEAL_TOGETHER
+  
 }
