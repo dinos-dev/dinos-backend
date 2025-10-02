@@ -10,7 +10,7 @@ import {
   WithdrawUserDocs,
 } from './swagger/rest-swagger.decorator';
 import { HttpResponse } from 'src/common/http/http-response';
-import { UserId } from './decorator/user-id.decorator';
+import { UserId } from '../../common/decorator/user-id.decorator';
 import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
 import { ProfileResponseDto } from './dto/response/profile.response.dto';
