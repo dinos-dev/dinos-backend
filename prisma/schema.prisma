@@ -96,7 +96,7 @@ model Profile {
   id          Int       @id @default(autoincrement())
   userId      Int       @unique @map("user_id")
 
-  nickName    String    @db.VarChar(20) @map("nick_name")
+  nickname    String    @db.VarChar(20) @map("nickname")
   comment     String?   @db.VarChar(50)
   headerId    Int?      @map("header_id")
   bodyId      Int?      @map("body_id")
