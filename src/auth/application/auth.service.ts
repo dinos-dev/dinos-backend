@@ -163,7 +163,7 @@ export class AuthService {
     const parseToken = await this.validateBearerToken(token);
     const userEntity = await this.userRepository.findAllRefToken(userId);
 
-    if (!userEntity) {
+    if (!userEntity.user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
     }
 
@@ -174,7 +174,7 @@ export class AuthService {
       throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
     }
 
-    const accessToken = await this.issueToken(userEntity, false);
+    const accessToken = await this.issueToken(userEntity.user, false);
 
     return accessToken.token;
   }

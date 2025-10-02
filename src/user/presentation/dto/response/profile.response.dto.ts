@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance } from 'class-transformer';
 
-export class UserProfileResponseDto {
-  constructor(partial: Partial<UserProfileResponseDto>) {
+export class ProfileResponseDto {
+  constructor(partial: Partial<ProfileResponseDto>) {
     Object.assign(this, partial);
   }
   @Expose()
@@ -71,8 +71,8 @@ export class UserProfileResponseDto {
   })
   bodyColor: string;
 
-  static fromResult(result: Partial<UserProfileResponseDto>): UserProfileResponseDto {
-    return plainToInstance(UserProfileResponseDto, result, {
+  static fromResult(result: Partial<ProfileResponseDto>): ProfileResponseDto {
+    return plainToInstance(ProfileResponseDto, result, {
       excludeExtraneousValues: true,
     });
   }

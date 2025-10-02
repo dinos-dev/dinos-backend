@@ -9,7 +9,8 @@ import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-crea
 import { HttpUserErrorConstants } from '../../application/helper/http-error-object';
 import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
 import { UpdateUserProfileDto } from '../dto/request/update-user-profile.dto';
-import { UserProfileResponseDto } from '../dto/response/user-profile-response.dto';
+import { ProfileResponseDto } from '../dto/response/profile.response.dto';
+import { UserWithProfileResponseDto } from '../dto/response/user-with-profile.response.dto';
 
 //? Withdraw
 export const WithdrawUserDocs = () => {
@@ -44,7 +45,7 @@ export const FindByProfileDocs = () => {
     }),
     ApiOkResponseTemplate({
       description: '유저 프로필 조회 성공',
-      type: UserProfileResponseDto,
+      type: ProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -74,7 +75,7 @@ export const CreateUserProfileDocs = () => {
     }),
     ApiCreatedResponseTemplate({
       description: '유저 프로필 생성 성공',
-      type: UserProfileResponseDto,
+      type: ProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -112,7 +113,7 @@ export const UpdateUserProfileDocs = () => {
     }),
     ApiOkResponseTemplate({
       description: '유저 프로필 수정 성공',
-      type: UserProfileResponseDto,
+      type: ProfileResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -122,6 +123,29 @@ export const UpdateUserProfileDocs = () => {
       {
         status: StatusCodes.FORBIDDEN,
         errorFormatList: [HttpUserErrorConstants.FORBIDDEN_USER_PROFILE],
+      },
+    ]),
+  );
+};
+
+//? Find By Invite Code
+export const FindByInviteCodeDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '초대코드 기반 유저정보 조회',
+      description: `
+      - 최초가입시 유저별로 할당되는 초대코드를 기반으로 유저의 기본정보를 조회한다. 
+      - 가입시, name(이름)은 nullable 하기 때문에, name으로 화면에 표기할지, nickname을 표기할지는 별도로 논의가 필요함.
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: '초대코드 기반 유저 조회 성공',
+      type: UserWithProfileResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpUserErrorConstants.NOT_FOUND_USER],
       },
     ]),
   );

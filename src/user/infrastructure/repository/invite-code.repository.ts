@@ -5,22 +5,11 @@ import { InviteCode } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { InviteCodeEntity } from 'src/user/domain/entities/invite-code.entity';
 import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
-import { InviteCodeMapper } from '../mapper/invite-code.mapper';
 
 @Injectable()
 export class InviteCodeRepository extends PrismaRepository<InviteCode> implements IInviteCodeRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
     super(txHost, (client) => client.inviteCode);
-  }
-
-  /**
-   * inviteCode 기반 조회
-   * @param code - invite code
-   * @returns InviteCodeEntity | null
-   */
-  async findByCode(code: string): Promise<InviteCodeEntity | null> {
-    const inviteCode = await this.model.findUnique({ where: { code } });
-    return inviteCode ? InviteCodeMapper.toDomain(inviteCode) : null;
   }
 
   /**

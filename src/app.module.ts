@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './auth/presentation/guard/jwt-auth.guard';
 import { FeedModule } from './feed/feed.module';
 import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
 import { ClsModule } from './infrastructure/cls/cls.module';
+import { FriendshipModule } from './friendship/friendship.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { ClsModule } from './infrastructure/cls/cls.module';
     SlackModule,
     FeedModule,
     ClsModule,
+    FriendshipModule,
   ],
   providers: [
     {

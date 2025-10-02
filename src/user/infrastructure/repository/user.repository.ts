@@ -8,6 +8,8 @@ import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { UserMapper } from '../mapper/user.mapper';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { TokenEntity } from 'src/auth/domain/entities/token.entity';
+import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 
 @Injectable()
 export class UserRepository extends PrismaRepository<User> implements IUserRepository {
@@ -64,13 +66,17 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
    * @param userId
    * @returns User
    */
-  async findAllRefToken(userId: number): Promise<UserEntity | null> {
+  async findAllRefToken(userId: number): Promise<{ user: UserEntity; tokens: TokenEntity[] }> {
     const userByToken = await this.model.findUnique({
       where: { id: userId },
       include: { tokens: true },
     });
 
-    return UserMapper.toDomain(userByToken);
+    // Mapper에서 순수 Entity로 변환
+    const user = UserMapper.toDomainWithTokens(userByToken);
+    const tokens = UserMapper.extractTokens(userByToken);
+
+    return { user, tokens };
   }
 
   /**
@@ -155,5 +161,26 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
     const user = await this.model.delete({ where: { id } });
 
     return user.id;
+  }
+
+  /**
+   * findByUserProfile
+   * @param userId
+   * @returns UserEntity | null
+   */
+  async findByUserProfile(userId: number): Promise<{ user: UserEntity; profile: ProfileEntity }> {
+    const findUserByProfile = await this.model.findUnique({
+      where: { id: userId },
+      include: {
+        profile: true,
+      },
+    });
+
+    console.log('findUserByProfile', findUserByProfile);
+
+    const user = UserMapper.toDomainWithProfile(findUserByProfile);
+    const profile = UserMapper.extractProfile(findUserByProfile);
+
+    return { user, profile };
   }
 }

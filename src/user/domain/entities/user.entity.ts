@@ -1,4 +1,3 @@
-import { TokenEntity } from 'src/auth/domain/entities/token.entity';
 import { Provider } from '../const/provider.enum';
 
 export class UserEntity {
@@ -14,7 +13,7 @@ export class UserEntity {
     public updatedAt: Date | null,
     public deletedAt: Date | null,
     public version: number | null,
-    public readonly tokens: TokenEntity[],
+    // public readonly tokens: TokenEntity[],
   ) {}
 
   static create(params: {
@@ -36,7 +35,8 @@ export class UserEntity {
       null,
       null,
       0,
-      [],
+      // [],
+      // null,
     );
   }
 

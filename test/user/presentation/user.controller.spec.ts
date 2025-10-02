@@ -5,7 +5,7 @@ import { CreateUserProfileDto } from 'src/user/presentation/dto/request/create-u
 import { UpdateUserProfileDto } from 'src/user/presentation/dto/request/update-user-profile.dto';
 import { HttpResponse } from 'src/common/http/http-response';
 import { createProfileMock } from '../../__mocks__/user.factory';
-import { UserProfileResponseDto } from 'src/user/presentation/dto/response/user-profile-response.dto';
+import { UserProfileResponseDto } from 'src/user/presentation/dto/response/profile.response.dto';
 import { plainToInstance } from 'class-transformer';
 
 describe('UserController', () => {
