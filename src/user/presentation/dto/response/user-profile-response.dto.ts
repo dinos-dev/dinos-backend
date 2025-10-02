@@ -29,7 +29,7 @@ export class UserProfileResponseDto {
     required: true,
     maxLength: 20,
   })
-  nickName: string;
+  nickname: string;
 
   @Expose()
   @ApiProperty({

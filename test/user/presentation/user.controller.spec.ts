@@ -35,7 +35,7 @@ describe('UserController', () => {
   describe('createProfile', () => {
     it('should return created profile response', async () => {
       // 1. given
-      const dto: CreateUserProfileDto = { nickName: '테스터' };
+      const dto: CreateUserProfileDto = { nickname: '테스터' };
       const userId = 1;
       const createdProfile = createProfileMock();
 
@@ -58,7 +58,7 @@ describe('UserController', () => {
   describe('updateProfile', () => {
     it('should return updated profile response', async () => {
       // 1. given
-      const dto: UpdateUserProfileDto = { nickName: '업데이트됨' };
+      const dto: UpdateUserProfileDto = { nickname: '업데이트됨' };
       const profileId = 1;
       const updatedProfile = createProfileMock();
 

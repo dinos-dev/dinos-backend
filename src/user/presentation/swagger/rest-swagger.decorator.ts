@@ -66,7 +66,7 @@ export const CreateUserProfileDocs = () => {
       summary: '유저 프로필 생성',
       description: `
         - 유저 프로필을 생성한다.
-        - 유저 프로필 생성시, nickName은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
+        - 유저 프로필 생성시, nickname은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
         `,
     }),
     ApiBody({
@@ -97,7 +97,7 @@ export const UpdateUserProfileDocs = () => {
       description: `
         - 유저 프로필을 수정한다.
         - 사용자의 Header의 Bearer AccessToken을 기반으로 검증을하고, 사용자가 요청을 보낸 parameter id 값과 대조하여, 값이 불일치할 경우 403 에러를 반환한다.
-        - 유저 프로필 수정시, nickName은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
+        - 유저 프로필 수정시, nickname은 필수값이고, 나머지 항목은 선택적으로 요청을 보내야한다.
         `,
     }),
     ApiParam({

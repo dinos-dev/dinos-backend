@@ -1,6 +1,6 @@
 import { UserProfileCommand } from '../command/user-profile.command';
 
-const generateNickName = (): string => {
+const generatenickname = (): string => {
   const adjectives = ['happy', 'lazy', 'blue', 'fuzzy', 'quick'];
   const animals = ['dino', 'cat', 'fox', 'panda', 'lion'];
   const nickname = `${adjectives[Math.floor(Math.random() * adjectives.length)]}-${animals[Math.floor(Math.random() * animals.length)]}-${Math.floor(Math.random() * 1000)}`;
@@ -21,7 +21,7 @@ const generateHexColor = (): string => {
 export const buildDefaultProfile = (userId: number, input?: Partial<UserProfileCommand>): UserProfileCommand => {
   return {
     userId,
-    nickName: input?.nickName ?? generateNickName(),
+    nickname: input?.nickname ?? generatenickname(),
     comment: input?.comment ?? '소개를 작성해주세요',
     headerId: input?.headerId ?? generateRandomInt(1, 5),
     bodyId: input?.bodyId ?? generateRandomInt(1, 5),

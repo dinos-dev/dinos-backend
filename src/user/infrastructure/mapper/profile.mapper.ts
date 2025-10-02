@@ -6,7 +6,7 @@ export class ProfileMapper {
     return new ProfileEntity(
       prismaProfile.id,
       prismaProfile.userId,
-      prismaProfile.nickName,
+      prismaProfile.nickname,
       prismaProfile.comment,
       prismaProfile.headerId,
       prismaProfile.bodyId,

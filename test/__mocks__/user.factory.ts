@@ -1,4 +1,4 @@
-import { PlatFormEnumType, Profile, Provider, Token, User } from '@prisma/client';
+import { PlatformEnumType, Profile, Provider, Token, User } from '@prisma/client';
 
 /**
  * User Mocking Factory
@@ -12,7 +12,6 @@ export function createMockUser(overrides: Partial<User> = {}): User {
     isActive: true,
     provider: Provider.GOOGLE,
     providerId: 'google-id',
-    profileId: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null,
@@ -28,7 +27,7 @@ export function createProfileMock(overrides: Partial<Profile> = {}): Profile {
   return {
     id: 1,
     userId: 1,
-    nickName: 'Mock User',
+    nickname: 'Mock User',
     comment: 'Mock Comment',
     headerId: 1,
     bodyId: 1,
@@ -55,7 +54,7 @@ export function createMockUserWithTokens(
         refToken: 'token1',
         userId: 1,
         expiresAt: new Date(),
-        platForm: PlatFormEnumType.WEB,
+        platform: PlatformEnumType.WEB,
         createdAt: new Date(),
         updatedAt: new Date(),
         version: 1,
@@ -76,7 +75,7 @@ export function createMockUserWithProfile(
     profile: {
       id: 1,
       userId: 1,
-      nickName: 'Mock User',
+      nickname: 'Mock User',
       comment: 'Mock Comment',
       headerId: 1,
       bodyId: 1,

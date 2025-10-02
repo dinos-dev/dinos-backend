@@ -22,7 +22,7 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
   async createProfile(entity: ProfileEntity): Promise<ProfileEntity> {
     const profile = await this.model.create({
       data: {
-        nickName: entity.nickName,
+        nickname: entity.nickname,
         comment: entity.comment,
         headerId: entity.headerId,
         bodyId: entity.bodyId,
@@ -46,7 +46,7 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
     const profile = await this.model.update({
       where: { id },
       data: {
-        nickName: entity.nickName,
+        nickname: entity.nickname,
         comment: entity.comment,
         headerId: entity.headerId,
         bodyId: entity.bodyId,
