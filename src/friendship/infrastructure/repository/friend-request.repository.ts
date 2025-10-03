@@ -1,7 +1,7 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Injectable } from '@nestjs/common';
-import { FriendRequest } from '@prisma/client';
+import { FriendRequest, FriendRequestStatus } from '@prisma/client';
 import { IFriendRequestRepository } from 'src/friendship/domain/repository/friend-request.repository.interface';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { FriendRequestMapper } from '../mapper/friend-request.mapper';
@@ -37,5 +37,21 @@ export class FriendRequestRepository extends PrismaRepository<FriendRequest> imp
     });
 
     return FriendRequestMapper.toDomain(friendRequest);
+  }
+
+  /**
+   * 나에게 온 요청 리스트조회
+   * @param receiveId 나의 userId
+   */
+  async findByReceiveId(receiveId: number): Promise<FriendRequestEntity[]> {
+    return await this.model.findMany({
+      where: {
+        receiverId: receiveId,
+        status: FriendRequestStatus.PENDING,
+      },
+      include: {
+        sender: true,
+      },
+    });
   }
 }

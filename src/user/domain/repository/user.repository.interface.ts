@@ -13,4 +13,5 @@ export interface IUserRepository {
   findByUserId(id: number): Promise<UserEntity | null>;
   deleteByUser(id: number): Promise<number>;
   findByUserProfile(userId: number): Promise<{ user: UserEntity; profile: ProfileEntity }>;
+  findManyByUserId(userIds: number[]): Promise<{ user: UserEntity; profile: ProfileEntity }[]>;
 }

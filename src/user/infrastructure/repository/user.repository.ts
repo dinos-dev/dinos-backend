@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { hashPassword } from 'src/common/helper/password.util';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
-import { User } from '@prisma/client';
+import { Profile, User } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { UserMapper } from '../mapper/user.mapper';
@@ -175,12 +175,22 @@ export class UserRepository extends PrismaRepository<User> implements IUserRepos
         profile: true,
       },
     });
-
-    console.log('findUserByProfile', findUserByProfile);
-
     const user = UserMapper.toDomainWithProfile(findUserByProfile);
     const profile = UserMapper.extractProfile(findUserByProfile);
 
     return { user, profile };
+  }
+
+  /**
+   * userId 기반 사용자 및 프로필 조회
+   * @param userIds
+   */
+  async findManyByUserId(userIds: number[]): Promise<{ user: UserEntity; profile: ProfileEntity }[]> {
+    const users = await this.model.findMany({ where: { id: { in: userIds } }, include: { profile: true } });
+
+    return users.map((user: User & { profile: Profile }) => ({
+      user: UserMapper.toDomainWithProfile(user),
+      profile: UserMapper.extractProfile(user),
+    }));
   }
 }

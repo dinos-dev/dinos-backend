@@ -3,8 +3,8 @@ import { Expose, plainToInstance } from 'class-transformer';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 
-export class UserWithProfileResponseDto {
-  constructor(partial: Partial<UserWithProfileResponseDto>) {
+export class FriendUserResponseDto {
+  constructor(partial: Partial<FriendUserResponseDto>) {
     Object.assign(this, partial);
   }
 
@@ -57,9 +57,9 @@ export class UserWithProfileResponseDto {
     comment: string | null;
   } | null;
 
-  static fromResult(user: UserEntity, profile: ProfileEntity | null): UserWithProfileResponseDto {
+  static fromResult(user: UserEntity, profile: ProfileEntity | null): FriendUserResponseDto {
     return plainToInstance(
-      UserWithProfileResponseDto,
+      FriendUserResponseDto,
       {
         id: user.id,
         email: user.email,
