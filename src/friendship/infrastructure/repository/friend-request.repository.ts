@@ -10,7 +10,7 @@ import { FriendRequestEntity } from 'src/friendship/domain/entities/friend-reque
 @Injectable()
 export class FriendRequestRepository extends PrismaRepository<FriendRequest> implements IFriendRequestRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    super(txHost, (client) => client.friendRequest);
+    super(txHost, (client) => client.friendRequest, FriendRequestMapper.toDomain);
   }
 
   /**
@@ -27,6 +27,7 @@ export class FriendRequestRepository extends PrismaRepository<FriendRequest> imp
       },
       update: {
         status: entity.status,
+        respondedAt: entity.respondedAt,
         version: { increment: 1 },
       },
       create: {

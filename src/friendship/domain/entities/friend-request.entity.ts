@@ -31,4 +31,20 @@ export class FriendRequestEntity {
       undefined,
     );
   }
+
+  respondToRequest(status: FriendRequestStatus): FriendRequestEntity {
+    return new FriendRequestEntity(
+      this.id,
+      this.senderId,
+      this.receiverId,
+      status,
+      new Date(), // respondedAt 업데이트
+      this.expiresAt,
+      this.createdAt,
+      this.updatedAt,
+      this.version,
+      this.sender,
+      this.receiver,
+    );
+  }
 }

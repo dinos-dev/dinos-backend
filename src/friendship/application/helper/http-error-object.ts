@@ -17,4 +17,16 @@ export const HttpFriendshipErrorConstants = {
     error: 'SAME_USER_ID',
     message: '본인에게 친구 요청을 할 수 없습니다.',
   } as HttpErrorFormat,
+
+  INVALID_FRIEND_REQUEST_RECEIVER: {
+    status: HttpStatus.FORBIDDEN,
+    error: 'INVALID_FRIEND_REQUEST_RECEIVER',
+    message: '본인이 받은 친구 요청이 아닙니다.',
+  } as HttpErrorFormat,
+
+  NOT_FOUND_FRIEND_REQUEST: {
+    status: HttpStatus.NOT_FOUND,
+    error: 'NOT_FOUND_FRIEND_REQUEST',
+    message: '친구 요청을 찾을 수 없습니다.',
+  } as HttpErrorFormat,
 };

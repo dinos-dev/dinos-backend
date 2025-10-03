@@ -1,15 +1,20 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { FriendshipService } from '../application/friendship.service';
 import { SendFriendRequestDto } from './dto/request/send-friend-request.dto';
 import { HttpResponse } from 'src/common/http/http-response';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { RequestFriendshipCommand } from '../application/command/request-friendship.command';
 import { SendFriendRequestResponseDto } from './dto/response/send-friend-response.dto';
-import { FindByReceiveIdDocs, SendFriendRequestDocs } from './swagger/rest-swagger.decorator';
+import {
+  FindByReceiveIdDocs,
+  RespondToFriendRequestDocs,
+  SendFriendRequestDocs,
+} from './swagger/rest-swagger.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import { HttpFriendshipErrorConstants } from '../application/helper/http-error-object';
 import { FriendRequestResponseDto } from './dto/response/friend-request.response.dto';
+import { RespondToFriendRequestDto } from './dto/request/respond-friend-request.dto';
 
 @ApiTags('Friendship - 친구관리')
 @ApiCommonErrorResponseTemplate()
@@ -42,10 +47,15 @@ export class FriendshipController {
     return HttpResponse.ok(result);
   }
 
-  // //? 친구 요청에 대한 응답 ( 수락, 거절)
-  // @Patch('requests/:id')
-  // async respondToFriendRequest(@Param('id', ParseIntPipe) id: number, @Body() dto: RespondToFriendRequestDto) {
-  //   const respondToFriendRequest = await this.friendshipService.respondToFriendRequest(id, dto.status);
-  //   return respondToFriendRequest;
-  // }
+  //? 친구 요청에 대한 응답 ( 수락, 거절)
+  @RespondToFriendRequestDocs()
+  @Patch('requests/:id')
+  async respondToFriendRequest(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: RespondToFriendRequestDto,
+    @UserId() userId: number,
+  ): Promise<HttpResponse<string>> {
+    const respondToFriendRequest = await this.friendshipService.respondToFriendRequest(id, dto.status, userId);
+    return HttpResponse.ok(respondToFriendRequest);
+  }
 }
