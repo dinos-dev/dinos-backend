@@ -42,16 +42,23 @@ export class FriendRequestRepository extends PrismaRepository<FriendRequest> imp
   /**
    * 나에게 온 요청 리스트조회
    * @param receiveId 나의 userId
+   * @returns FriendRequestEntity[]
    */
   async findByReceiveId(receiveId: number): Promise<FriendRequestEntity[]> {
-    return await this.model.findMany({
+    const friendRequests = await this.model.findMany({
       where: {
         receiverId: receiveId,
         status: FriendRequestStatus.PENDING,
       },
       include: {
-        sender: true,
+        sender: {
+          include: {
+            profile: true,
+          },
+        },
       },
     });
+
+    return friendRequests.map(FriendRequestMapper.toDomainWithSenderProfile);
   }
 }

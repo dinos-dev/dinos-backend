@@ -14,8 +14,7 @@ import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 @Injectable()
 export class UserRepository extends PrismaRepository<User> implements IUserRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    // TransactionHost와 모델 접근 함수를 부모 클래스에 전달
-    super(txHost, (client) => client.user);
+    super(txHost, (client) => client.user, UserMapper.toDomain);
   }
   /**
    * 로컬 가입시 이메일 검증

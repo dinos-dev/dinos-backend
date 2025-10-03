@@ -7,8 +7,8 @@ import { ApiErrorResponseTemplate } from 'src/common/swagger/response/api-error-
 import { StatusCodes } from 'http-status-codes';
 import { HttpFriendshipErrorConstants } from 'src/friendship/application/helper/http-error-object';
 import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
-import { FriendUserResponseDto } from '../dto/response/friend-user.response.dto';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
+import { FriendRequestResponseDto } from '../dto/response/friend-request.response.dto';
 
 //? Send Friend Request
 export const SendFriendRequestDocs = () => {
@@ -57,7 +57,7 @@ export const FindByReceiveIdDocs = () => {
     }),
     ApiOkResponseTemplate({
       description: '나에게 요청을 보낸 유저 정보 조회 성공',
-      type: FriendUserResponseDto,
+      type: FriendRequestResponseDto,
       isArray: true,
     }),
     ApiErrorResponseTemplate([

@@ -1,4 +1,5 @@
 import { Provider } from '../const/provider.enum';
+import { ProfileEntity } from './profile.entity';
 
 export class UserEntity {
   constructor(
@@ -13,7 +14,7 @@ export class UserEntity {
     public updatedAt: Date | null,
     public deletedAt: Date | null,
     public version: number | null,
-    // public readonly tokens: TokenEntity[],
+    public profile?: ProfileEntity,
   ) {}
 
   static create(params: {

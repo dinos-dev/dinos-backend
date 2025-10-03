@@ -12,8 +12,6 @@ import { RequestFriendshipCommand } from './command/request-friendship.command';
 import { FriendRequestEntity } from '../domain/entities/friend-request.entity';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { HttpFriendshipErrorConstants } from './helper/http-error-object';
-import { UserEntity } from 'src/user/domain/entities/user.entity';
-import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 
 @Injectable()
 export class FriendshipService {
@@ -45,13 +43,19 @@ export class FriendshipService {
    * 나에게 요청을 보낸 사용자 정보 조회
    * @param receiveId 나의 userId
    */
-  async findByReceiveId(receiveId: number): Promise<{ user: UserEntity; profile: ProfileEntity }[]> {
+  async findByReceiveId(receiveId: number): Promise<FriendRequestEntity[]> {
     const receivedFriendRequests = await this.friendRequestRepository.findByReceiveId(receiveId);
     // 나에게 보낸 사용자가 없으면 빈 배열 반환
     if (receivedFriendRequests.length === 0) return [];
-
-    const userIds = receivedFriendRequests.map((friendRequest) => friendRequest.senderId);
-    const users = await this.userRepository.findManyByUserId(userIds);
-    return users;
+    return receivedFriendRequests;
   }
+
+  // /**
+  //  * @param id 친구 요청 id
+  //  * @param status FriendRequestStatus(수락, 거절)
+  //  */
+  // async respondToFriendRequest(id: number, status: FriendRequestStatus) {
+  //   const findFriendRequest = await this.friendRequestRepository.findById(id);
+  //   return findFriendRequest;
+  // }
 }

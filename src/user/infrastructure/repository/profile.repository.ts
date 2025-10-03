@@ -10,7 +10,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 @Injectable()
 export class ProfileRepository extends PrismaRepository<Profile> implements IProfileRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    super(txHost, (client) => client.profile);
+    super(txHost, (client) => client.profile, ProfileMapper.toDomain);
   }
 
   /**

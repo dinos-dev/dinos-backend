@@ -12,7 +12,7 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 @Injectable()
 export class TokenRepository extends PrismaRepository<Token> implements ITokenRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    super(txHost, (client) => client.token);
+    super(txHost, (client) => client.token, TokenMapper.toDomain);
   }
 
   /**

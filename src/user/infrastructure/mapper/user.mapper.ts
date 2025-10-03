@@ -19,19 +19,7 @@ export class UserMapper {
       prismaUser.updatedAt,
       prismaUser.deletedAt,
       prismaUser.version,
-    );
-  }
-
-  private static tokenToDomain(prismaToken: PrismaToken): TokenEntity {
-    return new TokenEntity(
-      prismaToken.id,
-      prismaToken.userId,
-      prismaToken.refToken,
-      prismaToken.expiresAt,
-      prismaToken.platform as unknown as PlatformEnumType,
-      prismaToken.createdAt,
-      prismaToken.updatedAt,
-      prismaToken.version,
+      undefined,
     );
   }
 
@@ -96,6 +84,7 @@ export class UserMapper {
       prismaUser.updatedAt,
       prismaUser.deletedAt,
       prismaUser.version,
+      this.extractProfile(prismaUser),
     );
   }
 

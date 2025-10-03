@@ -12,6 +12,7 @@ export abstract class PrismaRepository<T, ID = number> implements IRepository<T,
   constructor(
     protected readonly txHost: TransactionHost<TransactionalAdapterPrisma>,
     protected readonly getModel: (client: any) => any,
+    protected readonly mapper?: (entity: T) => any,
   ) {}
 
   /**
@@ -30,61 +31,88 @@ export abstract class PrismaRepository<T, ID = number> implements IRepository<T,
     return this.getModel(this.prisma);
   }
 
-  async findAll(): Promise<T[]> {
-    return this.model.findMany();
+  /**
+   * 도메인 Entity로 변환
+   */
+  protected toDomain(prismaEntity: T): any {
+    if (this.mapper) {
+      return this.mapper(prismaEntity);
+    }
+    return prismaEntity; // Mapper가 없으면 그대로 반환
   }
 
-  async findById(id: ID): Promise<T | null> {
-    return this.model.findUnique({
+  async findAll(): Promise<any[]> {
+    const entities = await this.model.findMany();
+    return entities.map((entity) => this.toDomain(entity));
+  }
+
+  async findById(id: ID): Promise<any | null> {
+    const entity = await this.model.findUnique({
       where: { id },
     });
+
+    if (!entity) return null;
+    return this.toDomain(entity);
   }
 
   /**
    * Prisma 전용 메서드 - 다른 ORM에서는 지원하지 않음
    */
-  async findByUnique<K extends keyof T>(key: K, value: T[K]): Promise<T | null> {
-    return this.model.findUnique({
+  async findByUnique<K extends keyof T>(key: K, value: T[K]): Promise<any | null> {
+    const entity = await this.model.findUnique({
       where: { [key]: value },
     });
+
+    if (!entity) return null;
+    return this.toDomain(entity);
   }
 
-  async create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'>): Promise<T> {
-    return this.model.create({
+  async create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'>): Promise<any> {
+    const createdEntity = await this.model.create({
       data: entity,
     });
+
+    return this.toDomain(createdEntity);
   }
 
-  async updateById(id: ID, entity: Partial<T>): Promise<T> {
-    return this.model.update({
+  async updateById(id: ID, entity: Partial<T>): Promise<any> {
+    const updatedEntity = await this.model.update({
       where: { id },
       data: entity,
     });
+
+    return this.toDomain(updatedEntity);
   }
 
-  async deleteById(id: ID): Promise<T> {
-    return this.model.delete({
+  async deleteById(id: ID): Promise<any> {
+    const deletedEntity = await this.model.delete({
       where: { id },
     });
+
+    return this.toDomain(deletedEntity);
   }
 
   async find(options: {
     where?: Partial<T>;
     select?: Partial<Record<keyof T, boolean>>;
     orderBy?: { [K in keyof T]?: 'asc' | 'desc' } | Array<{ [K in keyof T]?: 'asc' | 'desc' }>;
-  }): Promise<T[]> {
-    return this.model.findMany({
+  }): Promise<any[]> {
+    const entities = await this.model.findMany({
       where: options.where,
       select: options.select,
       orderBy: options.orderBy,
     });
+
+    return entities.map((entity) => this.toDomain(entity));
   }
 
-  async upsert(options: { where: Partial<T>; create: T; update: Partial<T> }): Promise<T> {
-    return this.model.upsert({
+  async upsert(options: { where: Partial<T>; create: T; update: Partial<T> }): Promise<any> {
+    const entity = await this.model.upsert({
       where: options.where,
       create: options.create,
       update: options.update,
     });
+
+    return this.toDomain(entity);
   }
 }

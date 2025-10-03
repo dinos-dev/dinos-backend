@@ -9,7 +9,7 @@ import { FindByReceiveIdDocs, SendFriendRequestDocs } from './swagger/rest-swagg
 import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import { HttpFriendshipErrorConstants } from '../application/helper/http-error-object';
-import { FriendUserResponseDto } from './dto/response/friend-user.response.dto';
+import { FriendRequestResponseDto } from './dto/response/friend-request.response.dto';
 
 @ApiTags('Friendship - 친구관리')
 @ApiCommonErrorResponseTemplate()
@@ -36,11 +36,16 @@ export class FriendshipController {
   //? 나에게 요청을 보낸 유저 정보 조회
   @FindByReceiveIdDocs()
   @Get('received')
-  async findByReceiveId(@UserId() userId: number): Promise<HttpResponse<FriendUserResponseDto[]>> {
+  async findByReceiveId(@UserId() userId: number): Promise<HttpResponse<FriendRequestResponseDto[]>> {
     const receivedFriendRequests = await this.friendshipService.findByReceiveId(userId);
-    const result = receivedFriendRequests.map((receivedFriendRequest) =>
-      FriendUserResponseDto.fromResult(receivedFriendRequest.user, receivedFriendRequest.profile),
-    );
+    const result = receivedFriendRequests.map(FriendRequestResponseDto.fromResult);
     return HttpResponse.ok(result);
   }
+
+  // //? 친구 요청에 대한 응답 ( 수락, 거절)
+  // @Patch('requests/:id')
+  // async respondToFriendRequest(@Param('id', ParseIntPipe) id: number, @Body() dto: RespondToFriendRequestDto) {
+  //   const respondToFriendRequest = await this.friendshipService.respondToFriendRequest(id, dto.status);
+  //   return respondToFriendRequest;
+  // }
 }
