@@ -13,4 +13,8 @@ export class FriendshipActivityRepository
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
     super(txHost, (client) => client.friendshipActivity);
   }
+
+  async removeByFriendshipId(friendshipId: number): Promise<void> {
+    await this.model.deleteMany({ where: { friendshipId } });
+  }
 }

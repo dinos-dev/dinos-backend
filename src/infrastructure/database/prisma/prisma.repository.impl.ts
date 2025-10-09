@@ -84,12 +84,12 @@ export abstract class PrismaRepository<T, ID = number> implements IRepository<T,
     return this.toDomain(updatedEntity);
   }
 
-  async deleteById(id: ID): Promise<any> {
-    const deletedEntity = await this.model.delete({
+  async removeById(id: ID): Promise<any> {
+    const removedEntity = await this.model.delete({
       where: { id },
     });
 
-    return this.toDomain(deletedEntity);
+    return this.toDomain(removedEntity);
   }
 
   async find(options: {

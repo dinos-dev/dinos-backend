@@ -29,4 +29,16 @@ export const HttpFriendshipErrorConstants = {
     error: 'NOT_FOUND_FRIEND_REQUEST',
     message: '친구 요청을 찾을 수 없습니다.',
   } as HttpErrorFormat,
+
+  NOT_FOUND_FRIENDSHIP: {
+    status: HttpStatus.NOT_FOUND,
+    error: 'NOT_FOUND_FRIENDSHIP',
+    message: '친구 관계를 찾을 수 없습니다.',
+  } as HttpErrorFormat,
+
+  FORBIDDEN_FRIENDSHIP_REMOVAL: {
+    status: HttpStatus.FORBIDDEN,
+    error: 'FORBIDDEN_FRIENDSHIP_REMOVAL',
+    message: '친구 관계를 제거할 권한이 없습니다.',
+  } as HttpErrorFormat,
 };

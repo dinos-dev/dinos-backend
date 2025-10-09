@@ -1,4 +1,15 @@
-import { BadRequestException, Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { FriendshipService } from '../application/friendship.service';
 import { SendFriendRequestDto } from './dto/request/send-friend-request.dto';
 import { HttpResponse } from 'src/common/http/http-response';
@@ -8,6 +19,7 @@ import { SendFriendRequestResponseDto } from './dto/response/send-friend-respons
 import {
   FindAllFriendshipDocs,
   FindByReceiveIdDocs,
+  RemoveFriendshipDocs,
   RespondToFriendRequestDocs,
   SendFriendRequestDocs,
 } from './swagger/rest-swagger.decorator';
@@ -80,5 +92,13 @@ export class FriendshipController {
 
     const responseData = PaginatedFriendListResponseDto.fromFriendshipResult(friendshipResult);
     return HttpResponse.ok(responseData);
+  }
+
+  //? 친구제거
+  @RemoveFriendshipDocs()
+  @Delete(':id')
+  async removeFriendship(@Param('id', ParseIntPipe) id: number, @UserId() userId: number): Promise<HttpResponse<void>> {
+    await this.friendshipService.removeFriendship(id, userId);
+    return HttpResponse.noContent();
   }
 }

@@ -62,4 +62,15 @@ export class FriendRequestRepository extends PrismaRepository<FriendRequest> imp
 
     return friendRequests.map(FriendRequestMapper.toDomainWithSenderProfile);
   }
+
+  /**
+   * receiverId와 senderId에 해당하는 친구 요청 기록 제거
+   * @param receiverId
+   * @param senderId
+   */
+  async removeByReceiverAndSenderId(senderId: number, receiverId: number): Promise<void> {
+    await this.model.deleteMany({
+      where: { receiverId, senderId },
+    });
+  }
 }

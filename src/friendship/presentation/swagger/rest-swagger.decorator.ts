@@ -11,6 +11,7 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { FriendRequestResponseDto } from '../dto/response/friend-request.response.dto';
 import { RespondToFriendRequestDto } from '../dto/request/respond-friend-request.dto';
 import { PaginatedFriendListResponseDto } from '../dto/response/friend-with-activity.response.dto';
+import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
 
 //? Send Friend Request
 export const SendFriendRequestDocs = () => {
@@ -145,6 +146,45 @@ export const FindAllFriendshipDocs = () => {
       type: PaginatedFriendListResponseDto,
     }),
     ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Remove Friendship
+export const RemoveFriendshipDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '친구 제거',
+      description: `
+      - 친구를 제거한다.
+      - 친구 관계를 제거할 권한이 없으면 403 에러를 반환한다(Bearer Token의 user 정보를 기반으로 본인의 친구 관계가 아닌 경우)
+      - 친구 관계를 찾을 수 없으면 404 에러를 반환한다. 
+      - 친구를 제거하면 친구 요청, 활동 내역, 친구 관계 정보가 모두 일괄로 hard delete 된다.
+      `,
+    }),
+    ApiParam({
+      description: '친구 관계 id',
+      name: 'id',
+      type: Number,
+      required: true,
+      example: 1,
+    }),
+    ApiNoContentResponseTemplate({
+      description: '친구 관계 제거 성공',
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpFriendshipErrorConstants.NOT_FOUND_FRIENDSHIP],
+      },
+      {
+        status: StatusCodes.FORBIDDEN,
+        errorFormatList: [HttpFriendshipErrorConstants.FORBIDDEN_FRIENDSHIP_REMOVAL],
+      },
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,

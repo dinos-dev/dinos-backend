@@ -137,4 +137,33 @@ export class FriendshipService {
       meta: friendshipResult.meta,
     };
   }
+
+  /**
+   * 친구 관계 삭제
+   * @param friendshipId
+   * @param userId
+   */
+  @Transactional()
+  async removeFriendship(friendshipId: number, userId: number): Promise<void> {
+    const friendship = await this.friendshipRepository.findById(friendshipId);
+
+    // 친구 관계를 찾을 수 없으면 exception
+    if (!friendship) {
+      throw new NotFoundException(HttpFriendshipErrorConstants.NOT_FOUND_FRIENDSHIP);
+    }
+
+    // 본인의 친구 관계가 아닌 경우 exception
+    if (friendship.requesterId !== userId && friendship.addresseeId !== userId) {
+      throw new ForbiddenException(HttpFriendshipErrorConstants.FORBIDDEN_FRIENDSHIP_REMOVAL);
+    }
+
+    // 1) 친구관계 제거
+    await this.friendshipRepository.removeById(friendshipId);
+
+    // 2) 친구관계 활동 정보 제거
+    await this.friendshipActivityRepository.removeByFriendshipId(friendshipId);
+
+    // 3) 친구 관계 요청 제거
+    await this.friendRequestRepository.removeByReceiverAndSenderId(friendship.requesterId, friendship.addresseeId);
+  }
 }
