@@ -15,6 +15,8 @@ import { HttpFriendshipErrorConstants } from './helper/http-error-object';
 import { FriendRequestStatus } from '../domain/const/friend-request.enum';
 import { Transactional } from '@nestjs-cls/transactional';
 import { FriendshipEntity } from '../domain/entities/friendship.entity';
+import { PaginatedResult, PaginationOptions } from 'src/common/types/pagination.types';
+import { FriendWithActivityDto } from './response/friend-with-activity.dto';
 
 @Injectable()
 export class FriendshipService {
@@ -86,5 +88,53 @@ export class FriendshipService {
     }
 
     return status === FriendRequestStatus.ACCEPTED ? '친구 요청을 수락하였습니다.' : '친구 요청을 거절하였습니다.';
+  }
+
+  /**
+   * 나의 친구 리스트 조회
+   * @param userId
+   * @param paginationOptions
+   * @returns
+   */
+  async findAllFriendship(
+    userId: number,
+    paginationOptions?: PaginationOptions,
+  ): Promise<PaginatedResult<FriendWithActivityDto>> {
+    // Repository에서 한 번에 모든 데이터 조회 (User 정보 포함)
+    const friendshipResult = await this.friendshipRepository.findAllFriendship(userId, paginationOptions);
+
+    const friendList = friendshipResult.data.map((friendship) => {
+      const friendInfo = friendship.getFriendInfo(userId);
+      const activityCount = friendship.activities.length || 0;
+
+      // 현재 사용자 기준으로 친구 정보 추출
+      const friendData = friendInfo.isRequester ? (friendship as any).addresseeInfo : (friendship as any).requesterInfo;
+
+      const profileData = friendData.profile
+        ? {
+            nickname: friendData.profile.nickname,
+            comment: friendData.profile.comment,
+            headerId: friendData.profile.headerId,
+            bodyId: friendData.profile.bodyId,
+            headerColor: friendData.profile.headerColor,
+            bodyColor: friendData.profile.bodyColor,
+          }
+        : null;
+
+      return FriendWithActivityDto.create({
+        id: friendship.id!,
+        friendUserId: friendInfo.friendId,
+        email: friendData.email,
+        name: friendData.name,
+        friendProfileData: profileData,
+        activityCount,
+        createdAt: friendship.createdAt!,
+      });
+    });
+
+    return {
+      data: friendList,
+      meta: friendshipResult.meta,
+    };
   }
 }

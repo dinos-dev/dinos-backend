@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { SendFriendRequestDto } from '../dto/request/send-friend-request.dto';
 import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
 import { SendFriendRequestResponseDto } from '../dto/response/send-friend-response.dto';
@@ -10,6 +10,7 @@ import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-respon
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { FriendRequestResponseDto } from '../dto/response/friend-request.response.dto';
 import { RespondToFriendRequestDto } from '../dto/request/respond-friend-request.dto';
+import { PaginatedFriendListResponseDto } from '../dto/response/friend-with-activity.response.dto';
 
 //? Send Friend Request
 export const SendFriendRequestDocs = () => {
@@ -108,6 +109,42 @@ export const RespondToFriendRequestDocs = () => {
         status: StatusCodes.FORBIDDEN,
         errorFormatList: [HttpFriendshipErrorConstants.INVALID_FRIEND_REQUEST_RECEIVER],
       },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Find All Friendship
+export const FindAllFriendshipDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '나의 친구 리스트 조회',
+      description: `
+      - 나의 친구 리스트를 조회한다.
+      - 친구 리스트는 친구의 사용자(userId) ID, 이메일, 이름, 프로필 정보, 활동 수, 생성 시간을 포함한다.
+      - query 파라미터로 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.
+      `,
+    }),
+    ApiQuery({
+      name: 'page',
+      type: Number,
+      required: false,
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'limit',
+      type: Number,
+      required: false,
+      example: 20,
+    }),
+    ApiOkResponseTemplate({
+      description: '나의 친구 리스트 조회 성공',
+      type: PaginatedFriendListResponseDto,
+    }),
+    ApiErrorResponseTemplate([
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
