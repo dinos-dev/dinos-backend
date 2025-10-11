@@ -130,42 +130,4 @@ export class FriendshipRepository extends PrismaRepository<Friendship> implement
 
     return PaginationUtil.createResult(friendshipEntities, normalizedOptions, total);
   }
-  // const friendships = await this.model.findMany({
-  //   where: {
-  //     OR: [{ requesterId: userId }, { addresseeId: userId }],
-  //   },
-  //   include: {
-  //     _count: {
-  //       select: {
-  //         activities: true,
-  //       },
-  //     },
-  //     requester: {
-  //       include: {
-  //         profile: true,
-  //       },
-  //     },
-  //     addressee: {
-  //       include: {
-  //         profile: true,
-  //       },
-  //     },
-  //   },
-  //   orderBy: {
-  //     createdAt: 'desc',
-  //   },
-  // });
-  // console.log('friendships --->', friendships);
-  // const friendList = friendships.map((friendship) => {
-  //   const friendInfo = friendship.requesterId === userId ? friendship.addressee : friendship.requester;
-  //   return {
-  //     id: friendInfo.id,
-  //     email: friendInfo.email,
-  //     name: friendInfo.name,
-  //     count: friendship._count.activities,
-  //     profile: friendInfo.profile,
-  //   };
-  // });
-  // return friendList;
-  // }
 }

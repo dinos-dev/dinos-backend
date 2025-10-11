@@ -1,5 +1,13 @@
-import { Friendship } from '@prisma/client';
+import { Friendship, Prisma } from '@prisma/client';
 import { FriendshipEntity } from 'src/friendship/domain/entities/friendship.entity';
+
+type PrismaFriendshipWithUserAndCount = Prisma.FriendshipGetPayload<{
+  include: {
+    _count: { select: { activities: true } };
+    requester: { include: { profile: true } };
+    addressee: { include: { profile: true } };
+  };
+}>;
 
 export class FriendshipMapper {
   static toDomain(prismaFriendship: Friendship): FriendshipEntity {
@@ -13,7 +21,10 @@ export class FriendshipMapper {
     );
   }
 
-  static toDomainWithUserInfo(prismaFriendship: any): FriendshipEntity {
+  /**
+   * @todo any로 강제 타입 캐스팅 제거 해야함
+   */
+  static toDomainWithUserInfo(prismaFriendship: PrismaFriendshipWithUserAndCount): FriendshipEntity {
     const entity = new FriendshipEntity(
       prismaFriendship.id,
       prismaFriendship.requesterId,
