@@ -10,7 +10,7 @@ export interface IRepository<T, ID = number> {
 
   create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'>): Promise<T>;
   updateById(id: ID, entity: Partial<T>): Promise<T>;
-  deleteById(id: ID): Promise<T>;
+  removeById(id: ID): Promise<T>;
 
   find(options: {
     where?: Partial<T>;

@@ -5,7 +5,7 @@ import { CreateUserProfileDto } from 'src/user/presentation/dto/request/create-u
 import { UpdateUserProfileDto } from 'src/user/presentation/dto/request/update-user-profile.dto';
 import { HttpResponse } from 'src/common/http/http-response';
 import { createProfileMock } from '../../__mocks__/user.factory';
-import { UserProfileResponseDto } from 'src/user/presentation/dto/response/user-profile-response.dto';
+import { UserProfileResponseDto } from 'src/user/presentation/dto/response/profile.response.dto';
 import { plainToInstance } from 'class-transformer';
 
 describe('UserController', () => {
@@ -35,7 +35,7 @@ describe('UserController', () => {
   describe('createProfile', () => {
     it('should return created profile response', async () => {
       // 1. given
-      const dto: CreateUserProfileDto = { nickName: '테스터' };
+      const dto: CreateUserProfileDto = { nickname: '테스터' };
       const userId = 1;
       const createdProfile = createProfileMock();
 
@@ -58,7 +58,7 @@ describe('UserController', () => {
   describe('updateProfile', () => {
     it('should return updated profile response', async () => {
       // 1. given
-      const dto: UpdateUserProfileDto = { nickName: '업데이트됨' };
+      const dto: UpdateUserProfileDto = { nickname: '업데이트됨' };
       const profileId = 1;
       const updatedProfile = createProfileMock();
 

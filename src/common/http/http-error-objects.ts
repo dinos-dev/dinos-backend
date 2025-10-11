@@ -145,6 +145,12 @@ export const HttpErrorConstants = {
     message: '토큰의 시그니처가 불일치 합니다.',
   } as HttpErrorFormat,
 
+  CONFLICT_USER_INVITE_CODE: {
+    status: HttpStatus.CONFLICT,
+    error: 'CONFLICT_USER_INVITE_CODE',
+    message: '유저코드 생성시 Conflict가 발생했습니다. 관리자에게 문의해주세요. (P2002)',
+  } as HttpErrorFormat,
+
   NOT_FOUND_TOKEN: {
     status: HttpStatus.UNAUTHORIZED,
     error: 'NOT_FOUND_TOKEN',

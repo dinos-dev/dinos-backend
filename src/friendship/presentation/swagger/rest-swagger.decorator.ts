@@ -1,0 +1,194 @@
+import { applyDecorators } from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { SendFriendRequestDto } from '../dto/request/send-friend-request.dto';
+import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
+import { SendFriendRequestResponseDto } from '../dto/response/send-friend-response.dto';
+import { ApiErrorResponseTemplate } from 'src/common/swagger/response/api-error-response';
+import { StatusCodes } from 'http-status-codes';
+import { HttpFriendshipErrorConstants } from 'src/friendship/application/helper/http-error-object';
+import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
+import { HttpErrorConstants } from 'src/common/http/http-error-objects';
+import { FriendRequestResponseDto } from '../dto/response/friend-request.response.dto';
+import { RespondToFriendRequestDto } from '../dto/request/respond-friend-request.dto';
+import { PaginatedFriendListResponseDto } from '../dto/response/friend-with-activity.response.dto';
+import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
+
+//? Send Friend Request
+export const SendFriendRequestDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '친구 요청 전송',
+      description: `
+      - 친구 요청 전송 엔드포인트 
+      - receiverId는 친구 요청을 받는 사용자의 userId 값이고, 이전에 사용자가 거절했던 이력이 있더라도 Pending(대기) 상태로 upsert 된다.
+      - 본인이 본인에게 친구 요청을 보내면 400 에러를 반환한다.
+      `,
+    }),
+    ApiBody({
+      type: SendFriendRequestDto,
+    }),
+    ApiCreatedResponseTemplate({
+      description: '친구 요청 성공',
+      type: SendFriendRequestResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpFriendshipErrorConstants.NOT_FOUND_USER],
+      },
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpFriendshipErrorConstants.SAME_USER_ID],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Find By Receive Id
+export const FindByReceiveIdDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '나에게 요청을 보낸 유저 정보 조회',
+      description: `
+      - 나에게 요청을 보낸 유저 정보를 조회한다.
+      - 요청을 보낸 사용자가 없을 경우 빈 배열을 리턴한다.
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: '나에게 요청을 보낸 유저 정보 조회 성공',
+      type: FriendRequestResponseDto,
+      isArray: true,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Respond To Friend Request
+export const RespondToFriendRequestDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '친구 요청에 대한 사용자의 응답을 처리하는 엔드포인트',
+      description: `
+      - 상대방이 나에게 보낸 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하기 위한 엔드포인트
+      - 사용자의 Bearer Token의 user 정보를 기반으로 본인에게 온 요청인지 체크 후 403 에러를 반환
+      - 친구 요청 id값이 불일치 하면 404 에러를 반환 
+      - 사용자가 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하면 친구 관계 테이블을 생성 또는 미생성한다. 
+      - 거절 (REJECTED) 했을 경우, 기존 친구 요청 테이블에서 상태값이 REJECTED로 업데이트 되고, 나의 요청 목록에서 제거된다.
+      - 친구 요청을 수락(ACCEPTED)시, http response의 result로 "친구 요청을 수락하였습니다." 
+      - 친구 요청을 거절(REJECTED)시, http response의 result로 "친구 요청을 거절하였습니다."
+      `,
+    }),
+    ApiParam({
+      description: '친구 요청 id ( 내가 받은 친구요청 리스트를 조회 했을 때의 id ) ',
+      name: 'id',
+      type: Number,
+      required: true,
+      example: 1,
+    }),
+    ApiBody({
+      type: RespondToFriendRequestDto,
+    }),
+    ApiOkResponseTemplate({
+      description: '친구 요청 응답 성공',
+      type: String,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpFriendshipErrorConstants.NOT_FOUND_FRIEND_REQUEST],
+      },
+      {
+        status: StatusCodes.FORBIDDEN,
+        errorFormatList: [HttpFriendshipErrorConstants.INVALID_FRIEND_REQUEST_RECEIVER],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Find All Friendship
+export const FindAllFriendshipDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '나의 친구 리스트 조회',
+      description: `
+      - 나의 친구 리스트를 조회한다.
+      - 친구 리스트는 친구의 사용자(userId) ID, 이메일, 이름, 프로필 정보, 활동 수, 생성 시간을 포함한다.
+      - query 파라미터로 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.
+      `,
+    }),
+    ApiQuery({
+      name: 'page',
+      type: Number,
+      required: false,
+      example: 1,
+    }),
+    ApiQuery({
+      name: 'limit',
+      type: Number,
+      required: false,
+      example: 20,
+    }),
+    ApiOkResponseTemplate({
+      description: '나의 친구 리스트 조회 성공',
+      type: PaginatedFriendListResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Remove Friendship
+export const RemoveFriendshipDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '친구 제거',
+      description: `
+      - 친구를 제거한다.
+      - 친구 관계를 제거할 권한이 없으면 403 에러를 반환한다(Bearer Token의 user 정보를 기반으로 본인의 친구 관계가 아닌 경우)
+      - 친구 관계를 찾을 수 없으면 404 에러를 반환한다. 
+      - 친구를 제거하면 친구 요청, 활동 내역, 친구 관계 정보가 모두 일괄로 hard delete 된다.
+      `,
+    }),
+    ApiParam({
+      description: '친구 관계 id',
+      name: 'id',
+      type: Number,
+      required: true,
+      example: 1,
+    }),
+    ApiNoContentResponseTemplate({
+      description: '친구 관계 제거 성공',
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpFriendshipErrorConstants.NOT_FOUND_FRIENDSHIP],
+      },
+      {
+        status: StatusCodes.FORBIDDEN,
+        errorFormatList: [HttpFriendshipErrorConstants.FORBIDDEN_FRIENDSHIP_REMOVAL],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};

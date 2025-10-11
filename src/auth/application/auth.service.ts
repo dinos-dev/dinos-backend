@@ -15,7 +15,12 @@ import { TokenPayLoad } from 'src/auth/domain/interface/token-payload.interface'
 import { DateUtils } from 'src/common/utils/date-util';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
-import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import {
+  INVITE_CODE_REPOSITORY,
+  PROFILE_REPOSITORY,
+  TOKEN_REPOSITORY,
+  USER_REPOSITORY,
+} from 'src/common/config/common.const';
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { SlackService } from 'src/infrastructure/slack/slack.service';
@@ -27,8 +32,11 @@ import { LocalUserCommand } from './command/local-user.command';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { TokenEntity } from '../domain/entities/token.entity';
 import { Provider } from 'src/user/domain/const/provider.enum';
-import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
+import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
 import { Transactional } from '@nestjs-cls/transactional';
+import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
+import { generateInviteCode } from 'src/user/application/helper/generated-invite-code';
+import { InviteCodeEntity } from 'src/user/domain/entities/invite-code.entity';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +47,8 @@ export class AuthService {
     private readonly tokenRepository: ITokenRepository,
     @Inject(PROFILE_REPOSITORY)
     private readonly profileRepository: IProfileRepository,
+    @Inject(INVITE_CODE_REPOSITORY)
+    private readonly inviteCodeRepository: IInviteCodeRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: WinstonLoggerService,
@@ -78,18 +88,9 @@ export class AuthService {
       // 6) 토큰 정보 추가 or 업데이트
       await this.tokenRepository.updateOrCreateRefToken(user, refreshToken, agent, expiresAt);
 
-      // 7) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
+      // 7) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성, 초대 코드 생성
       if (isNew) {
-        // slack webhook notification
-        this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
-
-        // create default profile
-        const defaultProfile = buildDefaultProfile(user.id);
-
-        // create profile instance
-        const profileEntity = ProfileEntity.create(defaultProfile);
-
-        await this.profileRepository.createProfile(profileEntity);
+        await this.newAccountGeneratedHook(user, 'social');
       }
 
       this.logger.log(`[소셜] ${command.email} 유저가 로그인 하였습니다 🎉`);
@@ -137,16 +138,7 @@ export class AuthService {
 
       // 6) 최초 가입일 경우 slack WebHook 알림, default 프로필 생성
       if (isNew) {
-        // slack webhook notification
-        this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${command.email} 유저가 회원가입 하였습니다 🎉`);
-
-        // create default profile
-
-        const defaultProfile = buildDefaultProfile(user.id);
-
-        // create profile instance
-        const profileEntity = ProfileEntity.create(defaultProfile);
-        await this.profileRepository.createProfile(profileEntity);
+        await this.newAccountGeneratedHook(user, 'local');
       }
 
       this.logger.log(`[로컬] ${command.email} 유저가 로그인 하였습니다 🎉`);
@@ -171,7 +163,7 @@ export class AuthService {
     const parseToken = await this.validateBearerToken(token);
     const userEntity = await this.userRepository.findAllRefToken(userId);
 
-    if (!userEntity) {
+    if (!userEntity.user) {
       throw new NotFoundException(HttpErrorConstants.NOT_FOUND_USER);
     }
 
@@ -182,7 +174,7 @@ export class AuthService {
       throw new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN);
     }
 
-    const accessToken = await this.issueToken(userEntity, false);
+    const accessToken = await this.issueToken(userEntity.user, false);
 
     return accessToken.token;
   }
@@ -323,5 +315,56 @@ export class AuthService {
     };
 
     throw new ConflictException(errorMap[provider]);
+  }
+
+  /**
+   * isNew account generated invite code & profile
+   * @param user
+   * @param type local | social
+   */
+  private async newAccountGeneratedHook(user: UserEntity, type: 'local' | 'social'): Promise<void> {
+    // create default profile
+    const defaultProfile = buildDefaultProfile(user.id);
+    // create profile instance
+    const profileEntity = ProfileEntity.create(defaultProfile);
+    await this.profileRepository.createProfile(profileEntity);
+
+    // generated invite code
+    await this.createUniqueInviteCode(user.id);
+
+    // register user slack webhook
+    if (type === 'social') {
+      this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${user.email} 유저가 회원가입 하였습니다 🎉`);
+    } else {
+      this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${user.email} 유저가 회원가입 하였습니다 🎉`);
+    }
+  }
+
+  /**
+   * 중복되지 않는 초대 코드 생성 및 저장
+   * @param userId
+   * @returns void
+   */
+  private async createUniqueInviteCode(userId: number): Promise<void> {
+    let code: string;
+    let attempts = 0;
+    const maxAttempts = 3;
+
+    while (attempts < maxAttempts) {
+      code = generateInviteCode();
+
+      const existingCode = await this.inviteCodeRepository.isExistCode(code);
+
+      if (!existingCode) {
+        const inviteCodeEntity = InviteCodeEntity.create({ userId, code });
+        await this.inviteCodeRepository.createInviteCode(inviteCodeEntity);
+        return;
+      }
+      attempts++;
+      this.logger.warn(`[초대 코드 생성] ${code}가 중복되었습니다. 다시 생성합니다. (attempts: ${attempts})`);
+    }
+
+    // 3번 실패시 rollback
+    throw new ConflictException(HttpErrorConstants.CONFLICT_USER_INVITE_CODE);
   }
 }

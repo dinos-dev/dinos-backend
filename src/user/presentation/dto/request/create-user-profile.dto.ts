@@ -13,7 +13,7 @@ export class CreateUserProfileDto {
   @IsNotEmpty()
   @IsString()
   @MaxLength(20)
-  nickName: string;
+  nickname: string;
 
   @ApiProperty({
     description: '프로필 간단 소개',

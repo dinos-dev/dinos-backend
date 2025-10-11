@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlatFormEnumType } from '../../domain/constant/platform.const';
+import { PlatformEnumType } from '../../domain/constant/platform.const';
 import { ITokenRepository } from '../../domain/repository/token.repository.interface';
 import { Token } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
@@ -12,20 +12,20 @@ import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-pr
 @Injectable()
 export class TokenRepository extends PrismaRepository<Token> implements ITokenRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    super(txHost, (client) => client.token);
+    super(txHost, (client) => client.token, TokenMapper.toDomain);
   }
 
   /**
    * 상태에 따른 리프레시 값 변경
    * @param user User
    * @param refToken refreshToken
-   * @param platForm signup Platform
+   * @param platform signup platform
    * @returns
    */
   async updateOrCreateRefToken(
     userEntity: UserEntity,
     refToken: string,
-    platForm: PlatFormEnumType,
+    platform: PlatformEnumType,
     expiresAt: Date,
   ): Promise<TokenEntity> {
     const userToken = await this.model.findFirst({
@@ -44,7 +44,7 @@ export class TokenRepository extends PrismaRepository<Token> implements ITokenRe
         data: {
           userId: userEntity.id,
           refToken,
-          platForm,
+          platform,
           expiresAt,
         },
       });

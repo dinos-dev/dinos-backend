@@ -245,7 +245,7 @@ describe('AuthService', () => {
       const tx = {} as any;
 
       const mockDefaultProfileDto = {
-        nickName: 'test-nick',
+        nickname: 'test-nick',
         comment: '소개를 작성해주세요',
         headerId: 1,
         bodyId: 2,
@@ -349,7 +349,7 @@ describe('AuthService', () => {
       };
 
       const mockDefaultProfileDto = {
-        nickName: 'test-nick',
+        nickname: 'test-nick',
         comment: '소개를 작성해주세요',
         headerId: 1,
         bodyId: 2,

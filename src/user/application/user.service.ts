@@ -9,13 +9,20 @@ import {
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { HttpUserErrorConstants } from './helper/http-error-object';
 
-import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import {
+  INVITE_CODE_REPOSITORY,
+  PROFILE_REPOSITORY,
+  TOKEN_REPOSITORY,
+  USER_REPOSITORY,
+} from 'src/common/config/common.const';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { ITokenRepository } from '../../auth/domain/repository/token.repository.interface';
 import { UserProfileCommand } from './command/user-profile.command';
-import { ProfileEntity } from '../domain/entities/user-profile.entity';
+import { ProfileEntity } from '../domain/entities/profile.entity';
 import { Transactional } from '@nestjs-cls/transactional';
+import { IInviteCodeRepository } from '../domain/repository/invite-code.repository.interface';
+import { UserEntity } from '../domain/entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -26,6 +33,8 @@ export class UserService {
     private readonly profileRepository: IProfileRepository,
     @Inject(TOKEN_REPOSITORY)
     private readonly tokenRepository: ITokenRepository,
+    @Inject(INVITE_CODE_REPOSITORY)
+    private readonly inviteCodeRepository: IInviteCodeRepository,
   ) {}
 
   /**
@@ -100,5 +109,19 @@ export class UserService {
     const profile = await this.profileRepository.findByUserId(userId);
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
     return profile;
+  }
+
+  /**
+   * 초대코드 기반 유저 조회
+   * @param code
+   * @returns User
+   */
+  async findByInviteCode(inviteCode: string): Promise<{ user: UserEntity; profile: ProfileEntity }> {
+    const inviteCodeByUser = await this.inviteCodeRepository.findByUnique('code', inviteCode);
+    if (!inviteCodeByUser) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_USER);
+
+    const { user, profile } = await this.userRepository.findByUserProfile(inviteCodeByUser.userId);
+
+    return { user, profile };
   }
 }

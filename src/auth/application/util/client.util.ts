@@ -1,22 +1,22 @@
-import { PlatFormEnumType, PlatFormType } from '../../domain/constant/platform.const';
+import { PlatformEnumType, PlatformType } from '../../domain/constant/platform.const';
 
-export async function detectPlatform(userAgent: string): Promise<PlatFormEnumType> {
+export async function detectPlatform(userAgent: string): Promise<PlatformEnumType> {
   let currentOS;
 
   const web = /mozilla/i.test(userAgent);
 
   // WEB 브라우저 요청
   if (web) {
-    currentOS = PlatFormType.WEB;
+    currentOS = PlatformType.WEB;
   }
   // APP 요청
   else {
     if (userAgent.search('okhttp') > -1) {
-      currentOS = PlatFormType.ANDROID;
+      currentOS = PlatformType.ANDROID;
     } else if (userAgent.search('alamofire') > -1) {
-      currentOS = PlatFormType.IOS;
+      currentOS = PlatformType.IOS;
     } else {
-      currentOS = PlatFormType.UNKNOWN;
+      currentOS = PlatformType.UNKNOWN;
     }
   }
   return currentOS;

@@ -6,7 +6,7 @@ export class UserProfileMapper {
   static toCreateCommand(userId: number, dto: CreateUserProfileDto): UserProfileCommand {
     return new UserProfileCommand(
       userId,
-      dto.nickName,
+      dto.nickname,
       dto.comment,
       dto.headerId,
       dto.bodyId,
@@ -18,7 +18,7 @@ export class UserProfileMapper {
   static toUpdateCommand(userId: number, dto: UpdateUserProfileDto): UserProfileCommand {
     return new UserProfileCommand(
       userId,
-      dto.nickName,
+      dto.nickname,
       dto.comment,
       dto.headerId,
       dto.bodyId,

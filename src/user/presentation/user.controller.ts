@@ -4,16 +4,18 @@ import { ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import {
   CreateUserProfileDocs,
+  FindByInviteCodeDocs,
   FindByProfileDocs,
   UpdateUserProfileDocs,
   WithdrawUserDocs,
 } from './swagger/rest-swagger.decorator';
 import { HttpResponse } from 'src/common/http/http-response';
-import { UserId } from './decorator/user-id.decorator';
+import { UserId } from '../../common/decorator/user-id.decorator';
 import { CreateUserProfileDto } from './dto/request/create-user-profile.dto';
 import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
-import { UserProfileResponseDto } from './dto/response/user-profile-response.dto';
+import { ProfileResponseDto } from './dto/response/profile.response.dto';
 import { UserProfileMapper } from './dto/mapper/user-profile.mapper';
+import { UserWithProfileResponseDto } from './dto/response/user-with-profile.response.dto';
 
 @ApiTags('User - 회원관리')
 @ApiCommonErrorResponseTemplate()
@@ -27,11 +29,11 @@ export class UserController {
   async createProfile(
     @UserId() userId: number,
     @Body() dto: CreateUserProfileDto,
-  ): Promise<HttpResponse<UserProfileResponseDto>> {
+  ): Promise<HttpResponse<ProfileResponseDto>> {
     const command = UserProfileMapper.toCreateCommand(userId, dto);
     const profile = await this.userService.createProfile(command);
 
-    const result = UserProfileResponseDto.fromResult(profile);
+    const result = ProfileResponseDto.fromResult(profile);
 
     return HttpResponse.created(result);
   }
@@ -43,22 +45,22 @@ export class UserController {
     @UserId() userId: number,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserProfileDto,
-  ): Promise<HttpResponse<UserProfileResponseDto>> {
+  ): Promise<HttpResponse<ProfileResponseDto>> {
     const command = UserProfileMapper.toUpdateCommand(userId, dto);
 
     const profile = await this.userService.updateProfile(id, command);
 
-    const result = UserProfileResponseDto.fromResult(profile);
+    const result = ProfileResponseDto.fromResult(profile);
     return HttpResponse.ok(result);
   }
 
   //? userId 기반 프로필 조회
   @FindByProfileDocs()
   @Get('/mine/profile')
-  async findByProfile(@UserId() userId: number): Promise<HttpResponse<UserProfileResponseDto>> {
+  async findByProfile(@UserId() userId: number): Promise<HttpResponse<ProfileResponseDto>> {
     const profile = await this.userService.findByProfile(userId);
 
-    const result = UserProfileResponseDto.fromResult(profile);
+    const result = ProfileResponseDto.fromResult(profile);
 
     return HttpResponse.ok(result);
   }
@@ -69,5 +71,14 @@ export class UserController {
   async withdrawUser(@UserId() userId: number): Promise<HttpResponse<void>> {
     await this.userService.withdrawUser(userId);
     return HttpResponse.noContent();
+  }
+
+  //? 초대코드 기반 유저 조회
+  @FindByInviteCodeDocs()
+  @Get('invite-code/:inviteCode')
+  async findByInviteCode(@Param('inviteCode') inviteCode: string): Promise<HttpResponse<UserWithProfileResponseDto>> {
+    const userByProfile = await this.userService.findByInviteCode(inviteCode);
+    const result = UserWithProfileResponseDto.fromResult(userByProfile.user, userByProfile.profile);
+    return HttpResponse.ok(result);
   }
 }

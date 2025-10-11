@@ -8,6 +8,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { HttpErrorConstants } from './common/http/http-error-objects';
 import { WinstonLoggerService } from './infrastructure/logger/winston-logger.service';
+import { HttpResponseInterceptor } from './common/interceptor/http-response.interceptor';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -21,6 +22,8 @@ async function bootstrap() {
   app.useLogger(logger);
 
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector), {}));
+
+  app.useGlobalInterceptors(new HttpResponseInterceptor());
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -1,16 +1,16 @@
 /** user-agent 타입을 체크하기 위한 상수 객체 */
 
-export const PlatFormType = Object.freeze({
+export const PlatformType = Object.freeze({
   WEB: 'WEB',
   IOS: 'IOS',
   ANDROID: 'ANDROID',
   UNKNOWN: 'UNKNOWN',
 } as const);
 
-type PlatFormType = (typeof PlatFormType)[keyof typeof PlatFormType];
+type PlatformType = (typeof PlatformType)[keyof typeof PlatformType];
 
 /**DB field 값에서 사용되는 ENUM 상수 객체*/
-export enum PlatFormEnumType {
+export enum PlatformEnumType {
   WEB = 'WEB',
   IOS = 'IOS',
   ANDROID = 'ANDROID',

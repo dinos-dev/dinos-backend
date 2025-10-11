@@ -1,5 +1,5 @@
-import { TokenEntity } from 'src/auth/domain/entities/token.entity';
 import { Provider } from '../const/provider.enum';
+import { ProfileEntity } from './profile.entity';
 
 export class UserEntity {
   constructor(
@@ -14,8 +14,7 @@ export class UserEntity {
     public updatedAt: Date | null,
     public deletedAt: Date | null,
     public version: number | null,
-    public readonly tokens: TokenEntity[],
-    public profileId?: number | null,
+    public profile?: ProfileEntity,
   ) {}
 
   static create(params: {
@@ -37,7 +36,8 @@ export class UserEntity {
       null,
       null,
       0,
-      [],
+      // [],
+      // null,
     );
   }
 

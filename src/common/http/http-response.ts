@@ -28,6 +28,10 @@ export class HttpResponse<T> {
     this.error = error;
   }
 
+  getStatus(): number {
+    return this.statusCode;
+  }
+
   // // Getter methods
   // get _statusCode(): number {
   //   return this.statusCode;

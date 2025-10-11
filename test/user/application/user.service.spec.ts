@@ -58,7 +58,7 @@ describe('UserService', () => {
       // 1. given
       const userId = 1;
       const dto: CreateUserProfileDto = {
-        nickName: 'Mock User',
+        nickname: 'Mock User',
         comment: 'Mock Comment',
         headerId: 1,
         bodyId: 1,
@@ -98,7 +98,7 @@ describe('UserService', () => {
       // 1. given
       const id = 1;
       const dto: UpdateUserProfileDto = {
-        nickName: 'Mock Update User',
+        nickname: 'Mock Update User',
         comment: 'Mock Update Comment',
         headerId: 3,
         bodyId: 2,

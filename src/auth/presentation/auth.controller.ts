@@ -8,7 +8,7 @@ import { AuthService } from 'src/auth/application/auth.service';
 import { HttpResponse } from 'src/common/http/http-response';
 import { LocalLoginDocs, LogOutDocs, RotateAccessTokenDocs, SocialLoginDocs } from './swagger/rest-swagger.decorator';
 import { RefreshTokenGuard } from 'src/auth/presentation/guard/refresh-token.guard';
-import { UserId } from 'src/user/presentation/decorator/user-id.decorator';
+import { UserId } from 'src/common/decorator/user-id.decorator';
 import { Authorization } from 'src/auth/presentation/decorator/authorization.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { SocialToken } from 'src/auth/presentation/decorator/social-token.decorator';

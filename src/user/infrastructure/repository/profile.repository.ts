@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { Profile } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
-import { ProfileEntity } from 'src/user/domain/entities/user-profile.entity';
-import { ProfileMapper } from '../mapper/user-profile.mapper';
+import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
+import { ProfileMapper } from '../mapper/profile.mapper';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 @Injectable()
 export class ProfileRepository extends PrismaRepository<Profile> implements IProfileRepository {
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
-    super(txHost, (client) => client.profile);
+    super(txHost, (client) => client.profile, ProfileMapper.toDomain);
   }
 
   /**
@@ -22,7 +22,7 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
   async createProfile(entity: ProfileEntity): Promise<ProfileEntity> {
     const profile = await this.model.create({
       data: {
-        nickName: entity.nickName,
+        nickname: entity.nickname,
         comment: entity.comment,
         headerId: entity.headerId,
         bodyId: entity.bodyId,
@@ -46,7 +46,7 @@ export class ProfileRepository extends PrismaRepository<Profile> implements IPro
     const profile = await this.model.update({
       where: { id },
       data: {
-        nickName: entity.nickName,
+        nickname: entity.nickname,
         comment: entity.comment,
         headerId: entity.headerId,
         bodyId: entity.bodyId,

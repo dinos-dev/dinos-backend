@@ -101,7 +101,7 @@ describe('ProfileRepository', () => {
       // 1. given
       const userId = 1;
       const dto: CreateUserProfileDto = {
-        nickName: 'Mock User',
+        nickname: 'Mock User',
         comment: 'Mock Comment',
         headerId: 1,
         bodyId: 1,
@@ -131,7 +131,7 @@ describe('ProfileRepository', () => {
       // 1. given
       const id = 1;
       const dto: UpdateUserProfileDto = {
-        nickName: 'update mock user',
+        nickname: 'update mock user',
         comment: 'update mock comment',
         headerId: 2,
         bodyId: 3,

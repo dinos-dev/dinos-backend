@@ -2,7 +2,7 @@ export class ProfileEntity {
   constructor(
     public readonly id: number | null,
     public readonly userId: number,
-    public nickName: string,
+    public nickname: string,
     public comment: string | null,
     public headerId: number | null,
     public bodyId: number | null,
@@ -15,7 +15,7 @@ export class ProfileEntity {
 
   static create(params: {
     userId: number;
-    nickName: string;
+    nickname: string;
     comment?: string | null;
     headerId?: number | null;
     bodyId?: number | null;
@@ -25,7 +25,7 @@ export class ProfileEntity {
     return new ProfileEntity(
       null,
       params.userId,
-      params.nickName,
+      params.nickname,
       params.comment ?? null,
       params.headerId ?? null,
       params.bodyId ?? null,

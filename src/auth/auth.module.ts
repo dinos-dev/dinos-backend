@@ -13,11 +13,17 @@ import { HttpModule } from '@nestjs/axios';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from 'src/auth/infrastructure/strategy/jwt.strategy';
 import { JwtRefreshStrategy } from 'src/auth/infrastructure/strategy/jwt-refresh.strategy';
-import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
+import {
+  INVITE_CODE_REPOSITORY,
+  PROFILE_REPOSITORY,
+  TOKEN_REPOSITORY,
+  USER_REPOSITORY,
+} from 'src/common/config/common.const';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { UserRepository } from 'src/user/infrastructure/repository/user.repository';
 import { SlackService } from 'src/infrastructure/slack/slack.service';
 import { ProfileRepository } from 'src/user/infrastructure/repository/profile.repository';
+import { InviteCodeRepository } from 'src/user/infrastructure/repository/invite-code.repository';
 
 @Module({
   imports: [JwtModule.register({}), HttpModule.register({}), PassportModule],
@@ -35,6 +41,10 @@ import { ProfileRepository } from 'src/user/infrastructure/repository/profile.re
     {
       provide: PROFILE_REPOSITORY,
       useClass: ProfileRepository,
+    },
+    {
+      provide: INVITE_CODE_REPOSITORY,
+      useClass: InviteCodeRepository,
     },
     NaverStrategy,
     GoogleStrategy,
