@@ -49,6 +49,30 @@ export class UserWithProfileResponseDto {
         example: '안녕하세요!',
         nullable: true,
       },
+      headerId: {
+        type: 'number',
+        description: '헤더 ID',
+        example: 1,
+        nullable: true,
+      },
+      bodyId: {
+        type: 'number',
+        description: '바디 ID',
+        example: 1,
+        nullable: true,
+      },
+      headerColor: {
+        type: 'string',
+        description: '헤더 색상',
+        example: '#FF5733',
+        nullable: true,
+      },
+      bodyColor: {
+        type: 'string',
+        description: '바디 색상',
+        example: '#FF5733',
+        nullable: true,
+      },
     },
     nullable: true,
   })
@@ -68,6 +92,10 @@ export class UserWithProfileResponseDto {
           ? {
               nickname: profile.nickname,
               comment: profile.comment,
+              headerId: profile.headerId,
+              bodyId: profile.bodyId,
+              headerColor: profile.headerColor,
+              bodyColor: profile.bodyColor,
             }
           : null,
       },

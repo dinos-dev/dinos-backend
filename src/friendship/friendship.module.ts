@@ -8,22 +8,28 @@ import { FriendRequestRepository } from './infrastructure/repository/friend-requ
 import {
   FRIEND_REQUEST_REPOSITORY,
   FRIENDSHIP_ACTIVITY_REPOSITORY,
+  FRIENDSHIP_QUERY_REPOSITORY,
   FRIENDSHIP_REPOSITORY,
   USER_REPOSITORY,
 } from 'src/common/config/common.const';
 import { UserRepository } from 'src/user/infrastructure/repository/user.repository';
+import { FriendshipQueryRepository } from './infrastructure/query/friendship.query';
 
 @Module({
   controllers: [FriendshipController],
   providers: [
     FriendshipService,
     {
-      provide: USER_REPOSITORY,
-      useClass: UserRepository,
-    },
-    {
       provide: FRIENDSHIP_REPOSITORY,
       useClass: FriendshipRepository,
+    },
+    {
+      provide: FRIENDSHIP_QUERY_REPOSITORY,
+      useClass: FriendshipQueryRepository,
+    },
+    {
+      provide: USER_REPOSITORY,
+      useClass: UserRepository,
     },
     {
       provide: FRIENDSHIP_ACTIVITY_REPOSITORY,
