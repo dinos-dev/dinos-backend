@@ -50,6 +50,7 @@ export class FriendshipController {
     const command = new RequestFriendshipCommand(userId, dto.receiverId);
     const friendRequest = await this.friendshipService.requestFriendship(command);
     const responseData = SendFriendRequestResponseDto.fromResult(friendRequest);
+
     return HttpResponse.created(responseData);
   }
 

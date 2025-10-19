@@ -77,6 +77,30 @@ export class FriendRequestResponseDto {
             example: '안녕하세요!',
             nullable: true,
           },
+          headerId: {
+            type: 'number',
+            description: '헤더 ID',
+            example: 1,
+            nullable: true,
+          },
+          bodyId: {
+            type: 'number',
+            description: '바디 ID',
+            example: 1,
+            nullable: true,
+          },
+          headerColor: {
+            type: 'string',
+            description: '헤더 색상',
+            example: '#FF5733',
+            nullable: true,
+          },
+          bodyColor: {
+            type: 'string',
+            description: '바디 색상',
+            example: '#FF5733',
+            nullable: true,
+          },
         },
       },
     },
@@ -89,6 +113,10 @@ export class FriendRequestResponseDto {
     profile: {
       nickname: string;
       comment: string | null;
+      headerId: number | null;
+      bodyId: number | null;
+      headerColor: string | null;
+      bodyColor: string | null;
     } | null;
   };
 
@@ -110,6 +138,10 @@ export class FriendRequestResponseDto {
             ? {
                 nickname: friendRequest.sender.profile.nickname,
                 comment: friendRequest.sender.profile.comment,
+                headerId: friendRequest.sender.profile.headerId,
+                bodyId: friendRequest.sender.profile.bodyId,
+                headerColor: friendRequest.sender.profile.headerColor,
+                bodyColor: friendRequest.sender.profile.bodyColor,
               }
             : null,
         },
