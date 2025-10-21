@@ -116,8 +116,11 @@ cd dinos-backend
 # !if you don't install pnpm, you must install pnpm
 pnpm install 
 
+# external dependence credentials ( sdk, api_key ... etc ) !see notion ( engineering docs )
+touch config 
+
 # see .env.example 
-touch .env.production .env.development 
+touch .env
 
 # start docker compose 
 docker-compose up --build
@@ -143,7 +146,9 @@ pnpm start:prod
 
 ---
 
-### prisma setup
+### prisma setup & migrate
+
+- 실제 운영중에는 DDL 구문을 작성, dev container 환경에서만 local migrate 진행
 
 ```bash
 # 최초 세팅에서만 적용
