@@ -63,3 +63,7 @@ mongo-data
 # env 
 .env.development
 .env.production
+
+# external dependence credentials
+config
+*.sdk.json
