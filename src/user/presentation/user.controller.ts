@@ -5,7 +5,7 @@ import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-
 import {
   CreateUserProfileDocs,
   FindByInviteCodeDocs,
-  FindByProfileDocs,
+  FindByProfileWithInviteInfoDocs,
   UpdateUserProfileDocs,
   WithdrawUserDocs,
 } from './swagger/rest-swagger.decorator';
@@ -16,6 +16,7 @@ import { UpdateUserProfileDto } from './dto/request/update-user-profile.dto';
 import { ProfileResponseDto } from './dto/response/profile.response.dto';
 import { UserProfileMapper } from './dto/mapper/user-profile.mapper';
 import { UserWithProfileResponseDto } from './dto/response/user-with-profile.response.dto';
+import { UserProfileWithInviteResponseDto } from './dto/response/user-profile-with-invite.response.dto';
 
 @ApiTags('User - 회원관리')
 @ApiCommonErrorResponseTemplate()
@@ -54,13 +55,13 @@ export class UserController {
     return HttpResponse.ok(result);
   }
 
-  //? userId 기반 프로필 조회
-  @FindByProfileDocs()
+  //? userId 기반 프로필 & 초대코드 & 요청 정보 조회
+  @FindByProfileWithInviteInfoDocs()
   @Get('/mine/profile')
-  async findByProfile(@UserId() userId: number): Promise<HttpResponse<ProfileResponseDto>> {
-    const profile = await this.userService.findByProfile(userId);
+  async findByProfileWithInviteInfo(@UserId() userId: number): Promise<HttpResponse<UserProfileWithInviteResponseDto>> {
+    const profile = await this.userService.findByProfileWithInviteInfo(userId);
 
-    const result = ProfileResponseDto.fromResult(profile);
+    const result = UserProfileWithInviteResponseDto.fromDto(profile);
 
     return HttpResponse.ok(result);
   }

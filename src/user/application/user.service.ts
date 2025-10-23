@@ -13,6 +13,7 @@ import {
   INVITE_CODE_REPOSITORY,
   PROFILE_REPOSITORY,
   TOKEN_REPOSITORY,
+  USER_QUERY_REPOSITORY,
   USER_REPOSITORY,
 } from 'src/common/config/common.const';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
@@ -23,6 +24,8 @@ import { ProfileEntity } from '../domain/entities/profile.entity';
 import { Transactional } from '@nestjs-cls/transactional';
 import { IInviteCodeRepository } from '../domain/repository/invite-code.repository.interface';
 import { UserEntity } from '../domain/entities/user.entity';
+import { IUserQuery } from './interface/user-query.interface';
+import { UserProfileWithInviteDto } from './dto/user-profile-with-invite.dto';
 
 @Injectable()
 export class UserService {
@@ -35,6 +38,8 @@ export class UserService {
     private readonly tokenRepository: ITokenRepository,
     @Inject(INVITE_CODE_REPOSITORY)
     private readonly inviteCodeRepository: IInviteCodeRepository,
+    @Inject(USER_QUERY_REPOSITORY)
+    private readonly userQueryRepository: IUserQuery,
   ) {}
 
   /**
@@ -105,8 +110,8 @@ export class UserService {
    * @param userId
    * @returns UserProfile
    */
-  async findByProfile(userId: number): Promise<ProfileEntity> {
-    const profile = await this.profileRepository.findByUserId(userId);
+  async findByProfileWithInviteInfo(userId: number): Promise<UserProfileWithInviteDto> {
+    const profile = await this.userQueryRepository.findProfileByUserId(userId);
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
     return profile;
   }

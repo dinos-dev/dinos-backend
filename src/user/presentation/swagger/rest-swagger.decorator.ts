@@ -11,6 +11,7 @@ import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no
 import { UpdateUserProfileDto } from '../dto/request/update-user-profile.dto';
 import { ProfileResponseDto } from '../dto/response/profile.response.dto';
 import { UserWithProfileResponseDto } from '../dto/response/user-with-profile.response.dto';
+import { UserProfileWithInviteResponseDto } from '../dto/response/user-profile-with-invite.response.dto';
 
 //? Withdraw
 export const WithdrawUserDocs = () => {
@@ -35,17 +36,18 @@ export const WithdrawUserDocs = () => {
 };
 
 //? Find By User Profile
-export const FindByProfileDocs = () => {
+export const FindByProfileWithInviteInfoDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: `유저 프로필 조회`,
+      summary: `유저의 프로필 정보 및 초대코드 & 친구 요청수 조회 `,
       description: `
         - token에 담긴 userId 값을 기반으로 유저 프로필 정보 조회
+        - userId 값을 base로 사용자의 프로필 정보, 초대코드, 친구 요청건수를 조회한다.
         `,
     }),
     ApiOkResponseTemplate({
-      description: '유저 프로필 조회 성공',
-      type: ProfileResponseDto,
+      description: '유저의 프로필 정보 및 초대코드 & 친구 요청수 조회 성공',
+      type: UserProfileWithInviteResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
@@ -54,7 +56,7 @@ export const FindByProfileDocs = () => {
       },
       {
         status: StatusCodes.NOT_FOUND,
-        errorFormatList: [HttpErrorConstants.NOT_FOUND_USER],
+        errorFormatList: [HttpUserErrorConstants.NOT_FOUND_PROFILE],
       },
     ]),
   );
