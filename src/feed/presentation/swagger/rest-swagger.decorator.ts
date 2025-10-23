@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiParam } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam } from '@nestjs/swagger';
 
 import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
 import { HomeFeedResponseDto } from '../dto/response/home-feed.response.dto';
@@ -30,6 +30,7 @@ export const FindAllFeedDocs = () => {
 //? Find By Home Feed
 export const FindByHomeFeedDocs = () => {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: `홈 피드 조회`,
       description: `
@@ -53,6 +54,7 @@ export const FindByHomeFeedDocs = () => {
 //? FindById Feed
 export const FindByIdFeedDocs = () => {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: `ID 기반 피드 상세 조회`,
       description: `

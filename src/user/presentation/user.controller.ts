@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { UserService } from '../application/user.service';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import {
   CreateUserProfileDocs,
@@ -19,6 +19,7 @@ import { UserWithProfileResponseDto } from './dto/response/user-with-profile.res
 import { UserProfileWithInviteResponseDto } from './dto/response/user-profile-with-invite.response.dto';
 
 @ApiTags('User - 회원관리')
+@ApiBearerAuth()
 @ApiCommonErrorResponseTemplate()
 @Controller('users')
 export class UserController {

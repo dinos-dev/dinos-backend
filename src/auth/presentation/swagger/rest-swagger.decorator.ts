@@ -1,5 +1,5 @@
 import { applyDecorators } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiOperation } from '@nestjs/swagger';
 import { StatusCodes } from 'http-status-codes';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
@@ -125,6 +125,7 @@ export const RotateAccessTokenDocs = () => {
 /**로그아웃 */
 export const LogOutDocs = () => {
   return applyDecorators(
+    ApiBearerAuth(),
     ApiOperation({
       summary: '로그아웃',
       description: `
