@@ -67,6 +67,9 @@ $ pnpm install crypto
 
 # EventEmitter
 $ pnpm install @nestjs/event-emitter
+
+# firebase admin
+$ pnpm install firebase-admin
 ```
 
 </br>
