@@ -23,8 +23,6 @@ import {
 } from 'src/common/config/common.const';
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
-import { SlackService } from 'src/infrastructure/slack/slack.service';
-import { SERVICE_CHANNEL } from 'src/infrastructure/slack/constant/channel.const';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { buildDefaultProfile } from 'src/user/application/helper/profile.factory';
 import { SocialUserCommand } from './command/social-user.command';
@@ -37,6 +35,8 @@ import { Transactional } from '@nestjs-cls/transactional';
 import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
 import { generateInviteCode } from 'src/user/application/helper/generated-invite-code';
 import { InviteCodeEntity } from 'src/user/domain/entities/invite-code.entity';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { UserRegisteredEvent } from './event/user-registered.event';
 
 @Injectable()
 export class AuthService {
@@ -52,7 +52,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: WinstonLoggerService,
-    private readonly slackService: SlackService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   /**
@@ -332,12 +332,8 @@ export class AuthService {
     // generated invite code
     await this.createUniqueInviteCode(user.id);
 
-    // register user slack webhook
-    if (type === 'social') {
-      this.slackService.sendMessage(SERVICE_CHANNEL, `[소셜 가입] ${user.email} 유저가 회원가입 하였습니다 🎉`);
-    } else {
-      this.slackService.sendMessage(SERVICE_CHANNEL, `[로컬 가입] ${user.email} 유저가 회원가입 하였습니다 🎉`);
-    }
+    // event emit
+    this.eventEmitter.emit('user.registered', new UserRegisteredEvent(user.id, user.email, type));
   }
 
   /**

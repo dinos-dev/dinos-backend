@@ -21,12 +21,12 @@ import {
 } from 'src/common/config/common.const';
 import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { UserRepository } from 'src/user/infrastructure/repository/user.repository';
-import { SlackService } from 'src/infrastructure/slack/slack.service';
 import { ProfileRepository } from 'src/user/infrastructure/repository/profile.repository';
 import { InviteCodeRepository } from 'src/user/infrastructure/repository/invite-code.repository';
+import { EventModule } from 'src/infrastructure/event/event.module';
 
 @Module({
-  imports: [JwtModule.register({}), HttpModule.register({}), PassportModule],
+  imports: [JwtModule.register({}), HttpModule.register({}), PassportModule, EventModule],
   controllers: [AuthController],
   providers: [
     AuthService,
@@ -52,7 +52,6 @@ import { InviteCodeRepository } from 'src/user/infrastructure/repository/invite-
     JwtStrategy,
     JwtRefreshStrategy,
     PrismaService,
-    SlackService,
   ],
   exports: [AuthService, JwtModule, PassportModule, JwtStrategy, JwtRefreshStrategy],
 })
