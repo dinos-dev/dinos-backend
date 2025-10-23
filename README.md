@@ -64,6 +64,12 @@ $ pnpm install nestjs-cls @nestjs-cls @nestjs-cls/transactional @nestjs-cls/tran
 
 # crypto
 $ pnpm install crypto
+
+# EventEmitter
+$ pnpm install @nestjs/event-emitter
+
+# firebase admin
+$ pnpm install firebase-admin
 ```
 
 </br>

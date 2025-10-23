@@ -17,6 +17,7 @@ import { FeedModule } from './feed/feed.module';
 import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
 import { ClsModule } from './infrastructure/cls/cls.module';
 import { FriendshipModule } from './friendship/friendship.module';
+import { EventModule } from './infrastructure/event/event.module';
 
 @Module({
   imports: [
@@ -36,8 +37,9 @@ import { FriendshipModule } from './friendship/friendship.module';
     CommonModule,
     SlackModule,
     FeedModule,
-    ClsModule,
     FriendshipModule,
+    ClsModule,
+    EventModule,
   ],
   providers: [
     {
