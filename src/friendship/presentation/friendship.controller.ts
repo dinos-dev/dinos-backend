@@ -23,7 +23,7 @@ import {
   RespondToFriendRequestDocs,
   SendFriendRequestDocs,
 } from './swagger/rest-swagger.decorator';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import { HttpFriendshipErrorConstants } from '../application/helper/http-error-object';
 import { FriendRequestResponseDto } from './dto/response/friend-request.response.dto';
@@ -32,6 +32,7 @@ import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { PaginatedFriendListResponseDto } from './dto/response/friend-with-activity.response.dto';
 
 @ApiTags('Friendship - 친구관리')
+@ApiBearerAuth()
 @ApiCommonErrorResponseTemplate()
 @Controller('friendships')
 export class FriendshipController {
