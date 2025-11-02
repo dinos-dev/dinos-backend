@@ -182,9 +182,9 @@ model Bookmark {
 
   itemType  ItemType @map("item_type") 
 
-  //? reference mongo document id (mongo object id fix 24 characters)
+//? reference mongo document id (mongo object id fix 24 characters)
   feedRefId         String  @db.VarChar(24)  @map("feed_ref_id")
-  restaurantRefId   String? @db.VarChar(24)  @map("restaurant_ref_id")
+  restaurantRefId   String  @db.VarChar(24)  @map("restaurant_ref_id")
 
   // restaurant or feed name
   itemName String  @db.VarChar(50) @map("item_name")  
