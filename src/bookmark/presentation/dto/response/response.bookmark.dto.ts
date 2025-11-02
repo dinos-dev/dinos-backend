@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ItemType } from '@prisma/client';
-import { Expose } from 'class-transformer';
+import { Expose, plainToInstance } from 'class-transformer';
+import { PaginatedResponseDto } from 'src/common/dto/pagination.dto';
 
 export class ResponseBookmarkDto {
   constructor(partial: Partial<ResponseBookmarkDto>) {
@@ -80,4 +81,73 @@ export class ResponseBookmarkDto {
     type: Date,
   })
   createdAt: Date;
+}
+
+export class PaginatedBookmarkResponseDto extends PaginatedResponseDto<ResponseBookmarkDto> {
+  constructor(partial: Partial<PaginatedBookmarkResponseDto>) {
+    super(partial);
+  }
+
+  @Expose()
+  @ApiProperty({
+    description: '북마크 목록',
+    type: [ResponseBookmarkDto],
+  })
+  data: ResponseBookmarkDto[];
+
+  @Expose()
+  @ApiProperty({
+    description: '페이지네이션 메타데이터',
+  })
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+
+  static fromBookmarkResult(result: {
+    data: Array<{
+      id: number;
+      userId: number;
+      itemType: ItemType;
+      feedRefId: string;
+      restaurantRefId: string;
+      itemName: string;
+      itemImageUrl: string;
+      itemSub: string;
+      createdAt: Date;
+    }>;
+    meta: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }): PaginatedBookmarkResponseDto {
+    const mappedData = result.data.map((item) =>
+      plainToInstance(ResponseBookmarkDto, {
+        id: item.id,
+        userId: item.userId,
+        itemType: item.itemType,
+        feedRefId: item.feedRefId,
+        restaurantRefId: item.restaurantRefId,
+        itemName: item.itemName,
+        itemImageUrl: item.itemImageUrl,
+        itemSub: item.itemSub,
+        createdAt: item.createdAt,
+      }),
+    );
+
+    return plainToInstance(
+      PaginatedBookmarkResponseDto,
+      {
+        data: mappedData,
+        meta: result.meta,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
+  }
 }

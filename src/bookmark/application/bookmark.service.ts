@@ -4,6 +4,8 @@ import { BOOKMARK_QUERY_REPOSITORY, BOOKMARK_REPOSITORY } from 'src/common/confi
 import { IBookmarkQuery } from './interface/bookmark-query.interface';
 import { BookmarkEntity } from '../domain/entity/bookmark.entity';
 import { RequestBookmarkCommand } from './command/request-bookmark.command';
+import { ItemType } from '../domain/const/item-type.enum';
+import { PaginatedResult, PaginationOptions } from 'src/common/types/pagination.types';
 
 @Injectable()
 export class BookmarkService {
@@ -38,10 +40,24 @@ export class BookmarkService {
 
     //? 북마크 Entity 생성
     const bookmarkEntity = BookmarkEntity.create(command);
-    console.log('!!!!!!!!!!!!!!!!!!!!bookmarkEntity', bookmarkEntity);
 
     //? 북마크 없을 경우 create
     bookmark = await this.bookmarkRepository.create(bookmarkEntity);
     return { bookmark, action: 'create' };
+  }
+
+  /**
+   * 북마크 필터 조회
+   * @param userId
+   * @param itemType
+   * @param options
+   * @returns
+   */
+  async findFilterBookmark(
+    userId: number,
+    itemType: ItemType,
+    options?: PaginationOptions,
+  ): Promise<PaginatedResult<BookmarkEntity>> {
+    return await this.bookmarkQuery.findFilterBookmark(userId, itemType, options);
   }
 }

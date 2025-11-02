@@ -15,6 +15,7 @@ export class ToggleBookmarkDto {
 
   @IsNotEmpty()
   @IsString()
+  @Length(1, 24)
   @ApiProperty({
     description: '북마크 참조 ID',
     example: '87e17540e',
@@ -24,6 +25,7 @@ export class ToggleBookmarkDto {
 
   @IsOptional()
   @IsString()
+  @Length(1, 24)
   @ApiProperty({
     description: '북마크 대상이 RESTAURANT인 경우 해당 Restaurant의 고유 아이디',
     example: 'sc37e17540e',
