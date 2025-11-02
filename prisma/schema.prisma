@@ -29,11 +29,12 @@ model User {
   inviteCode InviteCode? 
   
   //? 1:N
-  tokens      Token[]
-  sentFriendRequests     FriendRequest[] @relation("RequestSender")    
-  receivedFriendRequests FriendRequest[] @relation("RequestReceiver")  
-  friendshipsAsRequester Friendship[]    @relation("FriendshipRequester") 
-  friendshipsAsAddressee Friendship[]    @relation("FriendshipAddressee") 
+  tokens                 Token[]            @relation("UserToken")
+  sentFriendRequests     FriendRequest[]    @relation("RequestSender")    
+  receivedFriendRequests FriendRequest[]    @relation("RequestReceiver")  
+  friendshipsAsRequester Friendship[]       @relation("FriendshipRequester") 
+  friendshipsAsAddressee Friendship[]       @relation("FriendshipAddressee") 
+  bookmarks              Bookmark[]         @relation("UserBookmark")
 
   @@map("users")
 }
@@ -127,7 +128,7 @@ model Token {
   version    Int           @default(0)
 
   //? N:1
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User          @relation("UserToken", fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([refToken])
 
@@ -174,6 +175,37 @@ model FriendshipActivity {
   @@map("friendship_activities")
 }
 
+//? bookmarks ( feeds 정보 marking용 )
+model Bookmark {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+
+  itemType  ItemType @map("item_type") 
+
+  //? reference mongo document id (mongo object id fix 24 characters)
+  feedRefId         String  @db.VarChar(24)  @map("feed_ref_id")
+  restaurantRefId   String? @db.VarChar(24)  @map("restaurant_ref_id")
+
+  // restaurant or feed name
+  itemName String  @db.VarChar(50) @map("item_name")  
+  // restaurant or feed image url 
+  itemImageUrl String? @db.VarChar(500) @map("item_image_url")
+  // FEED -> editor name | RESTAURANT -> summary restaurant
+  itemSub String @db.VarChar(50) @map("item_sub")
+  
+  createdAt  DateTime      @default(now())  @map("created_at")
+  updatedAt  DateTime      @updatedAt       @map("updated_at") 
+
+  //? N:1
+  user       User          @relation("UserBookmark", fields: [userId], references: [id])
+
+  @@unique([userId, feedRefId, restaurantRefId], name: "unique_user_bookmark")
+  @@index([userId, itemType], name: "idx_user_type_bookmarks")
+  @@index([userId, createdAt(sort: Desc)], name: "idx_user_created_at_desc")
+
+  @@map("bookmarks")
+}
+
 enum Provider {
   LOCAL
   GOOGLE
@@ -210,6 +242,11 @@ enum FriendRequestStatus {
  * @param OTHER ( 기타 )
  */
 enum ActivityType {
-  MEAL_TOGETHER
-  
+  MEAL_TOGETHER 
+}
+
+//? bookmarks item type 
+enum ItemType {
+  FEED
+  RESTAURANT
 }
