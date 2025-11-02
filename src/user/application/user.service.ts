@@ -122,7 +122,7 @@ export class UserService {
    * @returns User
    */
   async findByInviteCode(inviteCode: string): Promise<{ user: UserEntity; profile: ProfileEntity }> {
-    const inviteCodeByUser = await this.inviteCodeRepository.findByUnique('code', inviteCode);
+    const inviteCodeByUser = await this.inviteCodeRepository.findByUnique(inviteCode);
     if (!inviteCodeByUser) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_USER);
 
     const { user, profile } = await this.userRepository.findByUserProfile(inviteCodeByUser.userId);

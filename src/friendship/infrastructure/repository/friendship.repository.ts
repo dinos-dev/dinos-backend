@@ -8,7 +8,10 @@ import { FriendshipMapper } from '../mapper/friendship.mapper';
 import { FriendshipEntity } from 'src/friendship/domain/entities/friendship.entity';
 
 @Injectable()
-export class FriendshipRepository extends PrismaRepository<Friendship> implements IFriendshipRepository {
+export class FriendshipRepository
+  extends PrismaRepository<Friendship, FriendshipEntity>
+  implements IFriendshipRepository
+{
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
     super(txHost, (client) => client.friendship, FriendshipMapper.toDomain);
   }

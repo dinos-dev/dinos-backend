@@ -8,7 +8,10 @@ import { FriendRequestMapper } from '../mapper/friend-request.mapper';
 import { FriendRequestEntity } from 'src/friendship/domain/entities/friend-request.entity';
 
 @Injectable()
-export class FriendRequestRepository extends PrismaRepository<FriendRequest> implements IFriendRequestRepository {
+export class FriendRequestRepository
+  extends PrismaRepository<FriendRequest, FriendRequestEntity>
+  implements IFriendRequestRepository
+{
   constructor(txHost: TransactionHost<TransactionalAdapterPrisma>) {
     super(txHost, (client) => client.friendRequest, FriendRequestMapper.toDomain);
   }
