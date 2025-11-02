@@ -33,7 +33,7 @@ export class ResponseToggleBookmarkDto {
           userId: result.bookmark.userId,
           itemType: result.bookmark.itemType,
           feedRefId: result.bookmark.feedRefId,
-          restaurantRefId: result.bookmark.restaurantRefId,
+          restaurantRefId: result.bookmark.getRestaurantRefId(),
           itemName: result.bookmark.itemName,
           itemImageUrl: result.bookmark.itemImageUrl,
           itemSub: result.bookmark.itemSub,

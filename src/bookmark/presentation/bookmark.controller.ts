@@ -25,11 +25,11 @@ export class BookmarkController {
     const command = new RequestBookmarkCommand(
       userId,
       dto.feedRefId,
-      dto.restaurantRefId,
       dto.itemName,
-      dto.itemImageUrl,
       dto.itemSub,
       dto.itemType,
+      dto.restaurantRefId ? dto.restaurantRefId : null,
+      dto.itemImageUrl ? dto.itemImageUrl : null,
     );
     const { bookmark, action } = await this.bookmarkService.toggleBookmark(command);
     const result = ResponseToggleBookmarkDto.fromResult({ bookmark, action });

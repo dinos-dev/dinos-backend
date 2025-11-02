@@ -6,6 +6,7 @@ import { IBookmarkQuery } from 'src/bookmark/application/interface/bookmark-quer
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { BookmarkMapper } from '../mapper/bookmark.mapper';
 import { BookmarkEntity } from 'src/bookmark/domain/entity/bookmark.entity';
+import { BOOKMARK_CONSTANTS } from 'src/bookmark/domain/const/bookmark.const';
 
 @Injectable()
 export class BookmarkQueryRepository extends PrismaRepository<Bookmark> implements IBookmarkQuery {
@@ -25,12 +26,14 @@ export class BookmarkQueryRepository extends PrismaRepository<Bookmark> implemen
     feedRefId: string,
     restaurantRefId?: string | null,
   ): Promise<BookmarkEntity | null> {
+    const normalizedRestaurantId = restaurantRefId ?? BOOKMARK_CONSTANTS.FEED_SENTINEL;
+
     return await this.model.findUnique({
       where: {
         unique_user_bookmark: {
           userId,
           feedRefId,
-          restaurantRefId: restaurantRefId || null,
+          restaurantRefId: normalizedRestaurantId,
         },
       },
     });

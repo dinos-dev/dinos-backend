@@ -38,6 +38,7 @@ export class BookmarkService {
 
     //? 북마크 Entity 생성
     const bookmarkEntity = BookmarkEntity.create(command);
+    console.log('!!!!!!!!!!!!!!!!!!!!bookmarkEntity', bookmarkEntity);
 
     //? 북마크 없을 경우 create
     bookmark = await this.bookmarkRepository.create(bookmarkEntity);
