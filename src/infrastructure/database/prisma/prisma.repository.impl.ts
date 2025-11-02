@@ -1,118 +1,94 @@
 import { Injectable } from '@nestjs/common';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
-import { IRepository } from './repository.interface';
+import { Prisma } from '@prisma/client';
 
 /**
+ *
  * Generic Prisma Repository 구현체
  * nestjs-cls를 활용한 트랜잭션 컨텍스트 자동 관리
+ *
+ * @param TPrisma - Prisma 생성 타입
+ * @param TDomain - 도메인 엔티티 타입
+ * @param ID - ID 타입 (기본값: number)
  */
 @Injectable()
-export abstract class PrismaRepository<T, ID = number> implements IRepository<T, ID> {
+export abstract class PrismaRepository<TPrisma, TDomain = TPrisma, ID = number> {
   constructor(
     protected readonly txHost: TransactionHost<TransactionalAdapterPrisma>,
-    protected readonly getModel: (client: any) => any,
-    protected readonly mapper?: (entity: T) => any,
+    protected readonly getModel: (client: Prisma.TransactionClient) => any,
+    protected readonly mapper?: (prismaEntity: TPrisma) => TDomain,
   ) {}
 
-  /**
-   * 현재 컨텍스트에 맞는 Prisma Client를 반환
-   * @Transactional 데코레이터가 활성화된 경우 트랜잭션 클라이언트를,
-   * 그렇지 않은 경우 일반 Prisma Client를 반환
-   */
   protected get prisma() {
-    return this.txHost.tx; // nestjs-cls가 자동으로 컨텍스트에 맞는 클라이언트 반환
+    return this.txHost.tx;
   }
 
-  /**
-   * 현재 컨텍스트의 모델 인스턴스를 반환
-   */
   protected get model() {
     return this.getModel(this.prisma);
   }
 
-  /**
-   * 도메인 Entity로 변환
-   */
-  protected toDomain(prismaEntity: T): any {
+  /** Prisma Entity to Domain Entity */
+  protected toDomain(prismaEntity: TPrisma): TDomain {
     if (this.mapper) {
       return this.mapper(prismaEntity);
     }
-    return prismaEntity; // Mapper가 없으면 그대로 반환
-  }
-
-  async findAll(): Promise<any[]> {
-    const entities = await this.model.findMany();
-    return entities.map((entity) => this.toDomain(entity));
-  }
-
-  async findById(id: ID): Promise<any | null> {
-    const entity = await this.model.findUnique({
-      where: { id },
-    });
-
-    if (!entity) return null;
-    return this.toDomain(entity);
+    return prismaEntity as unknown as TDomain;
   }
 
   /**
-   * Prisma 전용 메서드 - 다른 ORM에서는 지원하지 않음
+   * Array to Domain
    */
-  async findByUnique<K extends keyof T>(key: K, value: T[K]): Promise<any | null> {
-    const entity = await this.model.findUnique({
-      where: { [key]: value },
-    });
+  protected toDomains(prismaEntities: TPrisma[]): TDomain[] {
+    return prismaEntities.map((entity) => this.toDomain(entity));
+  }
 
+  // ========================================
+  // Generic Methods - Only Basic CRUD
+  // ========================================
+
+  /** Find Entity by ID */
+  async findById(id: ID): Promise<TDomain | null> {
+    const entity = await this.model.findUnique({ where: { id } });
     if (!entity) return null;
     return this.toDomain(entity);
   }
 
-  async create(entity: Omit<T, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt' | 'version'>): Promise<any> {
-    const createdEntity = await this.model.create({
-      data: entity,
-    });
-
-    return this.toDomain(createdEntity);
+  /** Find All Entities */
+  async findAll(): Promise<TDomain[]> {
+    const entities = await this.model.findMany();
+    return this.toDomains(entities);
   }
 
-  async updateById(id: ID, entity: Partial<T>): Promise<any> {
-    const updatedEntity = await this.model.update({
-      where: { id },
-      data: entity,
-    });
-
-    return this.toDomain(updatedEntity);
-  }
-
-  async removeById(id: ID): Promise<any> {
-    const removedEntity = await this.model.delete({
-      where: { id },
-    });
-
-    return this.toDomain(removedEntity);
-  }
-
-  async find(options: {
-    where?: Partial<T>;
-    select?: Partial<Record<keyof T, boolean>>;
-    orderBy?: { [K in keyof T]?: 'asc' | 'desc' } | Array<{ [K in keyof T]?: 'asc' | 'desc' }>;
-  }): Promise<any[]> {
-    const entities = await this.model.findMany({
-      where: options.where,
-      select: options.select,
-      orderBy: options.orderBy,
-    });
-
-    return entities.map((entity) => this.toDomain(entity));
-  }
-
-  async upsert(options: { where: Partial<T>; create: T; update: Partial<T> }): Promise<any> {
-    const entity = await this.model.upsert({
-      where: options.where,
-      create: options.create,
-      update: options.update,
-    });
-
+  /** Create Entity*/
+  async create(data: unknown): Promise<TDomain> {
+    const entity = await (this.model.create as any)({ data });
     return this.toDomain(entity);
+  }
+
+  /** Update Entity by ID */
+  async updateById(id: ID, data: unknown): Promise<TDomain> {
+    const entity = await (this.model.update as any)({
+      where: { id },
+      data,
+    });
+    return this.toDomain(entity);
+  }
+
+  /** Remove Entity by ID */
+  async removeById(id: ID): Promise<TDomain> {
+    const entity = await this.model.delete({ where: { id } });
+    return this.toDomain(entity);
+  }
+
+  /** Check Entity exists by ID */
+  async existsById(id: ID): Promise<boolean> {
+    const count = await this.model.count({ where: { id } });
+    return count > 0;
+  }
+
+  /** Count Entity by where */
+  async count(where?: unknown): Promise<number> {
+    return await (this.model.count as any)({ where });
   }
 }

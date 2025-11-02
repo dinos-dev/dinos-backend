@@ -18,6 +18,7 @@ import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose
 import { ClsModule } from './infrastructure/cls/cls.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventModule } from './infrastructure/event/event.module';
+import { BookmarkModule } from './bookmark/bookmark.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { EventModule } from './infrastructure/event/event.module';
     FriendshipModule,
     ClsModule,
     EventModule,
+    BookmarkModule,
   ],
   providers: [
     {

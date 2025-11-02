@@ -5,10 +5,10 @@ import { AppModule } from './app.module';
 import { initSwagger } from './common/swagger/swagger-config';
 import { middleware } from './app.middleware';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { BadRequestException, ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
-import { HttpErrorConstants } from './common/http/http-error-objects';
+import { ClassSerializerInterceptor } from '@nestjs/common';
 import { WinstonLoggerService } from './infrastructure/logger/winston-logger.service';
 import { HttpResponseInterceptor } from './common/interceptor/http-response.interceptor';
+import { createGlobalValidationPipe } from './common/pipe/validation-pipe.config';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -25,15 +25,7 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new HttpResponseInterceptor());
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      exceptionFactory: (errors) => {
-        console.log('error --->', errors);
-        return new BadRequestException(HttpErrorConstants.VALIDATE_ERROR);
-      },
-    }),
-  );
+  app.useGlobalPipes(createGlobalValidationPipe());
 
   middleware(app);
 

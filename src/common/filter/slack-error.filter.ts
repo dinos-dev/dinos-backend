@@ -1,5 +1,5 @@
 // src/core/filters/global-exception.filter.ts
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Injectable } from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, Injectable, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { SlackService } from '../../infrastructure/slack/slack.service';
 import { WinstonLoggerService } from '../../infrastructure/logger/winston-logger.service';
@@ -51,6 +51,16 @@ export class SlackErrorFilter implements ExceptionFilter {
           error: (errorResponse as HttpErrorFormat).error || 'UNKNOWN_ERROR',
           message: (errorResponse as HttpErrorFormat).message || error.message,
         };
+
+        // Validation 에러인 경우에만 validationErrors 추가
+        const isValidationError = status === HttpStatus.BAD_REQUEST && 'validationErrors' in errorResponse;
+
+        if (isValidationError) {
+          return response.status(status).json({
+            ...errorObj,
+            validationErrors: (errorResponse as any).validationErrors,
+          });
+        }
       } else if (typeof errorResponse === 'string') {
         errorObj = {
           status,
