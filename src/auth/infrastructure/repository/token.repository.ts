@@ -56,7 +56,6 @@ export class TokenRepository extends PrismaRepository<Token> implements ITokenRe
   /**
    * delete many token by user id
    * @param userId
-   * @param tx
    */
   async deleteManyByUserId(userId: number): Promise<number> {
     const deleteToken = await this.model.deleteMany({ where: { userId } });

@@ -1,34 +1,41 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TokenRepository } from 'src/auth/infrastructure/repository/token.repository';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { mockPrismaService, MockPrismaService } from '../../__mocks__/prisma.service.mock';
-import { createMockUser } from '../../__mocks__/user.factory';
+import { mockTransactionHost, MockTransactionHost } from '../../__mocks__/transaction-host.mock';
+import { createMockUserEntity } from '../../__mocks__/user.factory';
 import { createMockToken } from '../../__mocks__/token.factory';
-import { PlatFormEnumType } from 'src/auth/domain/constant/platform.const';
+import { PlatformEnumType } from 'src/auth/domain/constant/platform.const';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TokenMapper } from 'src/auth/infrastructure/mapper/token.mapper';
 
 describe('TokenRepository', () => {
   let repository: TokenRepository;
   let prismaService: MockPrismaService;
+  let txHost: MockTransactionHost;
 
-  const user = createMockUser();
+  const userMockEntity = createMockUserEntity();
   const token = createMockToken();
   const refToken = 'refToken';
   const expiresAt = new Date();
-  const platForm = PlatFormEnumType.WEB;
+  const platform = PlatformEnumType.WEB;
 
   beforeEach(async () => {
+    // mockPrismaService 생성
+    prismaService = mockPrismaService();
+
+    txHost = mockTransactionHost(prismaService);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         TokenRepository,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService(),
+          provide: TransactionHost,
+          useValue: txHost,
         },
       ],
     }).compile();
 
     repository = module.get<TokenRepository>(TokenRepository);
-    prismaService = module.get<MockPrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -36,74 +43,68 @@ describe('TokenRepository', () => {
   });
 
   describe('updateOrCreateRefToken', () => {
-    it('토큰이 존재할 경우 tx(트랜잭션) 없이 RefreshToken을 업데이트한다.', async () => {
+    it('토큰이 존재할 경우 RefreshToken을 업데이트한다.', async () => {
       // 1. given
-      prismaService.token.findFirst.mockResolvedValue(token);
-      prismaService.token.update.mockResolvedValue(token);
+      txHost.tx.token.findFirst.mockResolvedValue(token);
+      txHost.tx.token.update.mockResolvedValue(token);
 
       // 2. when
-      const result = await repository.updateOrCreateRefToken(user, refToken, platForm, expiresAt);
+      const result = await repository.updateOrCreateRefToken(userMockEntity, refToken, platform, expiresAt);
 
       // 3. then
-      expect(result).toEqual(token);
-      expect(prismaService.token.update).toHaveBeenCalledWith({
+      const expectedTokenEntity = TokenMapper.toDomain(token);
+      expect(result).toEqual(expectedTokenEntity);
+
+      expect(txHost.tx.token.findFirst).toHaveBeenCalledWith({
+        where: { userId: userMockEntity.id },
+      });
+
+      expect(txHost.tx.token.update).toHaveBeenCalledWith({
         where: { id: token.id },
         data: { refToken },
       });
     });
 
-    it('토큰이 존재할 경우 tx(트랜잭션)을 기반으로 RefreshToken을 업데이트한다.', async () => {
+    it('토큰이 존재하지 않을 경우 토큰 데이터를 생성한다', async () => {
       // 1. given
-      const tx = {
-        token: {
-          findFirst: jest.fn().mockResolvedValue(token),
-          update: jest.fn().mockResolvedValue(token),
-        },
-      } as any;
+      txHost.tx.token.findFirst.mockResolvedValue(null);
+      txHost.tx.token.create.mockResolvedValue(token);
 
       // 2. when
-      const result = await repository.updateOrCreateRefToken(user, refToken, platForm, expiresAt, tx);
+      const result = await repository.updateOrCreateRefToken(userMockEntity, refToken, platform, expiresAt);
 
       // 3. then
-      expect(tx.token.update).toHaveBeenCalledWith({
-        where: { id: token.id },
-        data: { refToken },
+      const expectedTokenEntity = TokenMapper.toDomain(token);
+      expect(result).toEqual(expectedTokenEntity);
+
+      expect(txHost.tx.token.findFirst).toHaveBeenCalledWith({
+        where: { userId: userMockEntity.id },
       });
-      expect(result).toEqual(token);
-    });
 
-    it('토큰이 존재하지 않을 경우 tx(트랜잭션) 없이 RefreshToken을 저장한다.', async () => {
-      // 1. given
-      prismaService.token.findFirst.mockResolvedValue(null);
-      prismaService.token.create.mockResolvedValue(token);
-
-      // 2. when
-      const result = await repository.updateOrCreateRefToken(user, refToken, platForm, expiresAt);
-
-      // 3. then
-      expect(result).toEqual(token);
-      expect(prismaService.token.create).toHaveBeenCalledWith({
-        data: { userId: user.id, refToken, platForm, expiresAt },
+      expect(txHost.tx.token.create).toHaveBeenCalledWith({
+        data: {
+          userId: userMockEntity.id,
+          refToken,
+          platform,
+          expiresAt,
+        },
       });
     });
+  });
 
-    it('토큰이 존재하지 않을 경우 tx(트랜잭션) 기반으로 생성한다', async () => {
+  describe('deleteManyByUserId', () => {
+    it('사용자의 ID를 기반으로 사용자 토큰을 제거한다.', async () => {
       // 1. given
-      const tx = {
-        token: {
-          findFirst: jest.fn().mockResolvedValue(null),
-          create: jest.fn().mockResolvedValue(token),
-        },
-      } as any;
+      txHost.tx.token.deleteMany.mockResolvedValue({ count: 1 });
+
+      const userId = 1;
 
       // 2. when
-      const result = await repository.updateOrCreateRefToken(user, refToken, platForm, expiresAt, tx);
+      const result = await repository.deleteManyByUserId(userId);
 
       // 3. then
-      expect(tx.token.create).toHaveBeenCalledWith({
-        data: { userId: user.id, refToken, platForm, expiresAt },
-      });
-      expect(result).toEqual(token);
+      expect(txHost.tx.token.deleteMany).toHaveBeenCalledWith({ where: { userId } });
+      expect(result).toBe(1);
     });
   });
 });
