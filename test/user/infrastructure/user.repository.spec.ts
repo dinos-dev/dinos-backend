@@ -1,30 +1,43 @@
 import { UserRepository } from 'src/user/infrastructure/repository/user.repository';
 import { mockPrismaService, MockPrismaService } from '../../__mocks__/prisma.service.mock';
 import { Test, TestingModule } from '@nestjs/testing';
-import { User } from '@prisma/client';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
-import { Provider } from 'src/auth/domain/constant/provider.enum';
-import { SocialUserDto } from 'src/user/presentation/dto/request/social-user.dto';
-import { createMockUser, createMockUserWithProfile, createMockUserWithTokens } from '../../__mocks__/user.factory';
-import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
+import { Provider } from 'src/user/domain/const/provider.enum';
+import {
+  createMockUser,
+  createMockUserEntity,
+  createMockUserWithProfile,
+  createMockUserWithTokens,
+} from '../../__mocks__/user.factory';
+import { mockTransactionHost, MockTransactionHost } from '../../__mocks__/transaction-host.mock';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { UserMapper } from 'src/user/infrastructure/mapper/user.mapper';
+import { createMockToken } from '../../__mocks__/token.factory';
+import { hashPassword } from 'src/common/helper/password.util';
 
 describe('UserRepository', () => {
   let repository: UserRepository;
   let prismaService: MockPrismaService;
+  let txHost: MockTransactionHost;
+
+  const userMockEntity = createMockUserEntity();
+  const userDataBaseEntity = createMockUser();
 
   beforeEach(async () => {
+    prismaService = mockPrismaService();
+
+    txHost = mockTransactionHost(prismaService);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UserRepository,
         {
-          provide: PrismaService,
-          useValue: mockPrismaService(),
+          provide: TransactionHost,
+          useValue: txHost,
         },
       ],
     }).compile();
 
     repository = module.get<UserRepository>(UserRepository);
-    prismaService = module.get<MockPrismaService>(PrismaService);
   });
 
   afterEach(() => {
@@ -35,138 +48,128 @@ describe('UserRepository', () => {
     it('이메일 중복 여부를 체크하고 중복된 이메일이 존재할 경우 true를 반환한다.', async () => {
       // 1. given(정의 - 해당 이메일은 존재함.)
       const email = 'exist@test.com';
-      prismaService.user.findUnique.mockResolvedValue({ id: 1, email } as User);
+      txHost.tx.user.findUnique.mockResolvedValue(userDataBaseEntity);
 
       // 2. when(실행)
       const result = await repository.existByEmail(email);
 
       // 3. then(검증)
       expect(result).toBe(true);
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({ where: { email } });
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { email } });
     });
 
     it('이메일 중복 여부를 체크하고 중복된 이메일이 없을 경우 false를 반환한다.', async () => {
       //1. given ( 정의 - 해당 이메일은 없음 )
       const email = 'not-exist@test.com';
-      prismaService.user.findUnique.mockResolvedValue(null);
+      txHost.tx.user.findUnique.mockResolvedValue(null);
 
       // 2. when(실행)
       const result = await repository.existByEmail(email);
 
       // 3. then (검증)
       expect(result).toBe(false);
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({ where: { email } });
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { email } });
     });
   });
 
   describe('findOrCreateSocialUser', () => {
     it('소셜 사용자가 존재할 경우 유저를 생성하지 않고 반환한다.', async () => {
       // 1. given( 정의 - 이메일을 기반으로 사용자가 존재하는지 조회 )
-
-      const dto: SocialUserDto = {
-        providerId: 'providerId123456789',
-        email: 'exist@test.com',
-        provider: Provider.GOOGLE,
-        name: 'existUser',
-      };
-
-      const expectedUser = {
-        id: 1,
-        email: dto.email,
-        name: dto.name,
-        provider: dto.provider,
-        providerId: dto.providerId,
-      };
-
-      const isNew = false;
-
-      prismaService.user.findUnique.mockResolvedValue(expectedUser as User);
+      txHost.tx.user.findUnique.mockResolvedValue(userDataBaseEntity);
 
       // 2. when ( 실행 )
-      const result = await repository.findOrCreateSocialUser(dto);
+      const result = await repository.findOrCreateSocialUser(userMockEntity);
 
       // 3. then ( 검증 )
-      expect(result).toEqual({ user: expectedUser, isNew });
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
-      expect(prismaService.user.create).not.toHaveBeenCalled();
+      const expectedUser = UserMapper.toDomain(userDataBaseEntity);
+      expect(result).toEqual({ user: expectedUser, isNew: false });
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { email: userMockEntity.email } });
+      expect(txHost.tx.user.create).not.toHaveBeenCalled();
     });
+
     it('소셜 사용자가 존재하지 않을 경우 유저를 생성하고 반환한다.', async () => {
-      // 1. given( 정의 - 이메일을 기반으로 사용자가 존재하는지 조회 )
-      const dto: SocialUserDto = {
-        providerId: 'providerId987654321',
+      // 1. given( 정의 - 새로운 소셜 사용자 엔티티 생성 )
+      const newUserEntity = createMockUserEntity({
         email: 'new@test.com',
-        provider: Provider.GOOGLE,
         name: 'newUser',
-      };
+        provider: Provider.GOOGLE,
+        providerId: 'providerId987654321',
+      });
 
-      const createdUser = {
-        id: 2,
-        email: dto.email,
-        name: dto.name,
-        provider: dto.provider,
-        providerId: dto.providerId,
-      };
+      const newUserDatabaseEntity = createMockUser({
+        email: 'new@test.com',
+        name: 'newUser',
+        provider: Provider.GOOGLE,
+        providerId: 'providerId987654321',
+      });
 
-      const isNew = true;
+      // 사용자가 없다고 가정 (findUnique는 null 반환)
+      txHost.tx.user.findUnique.mockResolvedValue(null);
 
-      // 사용자가 없다고 가정
-      prismaService.user.findUnique.mockResolvedValue(null);
-
-      // 사용자 생성
-      prismaService.user.create.mockResolvedValue(createdUser as User);
+      // 사용자 생성 시 반환될 데이터
+      txHost.tx.user.create.mockResolvedValue(newUserDatabaseEntity);
 
       // 2. when ( 실행 )
-      const result = await repository.findOrCreateSocialUser(createdUser);
+      const result = await repository.findOrCreateSocialUser(newUserEntity);
 
       // 3. then ( 검증 )
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({ where: { email: dto.email } });
-      expect(prismaService.user.create).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { email: newUserEntity.email } });
+      // create가 올바른 데이터로 호출되었는지 확인
+      expect(txHost.tx.user.create).toHaveBeenCalledWith({
         data: {
-          email: dto.email,
-          name: dto.name,
-          provider: dto.provider,
-          providerId: dto.providerId,
+          email: newUserEntity.email,
+          name: newUserEntity.name,
+          provider: newUserEntity.provider,
+          providerId: newUserEntity.providerId,
         },
       });
-      expect(result).toEqual({ user: createdUser, isNew });
+      const expectedUser = UserMapper.toDomain(newUserDatabaseEntity);
+      expect(result).toEqual({ user: expectedUser, isNew: true });
     });
   });
 
   describe('findAllRefToken', () => {
-    it('userId가 존재하면 유저 토큰을 포함한 유저 데이터를 반환한다.', async () => {
+    it('userId에 해당하는 유저 토큰 정보를 반환한다.', async () => {
       // 1. given
       const userId = 1;
-      const mockResult = createMockUserWithTokens();
+      const mockResult = createMockUserWithTokens({ ...userDataBaseEntity, tokens: [createMockToken()] });
 
-      prismaService.user.findUnique.mockResolvedValue(mockResult);
+      txHost.tx.user.findUnique.mockResolvedValue(mockResult);
 
       // 2. when
       const result = await repository.findAllRefToken(userId);
 
       // 3. then
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
         include: { tokens: true },
       });
+      const expectedUser = UserMapper.toDomainWithTokens(mockResult);
+      const expectedTokens = UserMapper.extractTokens(mockResult);
 
-      expect(result).toEqual(mockResult);
+      expect(result).toEqual({ user: expectedUser, tokens: expectedTokens });
     });
 
-    it('userId가 존재하지 않으면 null을 반환한다.', async () => {
+    it('userId에 해당하는 유저 토큰 정보가 없으면 빈 토큰 배열을 반환한다.', async () => {
       // 1. given
-      const userId = 999;
-      prismaService.user.findUnique.mockResolvedValue(null);
+      const userId = 1;
+      const mockResult = createMockUserWithTokens({ ...userDataBaseEntity, tokens: [] });
+      txHost.tx.user.findUnique.mockResolvedValue(mockResult);
 
       // 2. when
       const result = await repository.findAllRefToken(userId);
 
       // 3. then
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
         include: { tokens: true },
       });
+      const expectedUser = UserMapper.toDomainWithTokens(mockResult);
+      const expectedTokens = UserMapper.extractTokens(mockResult);
+      // extractTokens가 빈 배열을 반환하는지 검증
+      expect(expectedTokens).toEqual([]);
 
-      expect(result).toBeNull();
+      expect(result).toEqual({ user: expectedUser, tokens: expectedTokens });
     });
   });
 
@@ -176,13 +179,13 @@ describe('UserRepository', () => {
       const userId = 1;
       const mockResult = createMockUserWithProfile();
 
-      prismaService.user.findUnique.mockResolvedValue(mockResult);
+      txHost.tx.user.findUnique.mockResolvedValue(mockResult);
 
       // 2. when
       const result = await repository.findUserWithProfileById(userId);
 
       // 3. then
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
         include: { profile: true },
       });
@@ -193,13 +196,13 @@ describe('UserRepository', () => {
     it('userId가 존재하지 않으면 null을 반환한다.', async () => {
       // 1. given
       const userId = 999;
-      prismaService.user.findUnique.mockResolvedValue(null);
+      txHost.tx.user.findUnique.mockResolvedValue(null);
 
       // 2. when
       const result = await repository.findUserWithProfileById(userId);
 
       //3. then
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
         include: { profile: true },
       });
@@ -211,63 +214,80 @@ describe('UserRepository', () => {
   describe('findOrCreateLocalUser', () => {
     it('이메일이 존재할 경우, 로컬 유저를 반환한다.', async () => {
       // 1. given
-      const dto: CreateUserDto = {
-        email: 'exist@exist.com',
-        password: 'password',
-        name: 'existingUser',
-      };
-
-      const isNew = false;
-
-      const mockResult = createMockUser();
-
-      prismaService.user.findUnique.mockResolvedValue(mockResult);
+      txHost.tx.user.findUnique.mockResolvedValue(userDataBaseEntity);
 
       // 2. when
-      const result = await repository.findOrCreateLocalUser(dto);
+      const result = await repository.findOrCreateLocalUser(userMockEntity);
 
       // 3. then
-      expect(result).toEqual({ user: mockResult, isNew });
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-        where: {
-          email: dto.email,
-        },
-      });
-      expect(prismaService.user.create).not.toHaveBeenCalled();
+      const user = UserMapper.toDomain(userDataBaseEntity);
+      expect(result).toEqual({ user, isNew: false });
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { email: userMockEntity.email } });
+      expect(txHost.tx.user.create).not.toHaveBeenCalled();
     });
+
     it('이메일이 존재하지 않을 경우, 로컬 유저를 생성하고 반환한다.', async () => {
       // 1. given
-      const dto: CreateUserDto = {
-        email: 'new@new.com',
-        password: 'password',
+      const plainPassword = 'password';
+      const newUserEntity = createMockUserEntity({
+        email: 'new@test.com',
         name: 'newUser',
-      };
+        password: plainPassword,
+      });
 
-      const isNew = true;
+      // 실제 hashPassword 함수를 사용하여 해시 생성
+      const hashedPassword = hashPassword(plainPassword);
 
-      const mockResult = createMockUser();
+      const newUserDatabaseEntity = createMockUser({
+        email: 'new@test.com',
+        name: 'newUser',
+        password: hashedPassword,
+      });
 
-      prismaService.user.findUnique.mockResolvedValue(null);
-
-      prismaService.user.create.mockResolvedValue(mockResult);
+      txHost.tx.user.findUnique.mockResolvedValue(null);
+      txHost.tx.user.create.mockResolvedValue(newUserDatabaseEntity);
 
       // 2. when
-      const result = await repository.findOrCreateLocalUser(dto);
+      const result = await repository.findOrCreateLocalUser(newUserEntity);
 
       // 3. then
-      expect(prismaService.user.findUnique).toHaveBeenCalledWith({
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({
         where: {
-          email: dto.email,
+          email: newUserEntity.email,
         },
       });
-      expect(prismaService.user.create).toHaveBeenCalledWith({
+      expect(txHost.tx.user.create).toHaveBeenCalledWith({
         data: {
-          email: dto.email,
-          name: dto.name,
+          email: newUserEntity.email,
+          name: newUserEntity.name,
           password: expect.any(String),
         },
       });
-      expect(result).toEqual({ user: mockResult, isNew });
+      // password가 실제로 해시되었는지 확인 (bcrypt 해시 형식 검증)
+      const createCall = txHost.tx.user.create.mock.calls[0][0];
+      expect(createCall.data.password).toMatch(/^\$2[aby]\$\d+\$/); // bcrypt 해시 형식
+      expect(createCall.data.password).not.toBe(plainPassword); // 원본과 다름
+
+      const expectedUser = UserMapper.toDomain(newUserDatabaseEntity);
+      expect(result).toEqual({ user: expectedUser, isNew: true });
+    });
+  });
+
+  describe('findByUserProfile', () => {
+    it('userId에 해당하는 사용자의 프로필을 조회한다.', async () => {
+      // 1.given
+      const userId = 1;
+      const mockUserWithProfile = createMockUserWithProfile({ id: userId });
+      txHost.tx.user.findUnique.mockResolvedValue(mockUserWithProfile);
+
+      // 2. when
+      const result = await repository.findByUserProfile(userId);
+
+      // 3. then
+      expect(txHost.tx.user.findUnique).toHaveBeenCalledWith({ where: { id: userId }, include: { profile: true } });
+      const expectedUser = UserMapper.toDomainWithProfile(mockUserWithProfile);
+      const expectedProfile = UserMapper.extractProfile(mockUserWithProfile);
+      expect(result).toEqual({ user: expectedUser, profile: expectedProfile });
     });
   });
 });
