@@ -38,7 +38,7 @@ describe('AuthController', () => {
     accessToken: 'new.access.token',
   };
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [

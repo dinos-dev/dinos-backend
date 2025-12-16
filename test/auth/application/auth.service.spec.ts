@@ -1,9 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { TransactionHost } from '@nestjs-cls/transactional';
-import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 
 import {
   ConflictException,
@@ -11,13 +8,6 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-
-import {
-  INVITE_CODE_REPOSITORY,
-  PROFILE_REPOSITORY,
-  TOKEN_REPOSITORY,
-  USER_REPOSITORY,
-} from 'src/common/config/common.const';
 
 import { AuthService } from 'src/auth/application/auth.service';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
@@ -66,14 +56,12 @@ describe('AuthService', () => {
   let logger: jest.Mocked<WinstonLoggerService>;
   let eventEmitter: jest.Mocked<EventEmitter2>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Create mocks
     userRepository = mockDeep<IUserRepository>();
     tokenRepository = mockDeep<ITokenRepository>();
     profileRepository = mockDeep<IProfileRepository>();
     inviteCodeRepository = mockDeep<IInviteCodeRepository>();
-
-    const mockTransactionHost = mockDeep<TransactionHost<TransactionalAdapterPrisma>>();
 
     jwtService = {
       signAsync: jest.fn(),
@@ -94,49 +82,17 @@ describe('AuthService', () => {
       emit: jest.fn(),
     } as any;
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        {
-          provide: USER_REPOSITORY,
-          useValue: userRepository,
-        },
-        {
-          provide: TOKEN_REPOSITORY,
-          useValue: tokenRepository,
-        },
-        {
-          provide: PROFILE_REPOSITORY,
-          useValue: profileRepository,
-        },
-        {
-          provide: INVITE_CODE_REPOSITORY,
-          useValue: inviteCodeRepository,
-        },
-        {
-          provide: JwtService,
-          useValue: jwtService,
-        },
-        {
-          provide: ConfigService,
-          useValue: configService,
-        },
-        {
-          provide: WinstonLoggerService,
-          useValue: logger,
-        },
-        {
-          provide: EventEmitter2,
-          useValue: eventEmitter,
-        },
-        {
-          provide: TransactionHost,
-          useValue: mockTransactionHost,
-        },
-      ],
-    }).compile();
-
-    service = module.get<AuthService>(AuthService);
+    // Directly instantiate AuthService without TestingModule
+    service = new AuthService(
+      userRepository,
+      tokenRepository,
+      profileRepository,
+      inviteCodeRepository,
+      jwtService,
+      configService,
+      logger,
+      eventEmitter,
+    );
 
     // Setup default mocks
     mockDetectPlatform.mockResolvedValue('WEB' as any);

@@ -19,7 +19,7 @@ describe('TokenRepository', () => {
   const expiresAt = new Date();
   const platform = PlatformEnumType.WEB;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     // mockPrismaService 생성
     prismaService = mockPrismaService();
 
