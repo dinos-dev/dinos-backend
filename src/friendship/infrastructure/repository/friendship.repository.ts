@@ -17,7 +17,7 @@ export class FriendshipRepository
   }
 
   /**
-   * 친구 관계 테이블 생성
+   * 친구 관계 테이블 Upsert
    * @param entity FriendshipEntity
    * @returns FriendshipEntity
    */
