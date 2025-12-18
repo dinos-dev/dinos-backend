@@ -31,7 +31,7 @@ export class BookmarkQueryRepository extends PrismaRepository<Bookmark> implemen
   ): Promise<BookmarkEntity | null> {
     const normalizedRestaurantId = restaurantRefId ?? BOOKMARK_CONSTANTS.FEED_SENTINEL;
 
-    return await this.model.findUnique({
+    const bookmark = await this.model.findUnique({
       where: {
         unique_user_bookmark: {
           userId,
@@ -40,6 +40,7 @@ export class BookmarkQueryRepository extends PrismaRepository<Bookmark> implemen
         },
       },
     });
+    return bookmark ? BookmarkMapper.toDomain(bookmark) : null;
   }
 
   /**

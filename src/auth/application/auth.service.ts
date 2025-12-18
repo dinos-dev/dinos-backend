@@ -6,36 +6,41 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+
+import { JwtService } from '@nestjs/jwt';
+import { Transactional } from '@nestjs-cls/transactional';
 
 import { HttpErrorConstants, HttpErrorFormat } from 'src/common/http/http-error-objects';
 import { detectPlatform } from './util/client.util';
 import { TokenPayLoad } from 'src/auth/domain/interface/token-payload.interface';
-import { DateUtils } from 'src/common/utils/date-util';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
+import { DateUtils } from 'src/common/utils/date-util';
 import {
   INVITE_CODE_REPOSITORY,
   PROFILE_REPOSITORY,
   TOKEN_REPOSITORY,
   USER_REPOSITORY,
 } from 'src/common/config/common.const';
+
+import { Provider } from 'src/user/domain/const/provider.enum';
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
-import { buildDefaultProfile } from 'src/user/application/helper/profile.factory';
-import { SocialUserCommand } from './command/social-user.command';
-import { LocalUserCommand } from './command/local-user.command';
+import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
+
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { TokenEntity } from '../domain/entities/token.entity';
-import { Provider } from 'src/user/domain/const/provider.enum';
 import { ProfileEntity } from 'src/user/domain/entities/profile.entity';
-import { Transactional } from '@nestjs-cls/transactional';
-import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
-import { generateInviteCode } from 'src/user/application/helper/generated-invite-code';
 import { InviteCodeEntity } from 'src/user/domain/entities/invite-code.entity';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+
+import { buildDefaultProfile } from 'src/user/application/helper/profile.factory';
+import { generateInviteCode } from 'src/user/application/helper/generated-invite-code';
+import { SocialUserCommand } from './command/social-user.command';
+import { LocalUserCommand } from './command/local-user.command';
 import { UserRegisteredEvent } from './event/user-registered.event';
 
 @Injectable()

@@ -67,3 +67,4 @@ mongo-data
 # external dependence credentials
 config
 *.sdk.json
+TEST.md

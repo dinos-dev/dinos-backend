@@ -1,58 +1,68 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+
 import {
   ConflictException,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { PROFILE_REPOSITORY, TOKEN_REPOSITORY, USER_REPOSITORY } from 'src/common/config/common.const';
 
 import { AuthService } from 'src/auth/application/auth.service';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
 import { ITokenRepository } from 'src/auth/domain/repository/token.repository.interface';
 import { IUserRepository } from 'src/user/domain/repository/user.repository.interface';
+import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
+import { IInviteCodeRepository } from 'src/user/domain/repository/invite-code.repository.interface';
 
-import { SocialUserDto } from 'src/user/presentation/dto/request/social-user.dto';
-import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
+import {
+  createMockTokenEntity,
+  createMockUserEntity,
+  createMockUserEntityWithTokens,
+} from '../../__mocks__/user.factory';
 
-import { mockPrismaService, MockPrismaService } from '../../__mocks__/prisma.service.mock';
-import { createMockUser, createMockUserWithTokens } from '../../__mocks__/user.factory';
-import { createMockToken } from '../../__mocks__/token.factory';
-
-import { Provider } from 'src/auth/domain/constant/provider.enum';
+import { Provider } from 'src/user/domain/const/provider.enum';
 import { DateUtils } from 'src/common/utils/date-util';
 import { detectPlatform } from 'src/auth/application/util/client.util';
 import { mockDeep } from 'jest-mock-extended';
-import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
-import { SlackService } from 'src/infrastructure/slack/slack.service';
-import { SERVICE_CHANNEL } from 'src/infrastructure/slack/constant/channel.const';
 
 import * as profileFactory from 'src/user/application/helper/profile.factory';
+import { SocialUserCommand } from 'src/auth/application/command/social-user.command';
+import { LocalUserCommand } from 'src/auth/application/command/local-user.command';
 
 // Mock external dependencies
 jest.mock('src/auth/application/util/client.util');
 jest.mock('src/common/utils/date-util');
+jest.mock('@nestjs-cls/transactional', () => ({
+  ...jest.requireActual('@nestjs-cls/transactional'),
+  Transactional: () => (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+    return descriptor;
+  },
+}));
 
 const mockDetectPlatform = detectPlatform as jest.MockedFunction<typeof detectPlatform>;
 const mockDateUtils = DateUtils as jest.Mocked<typeof DateUtils>;
 
 describe('AuthService', () => {
   let service: AuthService;
-  let prismaService: MockPrismaService;
-
-  const userRepository: jest.Mocked<IUserRepository> = mockDeep<IUserRepository>();
-  const tokenRepository: jest.Mocked<ITokenRepository> = mockDeep<ITokenRepository>();
-  const profileRepository: jest.Mocked<IProfileRepository> = mockDeep<IProfileRepository>();
+  let userRepository: jest.Mocked<IUserRepository>;
+  let tokenRepository: jest.Mocked<ITokenRepository>;
+  let profileRepository: jest.Mocked<IProfileRepository>;
+  let inviteCodeRepository: jest.Mocked<IInviteCodeRepository>;
   let jwtService: jest.Mocked<JwtService>;
   let configService: jest.Mocked<ConfigService>;
   let logger: jest.Mocked<WinstonLoggerService>;
-  let slackService: jest.Mocked<SlackService>;
+  let eventEmitter: jest.Mocked<EventEmitter2>;
 
-  beforeEach(async () => {
+  beforeEach(() => {
+    // Create mocks
+    userRepository = mockDeep<IUserRepository>();
+    tokenRepository = mockDeep<ITokenRepository>();
+    profileRepository = mockDeep<IProfileRepository>();
+    inviteCodeRepository = mockDeep<IInviteCodeRepository>();
+
     jwtService = {
       signAsync: jest.fn(),
       verifyAsync: jest.fn(),
@@ -65,52 +75,24 @@ describe('AuthService', () => {
     logger = {
       log: jest.fn(),
       error: jest.fn(),
+      warn: jest.fn(),
     } as any;
 
-    slackService = {
-      sendMessage: jest.fn(),
+    eventEmitter = {
+      emit: jest.fn(),
     } as any;
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AuthService,
-        {
-          provide: USER_REPOSITORY,
-          useValue: userRepository,
-        },
-        {
-          provide: TOKEN_REPOSITORY,
-          useValue: tokenRepository,
-        },
-        {
-          provide: PROFILE_REPOSITORY,
-          useValue: profileRepository,
-        },
-        {
-          provide: PrismaService,
-          useValue: mockPrismaService(),
-        },
-        {
-          provide: JwtService,
-          useValue: jwtService,
-        },
-        {
-          provide: ConfigService,
-          useValue: configService,
-        },
-        {
-          provide: WinstonLoggerService,
-          useValue: logger,
-        },
-        {
-          provide: SlackService,
-          useValue: slackService,
-        },
-      ],
-    }).compile();
-
-    service = module.get<AuthService>(AuthService);
-    prismaService = module.get<MockPrismaService>(PrismaService);
+    // Directly instantiate AuthService without TestingModule
+    service = new AuthService(
+      userRepository,
+      tokenRepository,
+      profileRepository,
+      inviteCodeRepository,
+      jwtService,
+      configService,
+      logger,
+      eventEmitter,
+    );
 
     // Setup default mocks
     mockDetectPlatform.mockResolvedValue('WEB' as any);
@@ -141,14 +123,9 @@ describe('AuthService', () => {
   });
 
   describe('socialLogin', () => {
-    const mockSocialUserDto: SocialUserDto = {
-      email: 'test@example.com',
-      provider: Provider.GOOGLE,
-      providerId: '1234567890',
-      name: 'Test User',
-    };
+    const mockCommand = new SocialUserCommand('test@example.com', 'Test User', Provider.GOOGLE, '1234567890');
 
-    const mockUser = createMockUser();
+    const mockUser = createMockUserEntity();
     const mockTokens = {
       accessToken: 'access.token',
       refreshToken: 'refresh.token',
@@ -156,95 +133,74 @@ describe('AuthService', () => {
     };
 
     beforeEach(() => {
-      jest.clearAllMocks();
-
       jest.spyOn(service as any, 'generatedTokens').mockResolvedValue(mockTokens);
-      userRepository.findByUnique.mockReset();
-      userRepository.findOrCreateSocialUser.mockReset();
-      tokenRepository.updateOrCreateRefToken.mockReset();
-      jest.spyOn(logger, 'log').mockImplementation(jest.fn());
-
-      // detectPlatform은 외부 함수이므로 mock 처리 (정 필요하면 mock 파일 따로 분리해도 됨)
-      jest.mocked(detectPlatform as any).mockResolvedValue('WEB');
     });
 
     it('새로운 소셜 사용자 로그인 시 토큰을 반환한다.', async () => {
-      const tx = {} as any;
-
-      userRepository.findByUnique.mockResolvedValue(null);
+      // given
+      userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findOrCreateSocialUser.mockResolvedValue({ user: mockUser, isNew: true });
-      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockTokenEntity());
+      profileRepository.createProfile.mockResolvedValue(undefined);
+      inviteCodeRepository.isExistCode.mockResolvedValue(false);
+      inviteCodeRepository.createInviteCode.mockResolvedValue(undefined);
 
-      prismaService.$transaction.mockImplementation(async (cb) => {
-        return await cb(tx);
-      });
+      // when
+      const result = await service.socialLogin('Mozilla', mockCommand);
 
-      const result = await service.socialLogin('Mozilla', mockSocialUserDto);
-
+      // then
       expect(result).toEqual({
         accessToken: mockTokens.accessToken,
         refreshToken: mockTokens.refreshToken,
       });
 
-      expect(userRepository.findByUnique).toHaveBeenCalledWith('email', mockSocialUserDto.email, tx);
-      expect(userRepository.findOrCreateSocialUser).toHaveBeenCalledWith(mockSocialUserDto, tx);
-      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalledWith(
-        mockUser,
-        mockTokens.refreshToken,
-        'WEB',
-        mockTokens.expiresAt,
-        tx,
-      );
-      expect(logger.log).toHaveBeenCalledWith(`[소셜] ${mockSocialUserDto.email} 유저가 로그인 하였습니다 🎉`);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockCommand.email);
+      expect(userRepository.findOrCreateSocialUser).toHaveBeenCalled();
+      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalled();
+      expect(profileRepository.createProfile).toHaveBeenCalled();
+      expect(inviteCodeRepository.createInviteCode).toHaveBeenCalled();
+      expect(eventEmitter.emit).toHaveBeenCalledWith('user.registered', expect.any(Object));
+      expect(logger.log).toHaveBeenCalledWith(`[소셜] ${mockCommand.email} 유저가 로그인 하였습니다 🎉`);
     });
 
     it('기존 사용자가 다른 provider로 가입되어 있으면 ConflictException을 발생시킨다.', async () => {
-      const tx = {} as any;
-      const existingUser = createMockUser({ provider: Provider.NAVER });
+      // given
+      const existingUser = createMockUserEntity({ provider: Provider.NAVER });
+      userRepository.findByEmail.mockResolvedValue(existingUser);
 
-      userRepository.findByUnique.mockResolvedValue(existingUser);
-
-      prismaService.$transaction.mockImplementation(async (cb) => {
-        return await cb(tx);
-      });
-
-      await expect(service.socialLogin('Mozilla', mockSocialUserDto)).rejects.toThrow(ConflictException);
+      // when & then
+      await expect(service.socialLogin('Mozilla', mockCommand)).rejects.toThrow(ConflictException);
+      expect(userRepository.findOrCreateSocialUser).not.toHaveBeenCalled();
     });
 
     it('기존 사용자가 같은 provider로 가입되어 있으면 정상적으로 로그인한다.', async () => {
-      const tx = {} as any;
-      const existingUser = createMockUser({ provider: Provider.GOOGLE });
-
-      userRepository.findByUnique.mockResolvedValue(existingUser);
+      // given
+      const existingUser = createMockUserEntity({ provider: Provider.GOOGLE });
+      userRepository.findByEmail.mockResolvedValue(existingUser);
       userRepository.findOrCreateSocialUser.mockResolvedValue({ user: existingUser, isNew: false });
-      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockTokenEntity());
 
-      prismaService.$transaction.mockImplementation(async (cb) => {
-        return await cb(tx);
-      });
+      // when
+      const result = await service.socialLogin('Mozilla', mockCommand);
 
-      const result = await service.socialLogin('Mozilla', mockSocialUserDto);
-
+      // then
       expect(result).toEqual({
         accessToken: mockTokens.accessToken,
         refreshToken: mockTokens.refreshToken,
       });
 
-      expect(userRepository.findByUnique).toHaveBeenCalledWith('email', mockSocialUserDto.email, tx);
-      expect(userRepository.findOrCreateSocialUser).toHaveBeenCalledWith(mockSocialUserDto, tx);
-      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalledWith(
-        existingUser,
-        mockTokens.refreshToken,
-        'WEB',
-        mockTokens.expiresAt,
-        tx,
-      );
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockCommand.email);
+      expect(userRepository.findOrCreateSocialUser).toHaveBeenCalled();
+      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalled();
+      // 기존 유저는 프로필 생성 안함
+      expect(profileRepository.createProfile).not.toHaveBeenCalled();
+      expect(eventEmitter.emit).not.toHaveBeenCalled();
     });
 
-    it('최초 소셜 가입을 했을 경우 SlackWebhook 발송과 Default Profile을 생성한다.', async () => {
-      const tx = {} as any;
-
-      const mockDefaultProfileDto = {
+    it('최초 소셜 가입 시 프로필과 초대코드를 생성하고 이벤트를 발행한다.', async () => {
+      // given
+      const mockDefaultProfile = {
+        userId: 1,
         nickname: 'test-nick',
         comment: '소개를 작성해주세요',
         headerId: 1,
@@ -253,102 +209,101 @@ describe('AuthService', () => {
         bodyColor: '#000000',
       };
 
-      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfileDto);
+      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfile);
 
-      userRepository.findByUnique.mockResolvedValue(null);
+      userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findOrCreateSocialUser.mockResolvedValue({ user: mockUser, isNew: true });
-      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockTokenEntity());
       profileRepository.createProfile.mockResolvedValue(undefined);
-      slackService.sendMessage.mockResolvedValue(undefined);
+      inviteCodeRepository.isExistCode.mockResolvedValue(false);
+      inviteCodeRepository.createInviteCode.mockResolvedValue(undefined);
 
-      prismaService.$transaction.mockImplementation(async (cb) => {
-        return await cb(tx);
-      });
+      // when
+      const result = await service.socialLogin('Mozilla', mockCommand);
 
-      const result = await service.socialLogin('Mozilla', mockSocialUserDto);
-
+      // then
       expect(result).toEqual({
         accessToken: mockTokens.accessToken,
         refreshToken: mockTokens.refreshToken,
       });
 
-      // 프로필 생성 및 슬랙 호출 여부 확인
-      expect(profileRepository.createProfile).toHaveBeenCalledWith(mockDefaultProfileDto, mockUser.id, tx);
-      expect(slackService.sendMessage).toHaveBeenCalledWith(
-        SERVICE_CHANNEL,
-        `[소셜 가입] ${mockSocialUserDto.email} 유저가 회원가입 하였습니다 🎉`,
+      expect(profileRepository.createProfile).toHaveBeenCalled();
+      expect(inviteCodeRepository.isExistCode).toHaveBeenCalled();
+      expect(inviteCodeRepository.createInviteCode).toHaveBeenCalled();
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'user.registered',
+        expect.objectContaining({
+          userId: mockUser.id,
+          email: mockUser.email,
+          registrationType: 'social',
+        }),
       );
     });
 
     it('예상치 못한 에러 발생 시 InternalServerErrorException을 발생시킨다.', async () => {
-      prismaService.$transaction.mockRejectedValue(new Error('DB error'));
+      // given
+      userRepository.findByEmail.mockRejectedValue(new Error('DB error'));
 
-      await expect(service.socialLogin('Mozilla', mockSocialUserDto)).rejects.toThrow(InternalServerErrorException);
+      // when & then
+      await expect(service.socialLogin('Mozilla', mockCommand)).rejects.toThrow(InternalServerErrorException);
     });
   });
-  describe('localLogin', () => {
-    const mockCreateUserDto: CreateUserDto = {
-      email: 'test@example.com',
-      password: 'password123',
-      name: 'Test User',
-    };
 
-    const mockUser = createMockUser({ provider: Provider.LOCAL });
+  describe('localLogin', () => {
+    const mockCommand = new LocalUserCommand('test@example.com', 'Test User', 'password123');
+
+    const mockUser = createMockUserEntity({ provider: Provider.LOCAL });
     const mockTokens = {
       accessToken: 'access.token',
       refreshToken: 'refresh.token',
       expiresAt: new Date('2024-12-31'),
     };
 
-    const tx = {};
-
     beforeEach(() => {
-      prismaService.$transaction.mockImplementation(async (cb) => cb(tx as any));
-
-      userRepository.findByUnique.mockResolvedValue(null);
-      userRepository.findOrCreateLocalUser.mockResolvedValue({ user: mockUser, isNew: true });
-      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
-
       jest.spyOn(service as any, 'generatedTokens').mockResolvedValue(mockTokens);
     });
 
     it('새로운 로컬 사용자 로그인 시 토큰을 반환한다.', async () => {
-      const result = await service.localLogin('Mozilla', mockCreateUserDto);
+      // given
+      userRepository.findByEmail.mockResolvedValue(null);
+      userRepository.findOrCreateLocalUser.mockResolvedValue({ user: mockUser, isNew: true });
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockTokenEntity());
+      profileRepository.createProfile.mockResolvedValue(undefined);
+      inviteCodeRepository.isExistCode.mockResolvedValue(false);
+      inviteCodeRepository.createInviteCode.mockResolvedValue(undefined);
 
+      // when
+      const result = await service.localLogin('Mozilla', mockCommand);
+
+      // then
       expect(result).toEqual({
         accessToken: mockTokens.accessToken,
         refreshToken: mockTokens.refreshToken,
       });
 
-      expect(userRepository.findOrCreateLocalUser).toHaveBeenCalledWith(mockCreateUserDto, tx);
-      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalledWith(
-        mockUser,
-        mockTokens.refreshToken,
-        'WEB',
-        mockTokens.expiresAt,
-        tx,
-      );
-      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCreateUserDto.email} 유저가 로그인 하였습니다 🎉`);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(mockCommand.email);
+      expect(userRepository.findOrCreateLocalUser).toHaveBeenCalled();
+      expect(tokenRepository.updateOrCreateRefToken).toHaveBeenCalled();
+      expect(profileRepository.createProfile).toHaveBeenCalled();
+      expect(inviteCodeRepository.createInviteCode).toHaveBeenCalled();
+      expect(eventEmitter.emit).toHaveBeenCalledWith('user.registered', expect.any(Object));
+      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCommand.email} 유저가 로그인 하였습니다 🎉`);
     });
 
     it('기존 사용자가 다른 provider로 가입되어 있으면 ConflictException을 발생시킨다.', async () => {
-      const existingUser = createMockUser({ provider: Provider.GOOGLE });
+      // given
+      const existingUser = createMockUserEntity({ provider: Provider.GOOGLE });
+      userRepository.findByEmail.mockResolvedValue(existingUser);
 
-      userRepository.findByUnique.mockResolvedValue(existingUser);
-
-      await expect(service.localLogin('Mozilla', mockCreateUserDto)).rejects.toThrow(ConflictException);
+      // when & then
+      await expect(service.localLogin('Mozilla', mockCommand)).rejects.toThrow(ConflictException);
+      expect(userRepository.findOrCreateLocalUser).not.toHaveBeenCalled();
     });
 
-    it('최초 로컬 가입 시 슬랙 알림 및 디폴트 프로필을 생성한다.', async () => {
-      const mockTx = {};
-      const mockUser = createMockUser({ provider: Provider.LOCAL });
-      const mockTokens = {
-        accessToken: 'access.token',
-        refreshToken: 'refresh.token',
-        expiresAt: new Date('2024-12-31'),
-      };
-
-      const mockDefaultProfileDto = {
+    it('최초 로컬 가입 시 프로필과 초대코드를 생성하고 이벤트를 발행한다.', async () => {
+      // given
+      const mockDefaultProfile = {
+        userId: 1,
         nickname: 'test-nick',
         comment: '소개를 작성해주세요',
         headerId: 1,
@@ -357,42 +312,36 @@ describe('AuthService', () => {
         bodyColor: '#000000',
       };
 
-      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfileDto);
+      jest.spyOn(profileFactory, 'buildDefaultProfile').mockReturnValue(mockDefaultProfile);
 
-      // Prisma 트랜잭션 mock
-      prismaService.$transaction.mockImplementation(async (cb) => cb(mockTx as any));
-
-      // 유저는 없고 -> 신규 가입
-      userRepository.findByUnique.mockResolvedValue(null);
+      userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findOrCreateLocalUser.mockResolvedValue({ user: mockUser, isNew: true });
+      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockTokenEntity());
+      profileRepository.createProfile.mockResolvedValue(undefined);
+      inviteCodeRepository.isExistCode.mockResolvedValue(false);
+      inviteCodeRepository.createInviteCode.mockResolvedValue(undefined);
 
-      // 토큰 생성 mock
-      jest.spyOn(service as any, 'generatedTokens').mockResolvedValue(mockTokens);
+      // when
+      const result = await service.localLogin('Mozilla', mockCommand);
 
-      // 토큰 저장 mock
-      tokenRepository.updateOrCreateRefToken.mockResolvedValue(createMockToken());
-
-      // 프로필 생성 mock
-      profileRepository.createProfile.mockResolvedValue({ id: 1 } as any);
-
-      // SlackService mock
-      slackService.sendMessage = jest.fn();
-
-      const result = await service.localLogin('Mozilla', mockCreateUserDto);
-
+      // then
       expect(result).toEqual({
         accessToken: mockTokens.accessToken,
         refreshToken: mockTokens.refreshToken,
       });
 
-      expect(slackService.sendMessage).toHaveBeenCalledWith(
-        SERVICE_CHANNEL,
-        `[로컬 가입] ${mockCreateUserDto.email} 유저가 회원가입 하였습니다 🎉`,
+      expect(profileRepository.createProfile).toHaveBeenCalled();
+      expect(inviteCodeRepository.isExistCode).toHaveBeenCalled();
+      expect(inviteCodeRepository.createInviteCode).toHaveBeenCalled();
+      expect(eventEmitter.emit).toHaveBeenCalledWith(
+        'user.registered',
+        expect.objectContaining({
+          userId: mockUser.id,
+          email: mockUser.email,
+          registrationType: 'local',
+        }),
       );
-
-      expect(profileRepository.createProfile).toHaveBeenCalledWith(mockDefaultProfileDto, mockUser.id, tx);
-
-      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCreateUserDto.email} 유저가 로그인 하였습니다 🎉`);
+      expect(logger.log).toHaveBeenCalledWith(`[로컬] ${mockCommand.email} 유저가 로그인 하였습니다 🎉`);
     });
   });
 
@@ -406,37 +355,50 @@ describe('AuthService', () => {
     });
 
     it('유효한 refresh token으로 새로운 access token을 발급한다.', async () => {
-      const mockUser = createMockUserWithTokens({
-        tokens: [{ ...createMockToken(), refToken: 'valid.refresh.token' }],
+      // given
+      const mockUserWithTokens = createMockUserEntityWithTokens({
+        tokens: [{ refToken: 'valid.refresh.token' }],
       });
-      userRepository.findAllRefToken.mockResolvedValue(mockUser);
+      userRepository.findAllRefToken.mockResolvedValue({
+        user: mockUserWithTokens,
+        tokens: mockUserWithTokens.tokens,
+      });
 
+      // when
       const result = await service.rotateAccessToken(1, mockToken);
 
+      // then
       expect(result).toBe(mockAccessToken.token);
       expect(service.validateBearerToken).toHaveBeenCalledWith(mockToken);
       expect(userRepository.findAllRefToken).toHaveBeenCalledWith(1);
-      expect(service.issueToken).toHaveBeenCalledWith(mockUser, false);
+      expect(service.issueToken).toHaveBeenCalledWith(mockUserWithTokens, false);
     });
 
     it('사용자를 찾을 수 없으면 NotFoundException을 발생시킨다.', async () => {
-      userRepository.findAllRefToken.mockResolvedValue(null);
+      // given
+      userRepository.findAllRefToken.mockResolvedValue({ user: null, tokens: [] });
 
+      // when & then
       await expect(service.rotateAccessToken(1, mockToken)).rejects.toThrow(NotFoundException);
     });
 
     it('유효하지 않은 refresh token이면 UnauthorizedException을 발생시킨다.', async () => {
-      const userWithInvalidToken = createMockUserWithTokens({
-        tokens: [{ ...createMockToken(), refToken: 'different.token' }],
+      // given
+      const mockUserWithTokens = createMockUserEntityWithTokens({
+        tokens: [{ refToken: 'different.token' }],
       });
-      userRepository.findAllRefToken.mockResolvedValue(userWithInvalidToken);
+      userRepository.findAllRefToken.mockResolvedValue({
+        user: mockUserWithTokens,
+        tokens: mockUserWithTokens.tokens,
+      });
 
+      // when & then
       await expect(service.rotateAccessToken(1, mockToken)).rejects.toThrow(UnauthorizedException);
     });
   });
 
   describe('issueToken', () => {
-    const mockUser = createMockUser();
+    const mockUser = createMockUserEntity();
 
     beforeEach(() => {
       configService.get.mockImplementation((key: string) => {
@@ -453,8 +415,10 @@ describe('AuthService', () => {
     });
 
     it('access token을 발급한다.', async () => {
+      // when
       const result = await service.issueToken(mockUser, false);
 
+      // then
       expect(result).toEqual({
         token: 'signed.token',
         expiresAt: new Date('2024-12-31'),
@@ -470,8 +434,10 @@ describe('AuthService', () => {
     });
 
     it('refresh token을 발급한다.', async () => {
+      // when
       const result = await service.issueToken(mockUser, true);
 
+      // then
       expect(result).toEqual({
         token: 'signed.token',
         expiresAt: new Date('2024-12-31'),
@@ -552,7 +518,7 @@ describe('AuthService', () => {
 
   describe('private methods', () => {
     describe('generatedTokens', () => {
-      const mockUser = createMockUser();
+      const mockUser = createMockUserEntity();
 
       beforeEach(() => {
         jest.spyOn(service, 'issueToken').mockResolvedValue({
@@ -562,8 +528,10 @@ describe('AuthService', () => {
       });
 
       it('access token과 refresh token을 생성한다.', async () => {
+        // when
         const result = await (service as any).generatedTokens(mockUser);
 
+        // then
         expect(result).toEqual({
           accessToken: 'test.token',
           refreshToken: 'test.token',
@@ -576,17 +544,21 @@ describe('AuthService', () => {
     });
 
     describe('createPayload', () => {
-      const mockUser = createMockUser();
+      const mockUser = createMockUserEntity();
 
       it('refresh token용 payload를 생성한다.', async () => {
+        // when
         const result = await (service as any).createPayload(mockUser, true);
 
+        // then
         expect(result).toEqual({ sub: mockUser.id });
       });
 
       it('access token용 payload를 생성한다.', async () => {
+        // when
         const result = await (service as any).createPayload(mockUser, false);
 
+        // then
         expect(result).toEqual({
           sub: mockUser.id,
           email: mockUser.email,

@@ -21,6 +21,8 @@
     "test:user": "jest --testPathPattern=test/user",
     "test:auth": "jest --testPathPattern=test/auth",
     "test:feed": "jest --testPathPattern=test/feed",
+    "test:friendship": "jest --testPathPattern=test/friendship",
+    "test:bookmark": "jest --testPathPattern=test/bookmark",
     "prepare": "husky install"
   },
   "dependencies": {

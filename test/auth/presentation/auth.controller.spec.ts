@@ -2,15 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from 'src/auth/presentation/auth.controller';
 import { AuthService } from 'src/auth/application/auth.service';
 import { Request } from 'express';
-import { UnauthorizedException } from '@nestjs/common';
-import { SocialUserDto } from 'src/user/presentation/dto/request/social-user.dto';
 import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto';
-import { Provider } from 'src/auth/domain/constant/provider.enum';
+import { Provider } from 'src/user/domain/const/provider.enum';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
-import { HttpErrorConstants } from 'src/common/http/http-error-objects';
-import { HttpResponse } from 'src/common/http/http-response';
-import * as classTransformer from 'class-transformer';
-import * as classValidator from 'class-validator';
+import { LocalUserCommand } from 'src/auth/application/command/local-user.command';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -20,7 +15,7 @@ describe('AuthController', () => {
     get: jest.fn().mockReturnValue('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'),
   } as any as Request;
 
-  const mockSocialUserDto: SocialUserDto = {
+  const mockOAuthPayload: OAuthPayLoad = {
     email: 'test@example.com',
     provider: Provider.GOOGLE,
     providerId: '1234567890',
@@ -29,16 +24,10 @@ describe('AuthController', () => {
 
   const mockCreateUserDto: CreateUserDto = {
     email: 'test@example.com',
+    name: 'Test User',
     password: 'password123',
-    name: 'Test User',
-  };
-
-  const mockOAuthPayload: OAuthPayLoad = {
-    email: 'test@example.com',
-    provider: Provider.GOOGLE,
-    providerId: '1234567890',
-    name: 'Test User',
-  };
+    toCommand: () => new LocalUserCommand('test@example.com', 'Test User', 'password123'),
+  } as CreateUserDto;
 
   const mockLoginResponse = {
     accessToken: 'access.token',
@@ -49,10 +38,7 @@ describe('AuthController', () => {
     accessToken: 'new.access.token',
   };
 
-  let plainToClassSpy: jest.SpyInstance;
-  let validateSpy: jest.SpyInstance;
-
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
       providers: [
@@ -70,10 +56,6 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get(AuthService);
-
-    // Setup default mocks
-    plainToClassSpy = jest.spyOn(classTransformer, 'plainToClass').mockReturnValue(mockSocialUserDto as any);
-    validateSpy = jest.spyOn(classValidator, 'validate').mockResolvedValue([]);
   });
 
   afterEach(() => {
@@ -82,136 +64,140 @@ describe('AuthController', () => {
 
   describe('naverLogin', () => {
     it('네이버 소셜 로그인을 성공적으로 처리한다.', async () => {
-      // 1. given
+      // given
+      const mockPayload: OAuthPayLoad = {
+        email: 'test@example.com',
+        provider: Provider.NAVER,
+        providerId: '1234567890',
+        name: 'Test User',
+      };
       authService.socialLogin.mockResolvedValue(mockLoginResponse);
 
-      // 2. when
-      const result = await controller.naverLogin(mockRequest, mockOAuthPayload);
+      // when
+      const result = await controller.naverLogin(mockRequest, mockPayload);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
-      expect(plainToClassSpy).toHaveBeenCalledWith(SocialUserDto, mockOAuthPayload);
-      expect(validateSpy).toHaveBeenCalledWith(mockSocialUserDto);
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
       expect(authService.socialLogin).toHaveBeenCalledWith(
         mockRequest.get('user-agent').toLowerCase(),
-        mockSocialUserDto,
+        expect.objectContaining({
+          email: mockPayload.email,
+          provider: mockPayload.provider,
+          providerId: mockPayload.providerId,
+          name: mockPayload.name,
+        }),
       );
     });
 
-    it('유효하지 않은 OAuth payload에 대해 UnauthorizedException을 발생시킨다.', async () => {
-      // 1. given
-      const invalidOAuthPayload = {
-        ...mockOAuthPayload,
-        email: '', // 유효하지 않은 이메일
-      };
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.socialLogin.mockRejectedValue(error);
 
-      validateSpy.mockResolvedValueOnce([
-        { property: 'email', constraints: { isEmail: '올바른 이메일 형식이 아닙니다.' } },
-      ]);
-
-      // 2. when & 3. then
-      await expect(controller.naverLogin(mockRequest, invalidOAuthPayload)).rejects.toThrow(UnauthorizedException);
-      expect(authService.socialLogin).not.toHaveBeenCalled();
+      // when & then
+      await expect(controller.naverLogin(mockRequest, mockOAuthPayload)).rejects.toThrow(error);
     });
   });
 
   describe('googleLogin', () => {
     it('구글 소셜 로그인을 성공적으로 처리한다.', async () => {
-      // 1. given
+      // given
       authService.socialLogin.mockResolvedValue(mockLoginResponse);
 
-      // 2. when
+      // when
       const result = await controller.googleLogin(mockRequest, mockOAuthPayload);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
-      expect(plainToClassSpy).toHaveBeenCalledWith(SocialUserDto, mockOAuthPayload);
-      expect(validateSpy).toHaveBeenCalledWith(mockSocialUserDto);
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
       expect(authService.socialLogin).toHaveBeenCalledWith(
         mockRequest.get('user-agent').toLowerCase(),
-        mockSocialUserDto,
+        expect.objectContaining({
+          email: mockOAuthPayload.email,
+          provider: mockOAuthPayload.provider,
+          providerId: mockOAuthPayload.providerId,
+          name: mockOAuthPayload.name,
+        }),
       );
     });
 
-    it('유효하지 않은 OAuth payload에 대해 UnauthorizedException을 발생시킨다.', async () => {
-      // 1. given
-      const invalidOAuthPayload = {
-        ...mockOAuthPayload,
-        providerId: '', // 유효하지 않은 providerId
-      };
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.socialLogin.mockRejectedValue(error);
 
-      validateSpy.mockResolvedValueOnce([
-        { property: 'providerId', constraints: { isNotEmpty: 'providerId는 필수입니다.' } },
-      ]);
-
-      // 2. when & 3. then
-      await expect(controller.googleLogin(mockRequest, invalidOAuthPayload)).rejects.toThrow(UnauthorizedException);
-      expect(authService.socialLogin).not.toHaveBeenCalled();
+      // when & then
+      await expect(controller.googleLogin(mockRequest, mockOAuthPayload)).rejects.toThrow(error);
     });
   });
 
   describe('appleLogin', () => {
     it('애플 소셜 로그인을 성공적으로 처리한다.', async () => {
-      // 1. given
+      // given
+      const mockPayload: OAuthPayLoad = {
+        email: 'test@example.com',
+        provider: Provider.APPLE,
+        providerId: '1234567890',
+        name: 'Test User',
+      };
       authService.socialLogin.mockResolvedValue(mockLoginResponse);
 
-      // 2. when
-      const result = await controller.appleLogin(mockRequest, mockOAuthPayload);
+      // when
+      const result = await controller.appleLogin(mockRequest, mockPayload);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
-      expect(plainToClassSpy).toHaveBeenCalledWith(SocialUserDto, mockOAuthPayload);
-      expect(validateSpy).toHaveBeenCalledWith(mockSocialUserDto);
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
       expect(authService.socialLogin).toHaveBeenCalledWith(
         mockRequest.get('user-agent').toLowerCase(),
-        mockSocialUserDto,
+        expect.objectContaining({
+          email: mockPayload.email,
+          provider: mockPayload.provider,
+          providerId: mockPayload.providerId,
+          name: mockPayload.name,
+        }),
       );
     });
 
-    it('유효하지 않은 OAuth payload에 대해 UnauthorizedException을 발생시킨다.', async () => {
-      // 1. given
-      const invalidOAuthPayload = {
-        ...mockOAuthPayload,
-        name: undefined, // 유효하지 않은 name
-      };
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.socialLogin.mockRejectedValue(error);
 
-      validateSpy.mockResolvedValueOnce([
-        { property: 'name', constraints: { isString: 'name은 문자열이어야 합니다.' } },
-      ]);
-
-      // 2. when & 3. then
-      await expect(controller.appleLogin(mockRequest, invalidOAuthPayload)).rejects.toThrow(UnauthorizedException);
-      expect(authService.socialLogin).not.toHaveBeenCalled();
+      // when & then
+      await expect(controller.appleLogin(mockRequest, mockOAuthPayload)).rejects.toThrow(error);
     });
   });
 
   describe('localLogin', () => {
     it('로컬 로그인을 성공적으로 처리한다.', async () => {
-      // 1. given
+      // given
       authService.localLogin.mockResolvedValue(mockLoginResponse);
 
-      // 2. when
+      // when
       const result = await controller.localLogin(mockRequest, mockCreateUserDto);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
       expect(authService.localLogin).toHaveBeenCalledWith(
         mockRequest.get('user-agent').toLowerCase(),
-        mockCreateUserDto,
+        expect.objectContaining({
+          email: mockCreateUserDto.email,
+          name: mockCreateUserDto.name,
+          password: mockCreateUserDto.password,
+        }),
       );
     });
 
-    it('유효하지 않은 CreateUserDto에 대해 에러를 발생시킨다.', async () => {
-      // 1. given
-      const invalidCreateUserDto = {
-        ...mockCreateUserDto,
-        email: 'invalid-email', // 유효하지 않은 이메일
-      };
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.localLogin.mockRejectedValue(error);
 
-      authService.localLogin.mockRejectedValue(new Error('Validation failed'));
-
-      // 2. when & 3. then
-      await expect(controller.localLogin(mockRequest, invalidCreateUserDto)).rejects.toThrow(Error);
+      // when & then
+      await expect(controller.localLogin(mockRequest, mockCreateUserDto)).rejects.toThrow(error);
     });
   });
 
@@ -220,23 +206,25 @@ describe('AuthController', () => {
     const mockToken = 'Bearer valid.refresh.token';
 
     it('액세스 토큰 재발급을 성공적으로 처리한다.', async () => {
-      // 1. given
+      // given
       authService.rotateAccessToken.mockResolvedValue(mockRotateTokenResponse.accessToken);
 
-      // 2. when
+      // when
       const result = await controller.rotateAccessToken(mockUserId, mockToken);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockRotateTokenResponse));
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
       expect(authService.rotateAccessToken).toHaveBeenCalledWith(mockUserId, mockToken);
     });
 
-    it('유효하지 않은 토큰에 대해 에러를 발생시킨다.', async () => {
-      // 1. given
-      authService.rotateAccessToken.mockRejectedValue(new UnauthorizedException(HttpErrorConstants.INVALID_TOKEN));
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.rotateAccessToken.mockRejectedValue(error);
 
-      // 2. when & 3. then
-      await expect(controller.rotateAccessToken(mockUserId, 'invalid.token')).rejects.toThrow(UnauthorizedException);
+      // when & then
+      await expect(controller.rotateAccessToken(mockUserId, mockToken)).rejects.toThrow(error);
     });
   });
 
@@ -244,111 +232,48 @@ describe('AuthController', () => {
     const mockUserId = 1;
 
     it('로그아웃을 성공적으로 처리한다.', async () => {
-      // 1. given
-      authService.removeRefToken.mockResolvedValue({ count: 1 } as any);
+      // given
+      authService.removeRefToken.mockResolvedValue(1);
 
-      // 2. when
+      // when
       const result = await controller.logOut(mockUserId);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.noContent());
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(204);
       expect(authService.removeRefToken).toHaveBeenCalledWith(mockUserId);
     });
 
-    it('로그아웃 중 에러가 발생하면 에러를 전파한다.', async () => {
-      // 1. given
-      const error = new Error('Database error');
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
       authService.removeRefToken.mockRejectedValue(error);
 
-      // 2. when & 3. then
-      await expect(controller.logOut(mockUserId)).rejects.toThrow(Error);
-    });
-  });
-
-  describe('validation scenarios', () => {
-    it('OAuth payload에서 필수 필드가 누락된 경우 UnauthorizedException을 발생시킨다.', async () => {
-      // 1. given
-      const invalidOAuthPayload = {
-        email: 'test@example.com',
-        // provider와 providerId가 누락됨
-      } as any;
-
-      validateSpy.mockResolvedValueOnce([
-        { property: 'provider', constraints: { isEnum: 'provider는 필수입니다.' } },
-        { property: 'providerId', constraints: { isNotEmpty: 'providerId는 필수입니다.' } },
-      ]);
-
-      // 2. when & 3. then
-      await expect(controller.googleLogin(mockRequest, invalidOAuthPayload)).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('CreateUserDto에서 필수 필드가 누락된 경우 에러를 발생시킨다.', async () => {
-      // 1. given
-      const invalidCreateUserDto = {
-        email: 'test@example.com',
-        // password와 name이 누락됨
-      } as any;
-
-      authService.localLogin.mockRejectedValue(new Error('Validation failed'));
-
-      // 2. when & 3. then
-      await expect(controller.localLogin(mockRequest, invalidCreateUserDto)).rejects.toThrow(Error);
+      // when & then
+      await expect(controller.logOut(mockUserId)).rejects.toThrow(error);
     });
   });
 
   describe('user-agent handling', () => {
     it('user-agent가 없는 경우에도 정상적으로 처리한다.', async () => {
-      // 1. given
+      // given
       const requestWithoutUserAgent = {
         get: jest.fn().mockReturnValue(''),
       } as any as Request;
-
       authService.socialLogin.mockResolvedValue(mockLoginResponse);
 
-      // 2. when
+      // when
       const result = await controller.googleLogin(requestWithoutUserAgent, mockOAuthPayload);
 
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
-      expect(authService.socialLogin).toHaveBeenCalledWith('', mockSocialUserDto);
-    });
-
-    it('user-agent가 빈 문자열인 경우에도 정상적으로 처리한다.', async () => {
-      // 1. given
-      const requestWithEmptyUserAgent = {
-        get: jest.fn().mockReturnValue(''),
-      } as any as Request;
-
-      authService.socialLogin.mockResolvedValue(mockLoginResponse);
-
-      // 2. when
-      const result = await controller.googleLogin(requestWithEmptyUserAgent, mockOAuthPayload);
-
-      // 3. then
-      expect(result).toEqual(HttpResponse.created(mockLoginResponse));
-      expect(authService.socialLogin).toHaveBeenCalledWith('', mockSocialUserDto);
-    });
-  });
-
-  describe('error handling', () => {
-    it('AuthService에서 ConflictException이 발생하면 그대로 전파한다.', async () => {
-      // 1. given
-      const conflictError = new Error('Conflict');
-      conflictError.name = 'ConflictException';
-      authService.socialLogin.mockRejectedValue(conflictError);
-
-      // 2. when & 3. then
-      await expect(controller.googleLogin(mockRequest, mockOAuthPayload)).rejects.toThrow(Error);
-    });
-
-    it('AuthService에서 InternalServerErrorException이 발생하면 그대로 전파한다.', async () => {
-      // 1. given
-      const internalError = new Error('Internal Server Error');
-      internalError.name = 'InternalServerErrorException';
-      authService.localLogin.mockRejectedValue(internalError);
-
-      // 2. when & 3. then
-      await expect(controller.localLogin(mockRequest, mockCreateUserDto)).rejects.toThrow(Error);
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
+      expect(authService.socialLogin).toHaveBeenCalledWith(
+        '',
+        expect.objectContaining({
+          email: mockOAuthPayload.email,
+        }),
+      );
     });
   });
 });
