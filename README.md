@@ -161,4 +161,7 @@ pnpm start:prod
 $ npx prisma init
 # 스키마가 변경되었을 때, migration 파일 생성 및 generate
 $ npx prisma migrate dev --name init
+
+# 다른 리소스에서 포크를 떠서 실행할 경우 최초 generate를 해주어야함. 
+$ pnpm prisma generate
 ```
