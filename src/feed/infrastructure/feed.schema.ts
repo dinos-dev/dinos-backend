@@ -1,4 +1,4 @@
-import { Schema, Document } from 'mongoose';
+import { Schema, Document, FlattenMaps, Types } from 'mongoose';
 
 // Menu 서브스키마
 const MenuSchema = new Schema(
@@ -64,3 +64,9 @@ export interface FeedDocument extends Document {
   sections: SectionDocument[];
   createdAt: Date;
 }
+
+// lean() 결과를 위한 타입 정의
+export type FeedDocumentLean = FlattenMaps<FeedDocument> & {
+  _id: Types.ObjectId;
+  __v: number;
+};

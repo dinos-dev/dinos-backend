@@ -10,7 +10,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { Transactional } from '@nestjs-cls/transactional';
 
 import { HttpErrorConstants, HttpErrorFormat } from 'src/common/http/http-error-objects';
@@ -200,7 +200,7 @@ export class AuthService {
 
     const token = await this.jwtService.signAsync(payload, {
       secret: isRefreshToken ? refreshTokenSecret : accessTokenSecret,
-      expiresIn,
+      expiresIn: expiresIn as JwtSignOptions['expiresIn'],
     });
 
     const expiresAt = DateUtils.calculateExpiresAt(expiresIn);
