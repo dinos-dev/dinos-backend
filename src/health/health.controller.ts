@@ -1,9 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import {
-  HealthCheck,
-  HealthCheckService,
-  MemoryHealthIndicator,
-} from '@nestjs/terminus';
+import { HealthCheck, HealthCheckService, MemoryHealthIndicator } from '@nestjs/terminus';
 import { Public } from 'src/common/decorator/public-access.decorator';
 
 @Controller('health')
@@ -23,5 +19,3 @@ export class HealthController {
     ]);
   }
 }
-
-
