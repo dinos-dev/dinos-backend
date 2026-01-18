@@ -31,4 +31,7 @@ export const envVariableKeys = Joi.object({
   // Slack 관련 환경 변수
   SLACK_WEB_HOOK: Joi.string().uri().required(),
   SLACK_API_TOKEN: Joi.string().required(),
+
+  // 포트 관련 환경 변수
+  PORT: Joi.number().default(3000),
 });
