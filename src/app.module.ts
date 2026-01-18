@@ -19,6 +19,7 @@ import { ClsModule } from './infrastructure/cls/cls.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventModule } from './infrastructure/event/event.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { BookmarkModule } from './bookmark/bookmark.module';
     ClsModule,
     EventModule,
     BookmarkModule,
+    HealthModule,
   ],
   providers: [
     {
