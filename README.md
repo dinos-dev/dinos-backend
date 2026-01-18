@@ -70,6 +70,9 @@ $ pnpm install @nestjs/event-emitter
 
 # firebase admin
 $ pnpm install firebase-admin
+
+# terminus
+$ pnpm install @nestjs-terminus
 ```
 
 </br>

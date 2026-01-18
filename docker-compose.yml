@@ -1,33 +1,84 @@
-version: '3.8'
-
 services:
-  # nestjs:
-  #   build: .
-  #   restart: always
-  #   ports:
-  #     - "3000:3000"
-  #   env_file:
-  #     - ./.env.${NODE_ENV}  # NODE_ENV에 따라 동적으로 설정
-  #   depends_on:
-  #     - postgres  
+  # -------------------------------
+  # 1. Application Service
+  # -------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgres
+      - MONGO_HOST=mongo
+      - DB_URL=postgresql://dev:dev@postgres:5432/dev?schema=public
+      - MONGO_URL=mongodb://mongo:27017/dinos_db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # -------------------------------
+  # 2. MongoDB Service
+  # -------------------------------
   mongo:
-    image: mongo:latest
+    image: mongo:7.0
+    restart: always
     ports:
       - "27017:27017"
     volumes:
-      - ./mongo-data:/data/db  # MongoDB 데이터 지속성 보장
+      - mongo-data:/data/db
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
+  # -------------------------------
+  # 3. PostgreSQL Service
+  # -------------------------------
   postgres:
     image: postgres:16.3-alpine
     restart: always
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     environment:
       POSTGRES_DB: dev
       POSTGRES_USER: dev
       POSTGRES_PASSWORD: dev
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# -------------------------------
+# Networks & Volumes
+# -------------------------------
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   mongo-data:

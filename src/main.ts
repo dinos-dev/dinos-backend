@@ -9,6 +9,7 @@ import { ClassSerializerInterceptor } from '@nestjs/common';
 import { WinstonLoggerService } from './infrastructure/logger/winston-logger.service';
 import { HttpResponseInterceptor } from './common/interceptor/http-response.interceptor';
 import { createGlobalValidationPipe } from './common/pipe/validation-pipe.config';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -16,6 +17,9 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
   });
+
+  const configService = app.get(ConfigService);
+  const port = configService.get<number>('PORT');
 
   // WinstonLoggerService를 전역 로거로 설정
   const logger = app.get(WinstonLoggerService);
@@ -33,6 +37,6 @@ async function bootstrap() {
     initSwagger(app);
   }
 
-  await app.listen(80);
+  await app.listen(port);
 }
 bootstrap();
