@@ -35,6 +35,7 @@ model User {
   friendshipsAsRequester Friendship[]       @relation("FriendshipRequester") 
   friendshipsAsAddressee Friendship[]       @relation("FriendshipAddressee") 
   bookmarks              Bookmark[]         @relation("UserBookmark")
+  pins                   Pin[]              @relation("UserPin")
 
   @@map("users")
 }
@@ -182,7 +183,7 @@ model Bookmark {
 
   itemType  ItemType @map("item_type") 
 
-//? reference mongo document id (mongo object id fix 24 characters)
+  //? reference mongo document id (mongo object id fix 24 characters)
   feedRefId         String  @db.VarChar(24)  @map("feed_ref_id")
   restaurantRefId   String  @db.VarChar(24)  @map("restaurant_ref_id")
 
@@ -204,6 +205,66 @@ model Bookmark {
   @@index([userId, createdAt(sort: Desc)], name: "idx_user_created_at_desc")
 
   @@map("bookmarks")
+}
+
+//? 가게 정보 테이블
+model Restaurant {
+  id        Int      @id @default(autoincrement())
+  /// 가게명  
+  name      String      @db.VarChar(100) @map("name")
+  /// 가게 ID (Naver Place ID)
+  ref_place_id String   @db.VarChar(50) @map("ref_place_id") @unique
+  
+  /// 가게 주소
+  address   String   @db.VarChar(200) @map("address")
+
+  /// 가게의 위도 & 경도 
+  latitude  Float    @map("latitude")
+  longitude Float    @map("longitude")
+
+  /// 가게의 Webview URL (Naver Place Webview URL)
+  webview_url String?  @db.Text() @map("webview_url")
+
+ /// 가게의 마지막 동기화 시간  
+  last_synced_at DateTime @map("last_synced_at")
+
+  /// 가게의 활성 상태
+  is_active Boolean @default(true) @map("is_active")
+  /// 가게의 카테고리
+  category String? @db.VarChar(100) @map("category")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  //? 1:N 
+  pins Pin[]  @relation("RestaurantPin")
+
+  
+  @@index([latitude, longitude], map: "idx_latitude_longitude")
+  @@index([category], map: "idx_category")
+
+  @@map("restaurants")
+}
+
+//? 핀 테이블 ( 사용자가 가고 싶은 가게에 대한 pins)
+model Pin {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int      @map("restaurant_id")
+
+  /// 메타
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  //? N:1
+  user         User     @relation("UserPin", fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation("RestaurantPin", fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  // 사용자당 음식점 하나만 핀 가능
+  @@unique([userId, restaurantId], map: "unique_user_restaurant")
+  @@index([createdAt], map: "idx_created")
+
+  @@map("pins")
 }
 
 enum Provider {
