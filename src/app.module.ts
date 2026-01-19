@@ -20,6 +20,9 @@ import { FriendshipModule } from './friendship/friendship.module';
 import { EventModule } from './infrastructure/event/event.module';
 import { BookmarkModule } from './bookmark/bookmark.module';
 import { HealthModule } from './health/health.module';
+import { RestaurantModule } from './restaurant/restaurant.module';
+import { ReviewModule } from './review/review.module';
+import { PinModule } from './pin/pin.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { HealthModule } from './health/health.module';
     EventModule,
     BookmarkModule,
     HealthModule,
+    RestaurantModule,
+    ReviewModule,
+    PinModule,
   ],
   providers: [
     {
