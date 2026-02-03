@@ -7,7 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 // 유저 정보
 model User {
   id          Int          @id @default(autoincrement())
@@ -35,6 +34,8 @@ model User {
   friendshipsAsRequester Friendship[]       @relation("FriendshipRequester") 
   friendshipsAsAddressee Friendship[]       @relation("FriendshipAddressee") 
   bookmarks              Bookmark[]         @relation("UserBookmark")
+  pins                   Pin[]              @relation("UserPin")
+  reviews                Review[]           @relation("UserReview")
 
   @@map("users")
 }
@@ -76,6 +77,7 @@ model Friendship {
   version      Int      @default(0)
 
   //? N:1
+  
   // 친구 요청을 먼저 보낸 사람
   requester    User     @relation("FriendshipRequester", fields: [requesterId], references: [id], onDelete: Cascade)
   // 친구 요청을 받고 승인한 사람
@@ -182,7 +184,7 @@ model Bookmark {
 
   itemType  ItemType @map("item_type") 
 
-//? reference mongo document id (mongo object id fix 24 characters)
+  //? reference mongo document id (mongo object id fix 24 characters)
   feedRefId         String  @db.VarChar(24)  @map("feed_ref_id")
   restaurantRefId   String  @db.VarChar(24)  @map("restaurant_ref_id")
 
@@ -204,6 +206,96 @@ model Bookmark {
   @@index([userId, createdAt(sort: Desc)], name: "idx_user_created_at_desc")
 
   @@map("bookmarks")
+}
+
+//? 가게 정보 테이블
+model Restaurant {
+  id        Int         @id @default(autoincrement())
+  name      String      @db.VarChar(100) @map("name")
+  /// 가게 ID (Prefix_UNIQUE_ID)
+  // refPlaceId String   @db.VarChar(50) @map("ref_place_id") @unique
+
+  address   String   @db.VarChar(200) @map("address")
+
+  /// 가게의 위도 & 경도 
+  latitude  Float    @map("latitude")
+  longitude Float    @map("longitude")
+
+
+  /// 가게의 마지막 동기화 시간  
+  lastSyncedAt DateTime @map("last_synced_at") 
+  /// 가게의 활성 상태
+  isActive Boolean @default(true) @map("is_active")
+  /// 가게의 카테고리
+  category String? @db.VarChar(100) @map("category")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  //? 1:N 
+  pins Pin[]  @relation("RestaurantPin")
+  reviews Review[] @relation("RestaurantReview")
+  
+  @@unique([name, address], name: "unique_name_address")
+
+  @@index([latitude, longitude], map: "idx_latitude_longitude")
+  @@index([category], map: "idx_category")
+
+  @@map("restaurants")
+}
+
+//? 핀 테이블 ( 사용자가 가고 싶은 가게에 대한 pins )
+model Pin {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int      @map("restaurant_id")
+  reviewId     Int?     @unique @map("review_id")
+
+  //? 핀의 타입 (방문 예정 vs 방문 완료)
+  type PinType @default(PLANNED) @map("type") 
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  //? N:1
+  user         User       @relation("UserPin", fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation("RestaurantPin", fields: [restaurantId], references: [id], onDelete: Cascade)
+  review       Review?    @relation("PinReview", fields: [reviewId], references: [id], onDelete: SetNull)
+
+
+  //? 사용자당 음식점 하나만 핀 가능
+  @@unique([userId, restaurantId], map: "unique_user_restaurant_pin")
+
+  //? index
+  @@index([userId, type], map: "idx_user_pin_type")
+  
+  @@map("pins")
+}
+
+//? 리뷰 테이블 (실제 방문 데이터 및 후기 ) 
+model Review {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  restaurantId Int      @map("restaurant_id")
+  
+  content      String?  @db.Text() // 리뷰 내용 (선택적일 경우)
+  rating       Int      @default(5) // 별점 등
+  visitedAt    DateTime @default(now()) @map("visited_at") // 실제 방문 날짜
+  
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at") // 리뷰 데이터를 지울지는 아직 미확정 
+
+  //? N:1
+  user         User       @relation("UserReview", fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant @relation("RestaurantReview", fields: [restaurantId], references: [id], onDelete: Cascade)
+  pin          Pin?       @relation("PinReview")
+  
+  @@unique([userId, restaurantId], map: "unique_user_restaurant_review")
+
+  @@index([userId], map: "idx_user_reviews")
+
+  @@map("reviews")
 }
 
 enum Provider {
@@ -249,4 +341,10 @@ enum ActivityType {
 enum ItemType {
   FEED
   RESTAURANT
+}
+
+// 핀의 타입 enum (방문 예정 vs 방문 완료)
+enum PinType {
+  PLANNED // 방문 예정 
+  VISITED // 방문 완료 
 }
