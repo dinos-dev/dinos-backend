@@ -6,11 +6,9 @@ export class RestaurantMapper {
     return new RestaurantEntity(
       restaurant.id,
       restaurant.name,
-      restaurant.refPlaceId,
       restaurant.address,
       restaurant.latitude,
       restaurant.longitude,
-      restaurant.webViewUrl,
       restaurant.lastSyncedAt,
       restaurant.isActive,
       restaurant.category,

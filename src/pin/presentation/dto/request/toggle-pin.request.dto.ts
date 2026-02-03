@@ -7,15 +7,6 @@ export class TogglePinDto {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({
-    description: '네이버 장소 ( Naver Place Id )의 고유 Id',
-    example: 'B16234567890',
-    required: true,
-  })
-  refPlaceId: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({
     description: '네이버 장소 ( Naver Place )에서 받아온 가게 이름',
     example: '유키돈까스',
     required: true,
@@ -50,15 +41,6 @@ export class TogglePinDto {
     required: true,
   })
   longitude: number;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({
-    description: '네이버 장소 ( Naver Place )에서 받아온 가게 Webview URL',
-    example: 'https://place.naver.com/1234567890',
-    required: true,
-  })
-  webviewUrl: string;
 
   @IsNotEmpty()
   @IsEnum(PinType)

@@ -9,6 +9,10 @@ import { Transactional } from '@nestjs-cls/transactional';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 import { IPinQuery } from './interface/pin-query.interface';
+import { BoundingBoxDto } from './dto/bounding-box.dto';
+import { LocationQueryOptionsDto } from './dto/location-query-options.dto';
+import { PinWithRestaurantDto } from './dto/pin-with-restaurant.dto';
+import { NearbyPinsQueryDto } from '../presentation/dto/request/nearby-pins-query.dto';
 
 @Injectable()
 export class PinService {
@@ -33,15 +37,13 @@ export class PinService {
       //? 1. restaurantEntity 생성
       const restaurantEntity = RestaurantEntity.create({
         name: command.name,
-        refPlaceId: command.refPlaceId,
         address: command.address,
         latitude: command.latitude,
         longitude: command.longitude,
-        webviewUrl: command.webviewUrl,
       });
 
       //? 2. restaurantEntity 동기화
-      const upsertRestaurantEntity = await this.restaurantRepository.upsertRestaurantByRefPlaceId(restaurantEntity);
+      const upsertRestaurantEntity = await this.restaurantRepository.upsertRestaurantByNameAndAddress(restaurantEntity);
 
       //? 3. pin 조회
       const pin = await this.pinQuery.findByUserIdAndRestaurantId(command.userId, upsertRestaurantEntity.id);
@@ -64,5 +66,29 @@ export class PinService {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  /**
+   * Get Nearby Pins
+   * @param userId number
+   * @param query NearbyPinsQueryDto
+   * @returns PinWithRestaurantDto[]
+   */
+  async getNearbyPins(userId: number, query: NearbyPinsQueryDto): Promise<PinWithRestaurantDto[]> {
+    const boundingBox = BoundingBoxDto.create({
+      minLat: query.minLat,
+      maxLat: query.maxLat,
+      minLng: query.minLng,
+      maxLng: query.maxLng,
+    });
+
+    const options = LocationQueryOptionsDto.create({
+      userLat: query.userLat,
+      userLng: query.userLng,
+      limit: query.limit,
+      type: query.type,
+    });
+
+    return this.pinQuery.findNearbyPinnedRestaurants(userId, boundingBox, options);
   }
 }

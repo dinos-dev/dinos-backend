@@ -17,39 +17,26 @@ export class RestaurantRepository
   }
 
   /**
-   * 네이버 refPlaceId 기반 가게 조회
-   * @param refPlaceId
-   * @returns RestaurantEntity | null
-   */
-  async findByRefPlaceId(refPlaceId: string): Promise<RestaurantEntity | null> {
-    const restaurant = await this.model.findUnique({ where: { refPlaceId } });
-    return restaurant ? RestaurantMapper.toDomain(restaurant) : null;
-  }
-
-  /**
    * 네이버 refPlaceId 기반 restaurant 정보 동기화
    * @param entity RestaurantEntity
    * @returns RestaurantEntity
    */
-  async upsertRestaurantByRefPlaceId(entity: RestaurantEntity): Promise<RestaurantEntity> {
+  async upsertRestaurantByNameAndAddress(entity: RestaurantEntity): Promise<RestaurantEntity> {
     const restaurant = await this.model.upsert({
-      where: { refPlaceId: entity.refPlaceId },
+      where: { unique_name_address: { name: entity.name, address: entity.address } },
       update: {
         name: entity.name,
         address: entity.address,
         latitude: entity.latitude,
         longitude: entity.longitude,
-        webViewUrl: entity.webviewUrl,
         lastSyncedAt: entity.lastSyncedAt,
         isActive: entity.isActive,
       },
       create: {
         name: entity.name,
-        refPlaceId: entity.refPlaceId,
         address: entity.address,
         latitude: entity.latitude,
         longitude: entity.longitude,
-        webViewUrl: entity.webviewUrl,
         lastSyncedAt: entity.lastSyncedAt,
         isActive: entity.isActive,
         category: entity.category,

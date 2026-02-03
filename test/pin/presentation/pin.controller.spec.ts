@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PinController } from '../../src/pin/presentation/pin.controller';
-import { PinService } from '../../src/pin/application/pin.service';
+import { PinController } from '../../../src/pin/presentation/pin.controller';
+import { PinService } from '../../../src/pin/application/pin.service';
 
 describe('PinController', () => {
   let controller: PinController;
