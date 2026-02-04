@@ -8,6 +8,7 @@ import { CommonModule } from './common/common.module';
 import { TraceModule } from './infrastructure/logger/trace.module';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { SlackModule } from './infrastructure/slack/slack.module';
+import { R2Module } from './infrastructure/r2/r2.module';
 import { SlackErrorFilter } from './common/filter/slack-error.filter';
 import { envVariableKeys } from './common/config/env-keys.const';
 import { UserModule } from './user/user.module';
@@ -41,6 +42,7 @@ import { PinModule } from './pin/pin.module';
     AuthModule,
     CommonModule,
     SlackModule,
+    R2Module,
     FeedModule,
     FriendshipModule,
     ClsModule,

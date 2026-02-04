@@ -15,6 +15,13 @@ export const envVariableKeys = Joi.object({
   REGION: Joi.string().required(),
   BUCKET_NAME: Joi.string().required(),
 
+  // CloudFlare R2 관련 환경 변수
+  R2_ACCOUNT_ID: Joi.string().required(),
+  R2_ACCESS_KEY: Joi.string().required(),
+  R2_SECRET_KEY: Joi.string().required(),
+  R2_BUCKET_NAME: Joi.string().required(),
+  R2_CDN_URL: Joi.string().uri().required(),
+
   // 인증 관련 환경 변수
   HASH_ROUNDS: Joi.number().default(10),
   EXPOSE_ACCESS_TK: Joi.string().required(),

@@ -1,5 +1,3 @@
-export const RESIGNED_URL_EXPIRES_IN = 300;
-
 // Dependency Injection Symbols
 
 // REPOSITORY
@@ -22,3 +20,6 @@ export const PIN_QUERY_REPOSITORY = Symbol('PIN_QUERY_REPOSITORY');
 
 // Mongo
 export const FEED_REPOSITORY = Symbol('FEED_REPOSITORY');
+
+// SERVICE
+export const FILE_UPLOAD_SERVICE = Symbol('FILE_UPLOAD_SERVICE');
