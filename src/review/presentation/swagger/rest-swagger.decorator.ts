@@ -7,6 +7,11 @@ import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.d
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { ApiErrorResponseTemplate } from 'src/common/swagger/response/api-error-response';
 import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
+import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
+import { CreateReviewQuestionDto } from '../dto/request/create-review-question.dto';
+import { CreateReviewQuestionsBulkDto } from '../dto/request/create-review-questions-bulk.dto';
+import { ReviewQuestionResponseDto } from '../dto/response/review-question.response.dto';
+import { ReviewQuestionsBulkResponseDto } from '../dto/response/review-questions-bulk.response.dto';
 
 export const GetPresignedUrlDocs = () => {
   return applyDecorators(
@@ -59,6 +64,66 @@ export const GetBulkPresignedUrlDocs = () => {
       description: 'presigned url 업로드 요청 성공',
       type: PresignedUrlResponseDto,
       isArray: true,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+export const CreateReviewQuestionDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 질문 생성 (관리자용)',
+      description: `
+      - 리뷰 질문을 생성한다.
+      - 질문과 선택지를 함께 생성한다.
+      - step은 BEFORE_ENTRY, ENTRY, ORDER, MEAL, WRAP_UP 중 하나를 선택한다.
+      `,
+    }),
+    ApiBody({
+      type: CreateReviewQuestionDto,
+    }),
+    ApiCreatedResponseTemplate({
+      description: '리뷰 질문 생성 성공',
+      type: ReviewQuestionResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+export const CreateReviewQuestionsBulkDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 질문 일괄 생성 (관리자용)',
+      description: `
+      - 여러 리뷰의 질문 리스트를 한 번에 생성한다.
+      - 각 질문과 선택지를 함께 생성한다.
+      - 개수 제한 없이 원하는 만큼 질문을 생성할 수 있다.
+      `,
+    }),
+    ApiBody({
+      type: CreateReviewQuestionsBulkDto,
+    }),
+    ApiCreatedResponseTemplate({
+      description: '리뷰 질문 일괄 생성 성공',
+      type: ReviewQuestionsBulkResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
