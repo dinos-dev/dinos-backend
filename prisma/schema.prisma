@@ -229,6 +229,11 @@ model Restaurant {
   /// 가게의 카테고리
   category String? @db.VarChar(100) @map("category")
 
+  /// 가게 대표 이미지 URL (최초 리뷰어의 대표 이미지를 채택)
+  primaryImageUrl  String?  @db.VarChar(500) @map("primary_image_url")
+  /// 대표 이미지 설정자 추적 (관리자 교체 시 null, 리뷰 삭제 시 처리용)
+  primaryImageSetBy Int?    @map("primary_image_set_by")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -249,10 +254,6 @@ model Pin {
   id           Int      @id @default(autoincrement())
   userId       Int      @map("user_id")
   restaurantId Int      @map("restaurant_id")
-  reviewId     Int?     @unique @map("review_id")
-
-  //? 핀의 타입 (방문 예정 vs 방문 완료)
-  type PinType @default(PLANNED) @map("type") 
 
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -260,14 +261,9 @@ model Pin {
   //? N:1
   user         User       @relation("UserPin", fields: [userId], references: [id], onDelete: Cascade)
   restaurant   Restaurant @relation("RestaurantPin", fields: [restaurantId], references: [id], onDelete: Cascade)
-  review       Review?    @relation("PinReview", fields: [reviewId], references: [id], onDelete: SetNull)
-
 
   //? 사용자당 음식점 하나만 핀 가능
   @@unique([userId, restaurantId], map: "unique_user_restaurant_pin")
-
-  //? index
-  @@index([userId, type], map: "idx_user_pin_type")
   
   @@map("pins")
 }
@@ -278,24 +274,103 @@ model Review {
   userId       Int      @map("user_id")
   restaurantId Int      @map("restaurant_id")
   
-  content      String?  @db.Text() // 리뷰 내용 (선택적일 경우)
-  rating       Int      @default(5) // 별점 등
-  visitedAt    DateTime @default(now()) @map("visited_at") // 실제 방문 날짜
+  content      String?  @db.VarChar(500) // 내가 방문한 가게에 대한 공통 리뷰 ( 서술형 )
+  wantRecommendation  Boolean   @default(false) @map("want_recommendation")
   
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at") // 리뷰 데이터를 지울지는 아직 미확정 
+  version             Int       @default(0)
 
   //? N:1
   user         User       @relation("UserReview", fields: [userId], references: [id], onDelete: Cascade)
   restaurant   Restaurant @relation("RestaurantReview", fields: [restaurantId], references: [id], onDelete: Cascade)
-  pin          Pin?       @relation("PinReview")
-  
-  @@unique([userId, restaurantId], map: "unique_user_restaurant_review")
 
-  @@index([userId], map: "idx_user_reviews")
+  //? 1:N
+  answers             ReviewAnswer[]
+  images              ReviewImage[]
+
+  @@index([userId, restaurantId], map: "idx_user_restaurant_reviews")
+  @@index([restaurantId], map: "idx_restaurant_reviews")
+  @@index([wantRecommendation], map: "idx_want_recommendation")
 
   @@map("reviews")
+}
+
+
+model ReviewImage {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int      @map("review_id")
+  imageUrl  String   @db.VarChar(500) @map("image_url")
+  isPrimary Boolean  @default(false) @map("is_primary")
+  sortOrder Int      @default(0) @map("sort_order")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  //? N:1
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId, isPrimary], map: "idx_review_image_primary")
+  @@map("review_images")
+}
+
+model ReviewQuestion {
+  id        Int         @id @default(autoincrement())
+  step      ReviewStep
+  content   String      @db.VarChar(500)
+  isActive  Boolean     @default(true) @map("is_active")
+  sortOrder Int         @default(0) @map("sort_order")
+
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  //? 1:N
+  options   ReviewQuestionOption[]
+  answers   ReviewAnswer[]
+
+  @@index([step, isActive], map: "idx_question_step_active")
+  @@map("review_questions")
+}
+
+model ReviewQuestionOption {
+  id           Int      @id @default(autoincrement())
+  questionId   Int      @map("question_id")
+  content      String   @db.VarChar(200)
+  userTagLabel String   @db.VarChar(100) @map("user_tag_label")
+  sortOrder    Int      @default(0) @map("sort_order")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  //? N:1
+  question     ReviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  //? 1:N
+  answers      ReviewAnswer[]
+
+  @@index([questionId], map: "idx_option_question")
+  @@map("review_question_options")
+}
+
+model ReviewAnswer {
+  id            Int      @id @default(autoincrement())
+  reviewId      Int      @map("review_id")
+  questionId    Int      @map("question_id")
+  optionId      Int?     @map("option_id")
+  customAnswer  String?  @db.VarChar(300) @map("custom_answer")
+
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  //? N:1
+  review        Review                @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  question      ReviewQuestion        @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  option        ReviewQuestionOption?  @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  @@unique([reviewId, questionId], map: "unique_review_question")
+  @@index([reviewId], map: "idx_answer_review")
+  @@index([optionId], map: "idx_answer_option")
+  @@map("review_answers")
 }
 
 enum Provider {
@@ -343,8 +418,24 @@ enum ItemType {
   RESTAURANT
 }
 
-// 핀의 타입 enum (방문 예정 vs 방문 완료)
-enum PinType {
-  PLANNED // 방문 예정 
-  VISITED // 방문 완료 
+/**
+ * 리뷰 단계 enum
+ * @param BEFORE_ENTRY 입장전
+ * @param ENTRY 입장
+ * @param ORDER 주문
+ * @param MEAL 식사
+ * @param WRAP_UP 마무리
+ */
+enum ReviewStep {
+  BEFORE_ENTRY
+  ENTRY
+  ORDER
+  MEAL
+  WRAP_UP
 }
+
+// // 핀의 타입 enum (방문 예정 vs 방문 완료)
+// enum PinType {
+//   PLANNED // 방문 예정 
+//   VISITED // 방문 완료 
+// }
