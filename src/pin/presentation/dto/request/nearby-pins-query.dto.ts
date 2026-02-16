@@ -1,7 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsLatitude, IsLongitude, IsNumber, IsOptional, Max, Min } from 'class-validator';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+import { IsLatitude, IsLongitude, IsNumber, IsOptional, Max, Min } from 'class-validator';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 export class NearbyPinsQueryDto {
   @ApiProperty({ description: '사용자 현재 위도', example: 37.506495, type: Number })
@@ -48,8 +48,8 @@ export class NearbyPinsQueryDto {
   @Max(1000)
   limit?: number = 50;
 
-  @ApiPropertyOptional({ description: '핀 타입 필터', enum: PinType, example: PinType.PLANNED })
-  @IsOptional()
-  @IsEnum(PinType)
-  type?: PinType;
+  // @ApiPropertyOptional({ description: '핀 타입 필터', enum: PinType, example: PinType.PLANNED })
+  // @IsOptional()
+  // @IsEnum(PinType)
+  // type?: PinType;
 }

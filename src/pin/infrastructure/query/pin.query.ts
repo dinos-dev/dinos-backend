@@ -9,7 +9,7 @@ import { PinMapper } from '../mapper/pin.mapper';
 import { BoundingBoxDto } from 'src/pin/application/dto/bounding-box.dto';
 import { LocationQueryOptionsDto } from 'src/pin/application/dto/location-query-options.dto';
 import { PinWithRestaurantDto } from 'src/pin/application/dto/pin-with-restaurant.dto';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 @Injectable()
 export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQuery {
@@ -48,13 +48,13 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
     options: LocationQueryOptionsDto,
   ): Promise<PinWithRestaurantDto[]> {
     const { minLat, maxLat, minLng, maxLng } = boundingBox;
-    const { userLat, userLng, limit, type } = options;
+    const { userLat, userLng, limit } = options;
 
     // Prisma의 $queryRaw를 사용하여 안전하게 Raw SQL 실행
     const query = Prisma.sql`
       SELECT
         p.id AS pin_id,
-        p.type AS pin_type,
+        -- p.type AS pin_type,
         p.created_at AS pinned_at,
         r.id AS restaurant_id,
         r.name AS restaurant_name,
@@ -78,7 +78,6 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
 
       WHERE
         p.user_id = ${userId}
-        ${type ? Prisma.sql`AND p.type = ${type}::"PinType"` : Prisma.empty}
         AND r.latitude BETWEEN ${minLat} AND ${maxLat}
         AND r.longitude BETWEEN ${minLng} AND ${maxLng}
 
@@ -99,7 +98,7 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
           row.address,
           row.category,
           Number(row.distance_km),
-          row.pin_type as PinType,
+          // row.pin_type as PinType,
           row.pinned_at,
         ),
     );

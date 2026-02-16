@@ -1,4 +1,4 @@
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 export class TogglePinCommand {
   constructor(
@@ -7,6 +7,6 @@ export class TogglePinCommand {
     public readonly address: string,
     public readonly latitude: number,
     public readonly longitude: number,
-    public readonly type: PinType,
+    // public readonly type: PinType,
   ) {}
 }

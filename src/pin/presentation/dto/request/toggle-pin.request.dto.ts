@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsNotIn, IsNumber, IsString } from 'class-validator';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 export class TogglePinDto {
   @IsNotEmpty()
@@ -42,14 +42,14 @@ export class TogglePinDto {
   })
   longitude: number;
 
-  @IsNotEmpty()
-  @IsEnum(PinType)
-  @IsNotIn([PinType.VISITED], { message: 'VISITED 유형의 핀 생성이 불가합니다. ( PLANNED 유형만 생성 가능 )' })
-  @ApiProperty({
-    description: '핀의 타입 ( PLANNED, VISITED )',
-    example: 'PLANNED',
-    required: true,
-    enum: PinType,
-  })
-  type: PinType;
+  // @IsNotEmpty()
+  // @IsEnum(PinType)
+  // @IsNotIn([PinType.VISITED], { message: 'VISITED 유형의 핀 생성이 불가합니다. ( PLANNED 유형만 생성 가능 )' })
+  // @ApiProperty({
+  //   description: '핀의 타입 ( PLANNED, VISITED )',
+  //   example: 'PLANNED',
+  //   required: true,
+  //   enum: PinType,
+  // })
+  // type: PinType;
 }

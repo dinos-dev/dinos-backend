@@ -1,5 +1,5 @@
 import { Pin } from '@prisma/client';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 import { PinEntity } from 'src/pin/domain/entities/pin.entity';
 
 export class PinMapper {
@@ -8,8 +8,7 @@ export class PinMapper {
       prismaPin.id,
       prismaPin.userId,
       prismaPin.restaurantId,
-      prismaPin.reviewId,
-      prismaPin.type as PinType,
+      // prismaPin.type as PinType,
       prismaPin.createdAt,
       prismaPin.updatedAt,
     );

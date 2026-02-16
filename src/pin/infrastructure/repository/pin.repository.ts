@@ -23,7 +23,7 @@ export class PinRepository extends PrismaRepository<Pin, PinEntity> implements I
       data: {
         userId: pinEntity.userId,
         restaurantId: pinEntity.restaurantId,
-        type: pinEntity.type,
+        // type: pinEntity.type,
       },
     });
     return PinMapper.toDomain(entity);

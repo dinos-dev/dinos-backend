@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, plainToInstance } from 'class-transformer';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 import { PinEntity } from 'src/pin/domain/entities/pin.entity';
 
 export class PinResponseDto {
@@ -40,13 +40,13 @@ export class PinResponseDto {
   })
   reviewId: number;
 
-  @Expose()
-  @ApiProperty({
-    description: '핀 타입',
-    example: 'PLANNED',
-    type: String,
-  })
-  type: PinType;
+  // @Expose()
+  // @ApiProperty({
+  //   description: '핀 타입',
+  //   example: 'PLANNED',
+  //   type: String,
+  // })
+  // type: PinType;
 
   @Expose()
   @ApiProperty({
@@ -63,8 +63,7 @@ export class PinResponseDto {
         id: result.id,
         userId: result.userId,
         restaurantId: result.restaurantId,
-        reviewId: result.reviewId,
-        type: result.type,
+        // type: result.type,
         createdAt: result.createdAt,
       },
       {

@@ -57,8 +57,7 @@ export class PinService {
       const pinEntity = PinEntity.create({
         userId: command.userId,
         restaurantId: upsertRestaurantEntity.id,
-        reviewId: null,
-        type: command.type,
+        // type: command.type,
       });
 
       return this.pinRepository.create(pinEntity);
@@ -86,7 +85,7 @@ export class PinService {
       userLat: query.userLat,
       userLng: query.userLng,
       limit: query.limit,
-      type: query.type,
+      // type: query.type,
     });
 
     return this.pinQuery.findNearbyPinnedRestaurants(userId, boundingBox, options);
