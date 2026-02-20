@@ -13,6 +13,38 @@ import { CreateReviewQuestionsBulkDto } from '../dto/request/create-review-quest
 import { ReviewQuestionResponseDto } from '../dto/response/review-question.response.dto';
 import { ReviewQuestionsBulkResponseDto } from '../dto/response/review-questions-bulk.response.dto';
 import { ReviewFormQuestionsResponseDto } from '../dto/response/review-form-questions.response.dto';
+import { CreateReviewDto } from '../dto/request/create-review.dto';
+import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
+
+export const CreateReviewDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 작성',
+      description: `
+      - 가게에 대한 리뷰를 작성한다.
+      - 가게 정보(name, address)를 기반으로 자동 upsert 처리된다. (Naver Place 기반)
+      - answers는 선택사항이며, 각 항목은 optionId 또는 customAnswer 중 하나만 입력해야 한다.
+      - reviews/questions 에서 반환된 Questions의 id는 모두 포함시켜야 한다. (추후 리뷰를 수정하는 케이스에서 해당 질문지를 그대로 보여주어야 하기 때문)
+      - images는 선택사항이며, 첨부 시 isPrimary: true 항목이 반드시 1개여야 한다.
+      `,
+    }),
+    ApiBody({ type: CreateReviewDto }),
+    ApiCreatedResponseTemplate({
+      description: '리뷰 작성 성공',
+      type: CreateReviewResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
 
 export const GetReviewFormQuestionsDocs = () => {
   return applyDecorators(

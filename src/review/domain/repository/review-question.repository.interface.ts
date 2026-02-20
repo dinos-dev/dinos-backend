@@ -6,4 +6,6 @@ export interface IReviewQuestionRepository {
     questionEntity: ReviewQuestionEntity,
     optionEntities: ReviewQuestionOptionEntity[],
   ): Promise<ReviewQuestionEntity>;
+
+  // createReview()
 }

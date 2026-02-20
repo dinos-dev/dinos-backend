@@ -7,6 +7,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateBulkPresignedUrlDto } from 'src/common/dto/create.presigned-url.bulk.dto';
 import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.dto';
 import {
+  CreateReviewDocs,
   CreateReviewQuestionDocs,
   CreateReviewQuestionsBulkDocs,
   GetBulkPresignedUrlDocs,
@@ -20,6 +21,15 @@ import { ReviewQuestionsBulkResponseDto } from './dto/response/review-questions-
 import { CreateReviewQuestionCommand } from '../application/command/create-review-question.command';
 import { CreateReviewQuestionsBulkCommand } from '../application/command/create-review-questions-bulk.command';
 import { ReviewFormQuestionsResponseDto } from './dto/response/review-form-questions.response.dto';
+import { CreateReviewDto } from './dto/request/create-review.dto';
+import {
+  CreateReviewAnswerCommand,
+  CreateReviewCommand,
+  CreateReviewImageCommand,
+  CreateReviewRestaurantCommand,
+} from '../application/command/create-review.command';
+import { CreateReviewResponseDto } from './dto/response/create-review.response.dto';
+import { UserId } from 'src/common/decorator/user-id.decorator';
 
 @ApiTags('Reviews - 리뷰')
 @ApiBearerAuth()
@@ -27,6 +37,34 @@ import { ReviewFormQuestionsResponseDto } from './dto/response/review-form-quest
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
+
+  @CreateReviewDocs()
+  @Post()
+  async createReview(
+    @UserId() userId: number,
+    @Body() dto: CreateReviewDto,
+  ): Promise<HttpResponse<CreateReviewResponseDto>> {
+    //? 1. CreateReviewCommand 생성
+    const command = new CreateReviewCommand(
+      userId,
+      new CreateReviewRestaurantCommand(
+        dto.restaurant.name,
+        dto.restaurant.address,
+        dto.restaurant.latitude,
+        dto.restaurant.longitude,
+      ),
+      dto.content ?? null,
+      dto.wantRecommendation,
+      (dto.answers ?? []).map(
+        (a) => new CreateReviewAnswerCommand(a.questionId, a.optionId ?? null, a.customAnswer ?? null),
+      ),
+      (dto.images ?? []).map((i) => new CreateReviewImageCommand(i.imageUrl, i.isPrimary, i.sortOrder)),
+    );
+
+    //? 2. 리뷰 생성
+    const result = await this.reviewService.createReview(command);
+    return HttpResponse.created(result);
+  }
 
   @GetReviewFormQuestionsDocs()
   @Get('questions/form')

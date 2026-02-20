@@ -1,8 +1,10 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import {
   FILE_UPLOAD_SERVICE,
+  RESTAURANT_REPOSITORY,
   REVIEW_QUERY_REPOSITORY,
   REVIEW_QUESTION_REPOSITORY,
+  REVIEW_REPOSITORY,
 } from 'src/common/config/common.const';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
 import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.dto';
@@ -19,6 +21,14 @@ import { IReviewQuery } from './interface/review-query.interface';
 import { ReviewStep } from '../domain/const/review.enum';
 import { ReviewQuestionWithOptionsEntity } from '../domain/entities/review-question-with-options.entity';
 import { ReviewFormQuestionsResponseDto } from '../presentation/dto/response/review-form-questions.response.dto';
+import { IReviewRepository } from '../domain/repository/review.repository.interface';
+import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaurant.repository.interface';
+import { CreateReviewCommand } from './command/create-review.command';
+import { ReviewEntity } from '../domain/entities/review.entity';
+import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
+import { ReviewAnswerEntity } from '../domain/entities/review-answer.entity';
+import { ReviewImageEntity } from '../domain/entities/review-image.entity';
+import { CreateReviewResponseDto } from '../presentation/dto/response/create-review.response.dto';
 
 @Injectable()
 export class ReviewService {
@@ -29,6 +39,10 @@ export class ReviewService {
     private readonly reviewQuestionRepository: IReviewQuestionRepository,
     @Inject(REVIEW_QUERY_REPOSITORY)
     private readonly reviewQuery: IReviewQuery,
+    @Inject(REVIEW_REPOSITORY)
+    private readonly reviewRepository: IReviewRepository,
+    @Inject(RESTAURANT_REPOSITORY)
+    private readonly restaurantRepository: IRestaurantRepository,
     private readonly logger: WinstonLoggerService,
   ) {}
 
@@ -53,6 +67,74 @@ export class ReviewService {
     });
 
     return ReviewFormQuestionsResponseDto.from(steps);
+  }
+
+  /**
+   * 리뷰 작성
+   * @param command CreateReviewCommand
+   * @returns CreateReviewResponseDto
+   */
+  @Transactional()
+  async createReview(command: CreateReviewCommand): Promise<CreateReviewResponseDto> {
+    try {
+      //? 1. Restaurant upsert (name + address 기준 조회 → 없으면 생성)
+      const restaurantEntity = RestaurantEntity.create({
+        name: command.restaurant.name,
+        address: command.restaurant.address,
+        latitude: command.restaurant.latitude,
+        longitude: command.restaurant.longitude,
+      });
+
+      const restaurant = await this.restaurantRepository.upsertRestaurantByNameAndAddress(restaurantEntity);
+
+      //? 2. ReviewEntity 생성
+      const reviewEntity = ReviewEntity.create({
+        userId: command.userId,
+        restaurantId: restaurant.id,
+        content: command.content,
+        wantRecommendation: command.wantRecommendation,
+      });
+
+      //? 3. ReviewAnswerEntity 배열 생성
+      const answerEntities = command.answers.map((a) =>
+        ReviewAnswerEntity.create({
+          questionId: a.questionId,
+          optionId: a.optionId,
+          customAnswer: a.customAnswer,
+        }),
+      );
+
+      //? 4. ReviewImageEntity 배열 생성
+      const imageEntities = command.images.map((i) =>
+        ReviewImageEntity.create({
+          imageUrl: i.imageUrl,
+          isPrimary: i.isPrimary,
+          sortOrder: i.sortOrder,
+        }),
+      );
+
+      //? 5. Review + Answers + Images 단일 트랜잭션 생성
+      const review = await this.reviewRepository.createWithAnswersAndImages(
+        reviewEntity,
+        answerEntities,
+        imageEntities,
+      );
+
+      //? 6. Restaurant 대표 이미지 업데이트 (primaryImageSetBy가 null인 경우에만 → 최초 리뷰어 이미지 채택)
+      const primaryImage = command.images.find((i) => i.isPrimary);
+      if (primaryImage) {
+        await this.restaurantRepository.updatePrimaryImageIfNotSet(
+          restaurant.id,
+          primaryImage.imageUrl,
+          command.userId,
+        );
+      }
+
+      return CreateReviewResponseDto.fromEntity(review);
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
+    }
   }
 
   /**
