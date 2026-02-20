@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
 import { HttpResponse } from 'src/common/http/http-response';
@@ -11,6 +11,7 @@ import {
   CreateReviewQuestionsBulkDocs,
   GetBulkPresignedUrlDocs,
   GetPresignedUrlDocs,
+  GetReviewFormQuestionsDocs,
 } from './swagger/rest-swagger.decorator';
 import { CreateReviewQuestionDto } from './dto/request/create-review-question.dto';
 import { CreateReviewQuestionsBulkDto } from './dto/request/create-review-questions-bulk.dto';
@@ -18,6 +19,7 @@ import { ReviewQuestionResponseDto } from './dto/response/review-question.respon
 import { ReviewQuestionsBulkResponseDto } from './dto/response/review-questions-bulk.response.dto';
 import { CreateReviewQuestionCommand } from '../application/command/create-review-question.command';
 import { CreateReviewQuestionsBulkCommand } from '../application/command/create-review-questions-bulk.command';
+import { ReviewFormQuestionsResponseDto } from './dto/response/review-form-questions.response.dto';
 
 @ApiTags('Reviews - 리뷰')
 @ApiBearerAuth()
@@ -25,6 +27,13 @@ import { CreateReviewQuestionsBulkCommand } from '../application/command/create-
 @Controller('reviews')
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
+
+  @GetReviewFormQuestionsDocs()
+  @Get('questions/form')
+  async getReviewQuestionsForForm(): Promise<HttpResponse<ReviewFormQuestionsResponseDto>> {
+    const result = await this.reviewService.getReviewQuestionsForForm();
+    return HttpResponse.ok(result);
+  }
 
   @GetPresignedUrlDocs()
   @Post('presigned-url')

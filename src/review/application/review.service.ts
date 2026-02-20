@@ -1,5 +1,9 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
-import { FILE_UPLOAD_SERVICE, REVIEW_QUESTION_REPOSITORY } from 'src/common/config/common.const';
+import {
+  FILE_UPLOAD_SERVICE,
+  REVIEW_QUERY_REPOSITORY,
+  REVIEW_QUESTION_REPOSITORY,
+} from 'src/common/config/common.const';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
 import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.dto';
 import { IFileUploadService } from 'src/common/interface/file-upload.interface';
@@ -11,6 +15,10 @@ import { ReviewQuestionOptionEntity } from '../domain/entities/review-question-o
 import { Transactional } from '@nestjs-cls/transactional';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { IReviewQuery } from './interface/review-query.interface';
+import { ReviewStep } from '../domain/const/review.enum';
+import { ReviewQuestionWithOptionsEntity } from '../domain/entities/review-question-with-options.entity';
+import { ReviewFormQuestionsResponseDto } from '../presentation/dto/response/review-form-questions.response.dto';
 
 @Injectable()
 export class ReviewService {
@@ -19,9 +27,39 @@ export class ReviewService {
     private readonly fileUploadService: IFileUploadService,
     @Inject(REVIEW_QUESTION_REPOSITORY)
     private readonly reviewQuestionRepository: IReviewQuestionRepository,
+    @Inject(REVIEW_QUERY_REPOSITORY)
+    private readonly reviewQuery: IReviewQuery,
     private readonly logger: WinstonLoggerService,
   ) {}
 
+  /**
+   * 리뷰 폼 질문 조회 - step별 랜덤 1개 반환
+   * @returns ReviewFormQuestionsResponseDto
+   */
+  async getReviewQuestionsForForm(): Promise<ReviewFormQuestionsResponseDto> {
+    // 1) 현재 활성화된 리뷰 데이터를 일괄로 조회 ( 리뷰는 초반에 많이 없고 Step 별로 일일이 쿼리해서 가공하는건 비효율적이기 때문에 애플리케이션 레벨에서 조정 )
+    const allQuestions = await this.reviewQuery.findAllActiveWithOptions();
+
+    // 2) 각 리뷰의 Step 별 랜덤 1개 질문을 선택
+    const steps = Object.values(ReviewStep).map((step) => {
+      const candidates = allQuestions.filter((q) => q.step === step);
+
+      if (candidates.length === 0) {
+        return { step, question: null as ReviewQuestionWithOptionsEntity | null };
+      }
+
+      const randomIndex = Math.floor(Math.random() * candidates.length);
+      return { step, question: candidates[randomIndex] };
+    });
+
+    return ReviewFormQuestionsResponseDto.from(steps);
+  }
+
+  /**
+   * 리뷰 이미지 업로드를 위한 Signed URL 발급
+   * @param dto CreatePresignedUrlDto
+   * @returns PresignedUrlResponseDto
+   */
   async getSignedUrl(dto: CreatePresignedUrlDto): Promise<PresignedUrlResponseDto> {
     return await this.fileUploadService.createPresignedUrl(dto, 'reviews');
   }

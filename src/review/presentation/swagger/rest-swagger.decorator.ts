@@ -12,6 +12,30 @@ import { CreateReviewQuestionDto } from '../dto/request/create-review-question.d
 import { CreateReviewQuestionsBulkDto } from '../dto/request/create-review-questions-bulk.dto';
 import { ReviewQuestionResponseDto } from '../dto/response/review-question.response.dto';
 import { ReviewQuestionsBulkResponseDto } from '../dto/response/review-questions-bulk.response.dto';
+import { ReviewFormQuestionsResponseDto } from '../dto/response/review-form-questions.response.dto';
+
+export const GetReviewFormQuestionsDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 폼 질문 조회',
+      description: `
+      - 리뷰 작성 시 각 단계(step)에 표시할 질문을 반환한다.
+      - 총 5단계(BEFORE_ENTRY, ENTRY, ORDER, MEAL, WRAP_UP)에 대해 각 1개씩 랜덤으로 선택된다.
+      - 특정 단계에 활성화된 질문이 없을 경우 해당 step의 question은 null로 반환된다 ( 해당 부분은 관리자단에서 잘 못 리소스를 삽입한 부분이기 때문에 임시 처리용으로 처리 )
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: '리뷰 폼 질문 조회 성공',
+      type: ReviewFormQuestionsResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
 
 export const GetPresignedUrlDocs = () => {
   return applyDecorators(
