@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { CursorPaginatedResponseDto, CursorPaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
 import { HttpResponse } from 'src/common/http/http-response';
@@ -11,6 +12,7 @@ import {
   CreateReviewQuestionDocs,
   CreateReviewQuestionsBulkDocs,
   GetBulkPresignedUrlDocs,
+  GetMyReviewsDocs,
   GetPresignedUrlDocs,
   GetReviewFormQuestionsDocs,
 } from './swagger/rest-swagger.decorator';
@@ -29,6 +31,7 @@ import {
   CreateReviewRestaurantCommand,
 } from '../application/command/create-review.command';
 import { CreateReviewResponseDto } from './dto/response/create-review.response.dto';
+import { MyReviewResponseDto } from './dto/response/my-reviews.response.dto';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 
 @ApiTags('Reviews - 리뷰')
@@ -38,6 +41,7 @@ import { UserId } from 'src/common/decorator/user-id.decorator';
 export class ReviewController {
   constructor(private readonly reviewService: ReviewService) {}
 
+  // ? 리뷰 작성
   @CreateReviewDocs()
   @Post()
   async createReview(
@@ -66,6 +70,18 @@ export class ReviewController {
     return HttpResponse.created(result);
   }
 
+  // ? 내가 작성한 리뷰조회
+  @GetMyReviewsDocs()
+  @Get('me')
+  async getMyReviews(
+    @UserId() userId: number,
+    @Query() query: CursorPaginationQueryDto,
+  ): Promise<HttpResponse<CursorPaginatedResponseDto<MyReviewResponseDto>>> {
+    const result = await this.reviewService.getMyReviews(userId, query.cursor ?? null);
+    return HttpResponse.ok(result);
+  }
+
+  // ? 리뷰 폼 질문 조회
   @GetReviewFormQuestionsDocs()
   @Get('questions/form')
   async getReviewQuestionsForForm(): Promise<HttpResponse<ReviewFormQuestionsResponseDto>> {
@@ -73,6 +89,7 @@ export class ReviewController {
     return HttpResponse.ok(result);
   }
 
+  // ? 리뷰 이미지 업로드 전 사전 서명 URL 발급
   @GetPresignedUrlDocs()
   @Post('presigned-url')
   async getSignedUrl(@Body() dto: CreatePresignedUrlDto): Promise<HttpResponse<PresignedUrlResponseDto>> {
@@ -80,6 +97,7 @@ export class ReviewController {
     return HttpResponse.ok(url);
   }
 
+  // ? 리뷰 이미지 업로드 전 사전 서명 URL 발급 (여러 개)
   @GetBulkPresignedUrlDocs()
   @Post('presigned-url/bulk')
   async getBulkSignedUrl(@Body() dto: CreateBulkPresignedUrlDto): Promise<HttpResponse<PresignedUrlResponseDto[]>> {
@@ -87,6 +105,7 @@ export class ReviewController {
     return HttpResponse.ok(urls);
   }
 
+  // ? 리뷰 질문 생성 ( 관리자용 )
   @CreateReviewQuestionDocs()
   @Post('questions')
   async createReviewQuestion(@Body() dto: CreateReviewQuestionDto): Promise<HttpResponse<ReviewQuestionResponseDto>> {
@@ -96,6 +115,7 @@ export class ReviewController {
     return HttpResponse.created(result);
   }
 
+  // ? 리뷰 질문 일괄 생성 (관리자용)
   @CreateReviewQuestionsBulkDocs()
   @Post('questions/bulk')
   async createReviewQuestionsBulk(

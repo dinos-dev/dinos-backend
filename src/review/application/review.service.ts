@@ -28,7 +28,9 @@ import { ReviewEntity } from '../domain/entities/review.entity';
 import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
 import { ReviewAnswerEntity } from '../domain/entities/review-answer.entity';
 import { ReviewImageEntity } from '../domain/entities/review-image.entity';
+import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { CreateReviewResponseDto } from '../presentation/dto/response/create-review.response.dto';
+import { MyReviewResponseDto } from '../presentation/dto/response/my-reviews.response.dto';
 
 @Injectable()
 export class ReviewService {
@@ -67,6 +69,17 @@ export class ReviewService {
     });
 
     return ReviewFormQuestionsResponseDto.from(steps);
+  }
+
+  /**
+   * 내가 작성한 리뷰 목록 조회 (커서 기반 페이징, 최신순)
+   * @param userId 요청 사용자 ID
+   * @param cursor 이전 페이지 마지막 리뷰 ID (null이면 첫 페이지)
+   * @returns MyReviewsResponseDto
+   */
+  async getMyReviews(userId: number, cursor: number | null): Promise<CursorPaginatedResponseDto<MyReviewResponseDto>> {
+    const result = await this.reviewQuery.findMyReviews(userId, cursor, 30);
+    return CursorPaginatedResponseDto.from(result, MyReviewResponseDto.from);
   }
 
   /**

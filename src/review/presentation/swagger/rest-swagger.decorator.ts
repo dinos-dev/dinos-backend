@@ -15,7 +15,10 @@ import { ReviewQuestionsBulkResponseDto } from '../dto/response/review-questions
 import { ReviewFormQuestionsResponseDto } from '../dto/response/review-form-questions.response.dto';
 import { CreateReviewDto } from '../dto/request/create-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
+import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
+import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
 
+//? 리뷰 작성문서
 export const CreateReviewDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -38,6 +41,33 @@ export const CreateReviewDocs = () => {
         status: StatusCodes.BAD_REQUEST,
         errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
       },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? 내가 작성한 리뷰 목록 조회문서
+export const GetMyReviewsDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '내가 작성한 리뷰 목록 조회',
+      description: `
+      - 사용자가 작성한 리뷰 목록을 최신순으로 반환한다.
+      - 커서 기반 페이징(30개)으로 동작한다.
+      - 첫 요청 시 cursor 파라미터를 생략한다.
+      - 응답의 nextCursor 값을 다음 요청의 cursor 파라미터로 전달하면 다음 페이지를 조회할 수 있다.
+      - hasNext가 false이면 마지막 페이지이다.
+      - 각 리뷰에는 가게 이름/주소, 답변(질문 텍스트 포함), 이미지 목록이 포함된다.
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: '내 리뷰 목록 조회 성공',
+      type: CursorPaginatedResponseDto<MyReviewResponseDto>,
+    }),
+    ApiErrorResponseTemplate([
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
