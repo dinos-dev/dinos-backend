@@ -17,6 +17,7 @@ import { CreateReviewDto } from '../dto/request/create-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
 import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
+import { ReviewDetailResponseDto } from '../dto/response/review-detail.response.dto';
 
 //? 리뷰 작성문서
 export const CreateReviewDocs = () => {
@@ -71,6 +72,34 @@ export const GetMyReviewsDocs = () => {
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+export const GetReviewDetailDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 단건 상세 조회 (수정 화면 진입용)',
+      description: `
+      - 리뷰 수정 화면 진입 시 호출
+      - 작성 당시 보여줬던 질문과 선택지 전체를 그대로 반환한다. ( 기존 최초 접근시 랜덤으로 뿌려주는 방식 X )
+      - 각 step의 userAnswer는 사용자가 이전에 선택한 답변이며, skip한 항목은 optionId, customAnswer 모두 null로 반환된다.
+      - 본인 리뷰가 아니거나 존재하지 않는 경우 404를 반환한다.
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: '리뷰 상세 조회 성공',
+      type: ReviewDetailResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpErrorConstants.NOT_FOUND_REVIEW],
       },
     ]),
   );

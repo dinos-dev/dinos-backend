@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { CursorPaginatedResponseDto, CursorPaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
@@ -14,6 +14,7 @@ import {
   GetBulkPresignedUrlDocs,
   GetMyReviewsDocs,
   GetPresignedUrlDocs,
+  GetReviewDetailDocs,
   GetReviewFormQuestionsDocs,
 } from './swagger/rest-swagger.decorator';
 import { CreateReviewQuestionDto } from './dto/request/create-review-question.dto';
@@ -32,6 +33,7 @@ import {
 } from '../application/command/create-review.command';
 import { CreateReviewResponseDto } from './dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from './dto/response/my-reviews.response.dto';
+import { ReviewDetailResponseDto } from './dto/response/review-detail.response.dto';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 
 @ApiTags('Reviews - 리뷰')
@@ -68,6 +70,17 @@ export class ReviewController {
     //? 2. 리뷰 생성
     const result = await this.reviewService.createReview(command);
     return HttpResponse.created(result);
+  }
+
+  // ? 리뷰 단건 상세 조회 (수정 화면 진입용)
+  @GetReviewDetailDocs()
+  @Get(':reviewId')
+  async getReviewDetail(
+    @UserId() userId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+  ): Promise<HttpResponse<ReviewDetailResponseDto>> {
+    const result = await this.reviewService.getReviewDetail(reviewId, userId);
+    return HttpResponse.ok(result);
   }
 
   // ? 내가 작성한 리뷰조회

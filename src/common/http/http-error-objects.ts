@@ -186,6 +186,12 @@ export const HttpErrorConstants = {
     message: '사용자를 찾을수 없습니다.',
   } as HttpErrorFormat,
 
+  NOT_FOUND_REVIEW: {
+    status: HttpStatus.NOT_FOUND,
+    error: 'NOT_FOUND_REVIEW',
+    message: '리뷰를 찾을 수 없습니다.',
+  } as HttpErrorFormat,
+
   NOT_REGISTER_USER: {
     error: 'NOT_REGISTER_USER',
     message: '가입된 유저가 아닙니다.',

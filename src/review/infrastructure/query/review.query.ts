@@ -7,6 +7,15 @@ import { IReviewQuery } from 'src/review/application/interface/review-query.inte
 import { ReviewEntity } from 'src/review/domain/entities/review.entity';
 import { CursorPaginatedResult } from 'src/common/types/pagination.types';
 import { MyReviewAnswerData, MyReviewEntity, MyReviewImageData } from 'src/review/domain/entities/my-review.entity';
+import {
+  ReviewDetailEntity,
+  ReviewDetailImageData,
+  ReviewDetailOptionData,
+  ReviewDetailQuestionData,
+  ReviewDetailStepData,
+  ReviewDetailUserAnswerData,
+} from 'src/review/domain/entities/review-detail.entity';
+import { ReviewStep } from 'src/review/domain/const/review.enum';
 import { ReviewQuestionWithOptionsEntity } from 'src/review/domain/entities/review-question-with-options.entity';
 import { ReviewQuestionMapper } from '../mapper/review-question.mapper';
 
@@ -139,5 +148,90 @@ export class ReviewQuery extends PrismaRepository<Review, ReviewEntity> implemen
       hasNext,
       nextCursor: hasNext ? reviews[reviews.length - 1].id : null,
     };
+  }
+
+  /**
+   * 리뷰 단건 상세 조회 (수정 화면 진입용)
+   * 작성 당시 동일 질문 + 선택지 전체 + 기존 답변 포함
+   * 본인 리뷰가 아닌 경우 null 반환
+   * @param reviewId 조회할 리뷰 ID
+   * @param userId 요청 사용자 ID
+   */
+  async findReviewDetail(reviewId: number, userId: number): Promise<ReviewDetailEntity | null> {
+    const row = await this.prisma.review.findUnique({
+      where: { id: reviewId, userId, deletedAt: null },
+      select: {
+        id: true,
+        content: true,
+        wantRecommendation: true,
+        createdAt: true,
+        restaurant: {
+          select: { name: true, address: true },
+        },
+        answers: {
+          select: {
+            questionId: true,
+            optionId: true,
+            customAnswer: true,
+            question: {
+              select: {
+                id: true,
+                step: true,
+                content: true,
+                options: {
+                  where: { isActive: true },
+                  select: { id: true, content: true, sortOrder: true },
+                  orderBy: { sortOrder: 'asc' },
+                },
+              },
+            },
+          },
+        },
+        images: {
+          select: { imageUrl: true, isPrimary: true, sortOrder: true },
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+    });
+
+    if (!row) return null;
+
+    // step 순서 고정 (BEFORE_ENTRY → ENTRY → ORDER → MEAL → WRAP_UP)
+    const stepOrder = [
+      ReviewStep.BEFORE_ENTRY,
+      ReviewStep.ENTRY,
+      ReviewStep.ORDER,
+      ReviewStep.MEAL,
+      ReviewStep.WRAP_UP,
+    ];
+
+    const steps = row.answers
+      .slice()
+      .sort(
+        (a, b) => stepOrder.indexOf(a.question.step as ReviewStep) - stepOrder.indexOf(b.question.step as ReviewStep),
+      )
+      .map(
+        (a) =>
+          new ReviewDetailStepData(
+            a.question.step as ReviewStep,
+            new ReviewDetailQuestionData(
+              a.question.id,
+              a.question.content,
+              a.question.options.map((o) => new ReviewDetailOptionData(o.id, o.content, o.sortOrder)),
+            ),
+            new ReviewDetailUserAnswerData(a.optionId, a.customAnswer),
+          ),
+      );
+
+    return new ReviewDetailEntity(
+      row.id,
+      row.content,
+      row.wantRecommendation,
+      row.createdAt,
+      row.restaurant.name,
+      row.restaurant.address,
+      steps,
+      row.images.map((i) => new ReviewDetailImageData(i.imageUrl, i.isPrimary, i.sortOrder)),
+    );
   }
 }

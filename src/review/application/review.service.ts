@@ -1,4 +1,4 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import {
   FILE_UPLOAD_SERVICE,
   RESTAURANT_REPOSITORY,
@@ -31,6 +31,7 @@ import { ReviewImageEntity } from '../domain/entities/review-image.entity';
 import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { CreateReviewResponseDto } from '../presentation/dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from '../presentation/dto/response/my-reviews.response.dto';
+import { ReviewDetailResponseDto } from '../presentation/dto/response/review-detail.response.dto';
 
 @Injectable()
 export class ReviewService {
@@ -77,6 +78,22 @@ export class ReviewService {
    * @param cursor 이전 페이지 마지막 리뷰 ID (null이면 첫 페이지)
    * @returns MyReviewsResponseDto
    */
+  /**
+   * 리뷰 단건 상세 조회 (수정 화면 진입용)
+   * - 본인 리뷰가 아니거나 존재하지 않으면 404
+   * @param reviewId 조회할 리뷰 ID
+   * @param userId 요청 사용자 ID
+   */
+  async getReviewDetail(reviewId: number, userId: number): Promise<ReviewDetailResponseDto> {
+    const entity = await this.reviewQuery.findReviewDetail(reviewId, userId);
+
+    if (!entity) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_REVIEW);
+    }
+
+    return ReviewDetailResponseDto.from(entity);
+  }
+
   async getMyReviews(userId: number, cursor: number | null): Promise<CursorPaginatedResponseDto<MyReviewResponseDto>> {
     const result = await this.reviewQuery.findMyReviews(userId, cursor, 30);
     return CursorPaginatedResponseDto.from(result, MyReviewResponseDto.from);
