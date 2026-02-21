@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 import { PinWithRestaurantDto } from 'src/pin/application/dto/pin-with-restaurant.dto';
 
 export class NearbyPinResponseDto {
@@ -27,8 +27,8 @@ export class NearbyPinResponseDto {
   @ApiProperty({ description: '사용자로부터 거리 (km)', example: 1.5, type: Number })
   distanceKm: number;
 
-  @ApiProperty({ description: '핀 타입', enum: PinType, example: PinType.PLANNED })
-  pinType: PinType;
+  // @ApiProperty({ description: '핀 타입', enum: PinType, example: PinType.PLANNED })
+  // pinType: PinType;
 
   @ApiProperty({ description: '핀 생성일', example: '2026-01-28T12:00:00Z', type: Date })
   pinnedAt: Date;
@@ -43,7 +43,7 @@ export class NearbyPinResponseDto {
     response.address = dto.address;
     response.category = dto.category;
     response.distanceKm = dto.distanceKm;
-    response.pinType = dto.pinType;
+    // response.pinType = dto.pinType;
     response.pinnedAt = dto.pinnedAt;
     return response;
   }

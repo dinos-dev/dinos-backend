@@ -1,4 +1,4 @@
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 export class PinWithRestaurantDto {
   constructor(
@@ -10,7 +10,7 @@ export class PinWithRestaurantDto {
     public readonly address: string,
     public readonly category: string | null,
     public readonly distanceKm: number,
-    public readonly pinType: PinType,
+    // public readonly pinType: PinType,
     public readonly pinnedAt: Date,
   ) {}
 }

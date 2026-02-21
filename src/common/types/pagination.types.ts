@@ -16,3 +16,14 @@ export interface PaginatedResult<T> {
 export interface IPaginatedRepository<T> {
   findAllWithPagination(options?: PaginationOptions): Promise<PaginatedResult<T>>;
 }
+
+export interface CursorPaginationOptions {
+  cursor: number | null;
+  limit: number;
+}
+
+export interface CursorPaginatedResult<T> {
+  data: T[];
+  hasNext: boolean;
+  nextCursor: number | null;
+}

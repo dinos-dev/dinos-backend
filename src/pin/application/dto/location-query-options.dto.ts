@@ -1,14 +1,14 @@
-import { PinType } from 'src/pin/domain/const/pin.enum';
+// import { PinType } from 'src/pin/domain/const/pin.enum';
 
 export class LocationQueryOptionsDto {
   constructor(
     public readonly userLat: number,
     public readonly userLng: number,
     public readonly limit: number,
-    public readonly type?: PinType,
+    // public readonly type?: PinType,
   ) {}
 
-  static create(params: { userLat: number; userLng: number; limit?: number; type?: PinType }): LocationQueryOptionsDto {
-    return new LocationQueryOptionsDto(params.userLat, params.userLng, params.limit ?? 30, params.type);
+  static create(params: { userLat: number; userLng: number; limit?: number }): LocationQueryOptionsDto {
+    return new LocationQueryOptionsDto(params.userLat, params.userLng, params.limit ?? 30);
   }
 }

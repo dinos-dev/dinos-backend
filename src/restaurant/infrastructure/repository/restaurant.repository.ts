@@ -44,4 +44,18 @@ export class RestaurantRepository
     });
     return RestaurantMapper.toDomain(restaurant);
   }
+
+  /**
+   * Restaurant 대표 이미지 업데이트 (미설정 상태인 경우에만)
+   * primaryImageSetBy가 null인 경우에만 업데이트 → 최초 리뷰어 이미지 채택
+   * @param restaurantId number
+   * @param imageUrl string
+   * @param userId number
+   */
+  async updatePrimaryImageIfNotSet(restaurantId: number, imageUrl: string, userId: number): Promise<void> {
+    await this.model.updateMany({
+      where: { id: restaurantId, primaryImageSetBy: null },
+      data: { primaryImageUrl: imageUrl, primaryImageSetBy: userId },
+    });
+  }
 }
