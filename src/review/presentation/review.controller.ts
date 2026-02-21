@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CursorPaginatedResponseDto, CursorPaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
@@ -16,6 +16,7 @@ import {
   GetPresignedUrlDocs,
   GetReviewDetailDocs,
   GetReviewFormQuestionsDocs,
+  UpdateReviewDocs,
 } from './swagger/rest-swagger.decorator';
 import { CreateReviewQuestionDto } from './dto/request/create-review-question.dto';
 import { CreateReviewQuestionsBulkDto } from './dto/request/create-review-questions-bulk.dto';
@@ -31,8 +32,14 @@ import {
   CreateReviewImageCommand,
   CreateReviewRestaurantCommand,
 } from '../application/command/create-review.command';
+import {
+  UpdateReviewAnswerCommand,
+  UpdateReviewCommand,
+  UpdateReviewImageCommand,
+} from '../application/command/update-review.command';
 import { CreateReviewResponseDto } from './dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from './dto/response/my-reviews.response.dto';
+import { UpdateReviewDto } from './dto/request/update-review.dto';
 import { ReviewDetailResponseDto } from './dto/response/review-detail.response.dto';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 
@@ -72,14 +79,23 @@ export class ReviewController {
     return HttpResponse.created(result);
   }
 
-  // ? 리뷰 단건 상세 조회 (수정 화면 진입용)
-  @GetReviewDetailDocs()
-  @Get(':reviewId')
-  async getReviewDetail(
+  // ? 리뷰 수정
+  @UpdateReviewDocs()
+  @Patch(':reviewId')
+  async updateReview(
     @UserId() userId: number,
     @Param('reviewId', ParseIntPipe) reviewId: number,
+    @Body() dto: UpdateReviewDto,
   ): Promise<HttpResponse<ReviewDetailResponseDto>> {
-    const result = await this.reviewService.getReviewDetail(reviewId, userId);
+    const command = new UpdateReviewCommand(
+      reviewId,
+      userId,
+      dto.content,
+      dto.wantRecommendation,
+      dto.answers?.map((a) => new UpdateReviewAnswerCommand(a.questionId, a.optionId ?? null, a.customAnswer ?? null)),
+      dto.images?.map((i) => new UpdateReviewImageCommand(i.imageUrl, i.isPrimary, i.sortOrder)),
+    );
+    const result = await this.reviewService.updateReview(command);
     return HttpResponse.ok(result);
   }
 
@@ -99,6 +115,17 @@ export class ReviewController {
   @Get('questions/form')
   async getReviewQuestionsForForm(): Promise<HttpResponse<ReviewFormQuestionsResponseDto>> {
     const result = await this.reviewService.getReviewQuestionsForForm();
+    return HttpResponse.ok(result);
+  }
+
+  // ? 리뷰 단건 상세 조회 (수정 화면 진입용)
+  @GetReviewDetailDocs()
+  @Get(':reviewId')
+  async getReviewDetail(
+    @UserId() userId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+  ): Promise<HttpResponse<ReviewDetailResponseDto>> {
+    const result = await this.reviewService.getReviewDetail(reviewId, userId);
     return HttpResponse.ok(result);
   }
 

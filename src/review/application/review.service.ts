@@ -24,6 +24,7 @@ import { ReviewFormQuestionsResponseDto } from '../presentation/dto/response/rev
 import { IReviewRepository } from '../domain/repository/review.repository.interface';
 import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaurant.repository.interface';
 import { CreateReviewCommand } from './command/create-review.command';
+import { UpdateReviewCommand } from './command/update-review.command';
 import { ReviewEntity } from '../domain/entities/review.entity';
 import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
 import { ReviewAnswerEntity } from '../domain/entities/review-answer.entity';
@@ -73,11 +74,36 @@ export class ReviewService {
   }
 
   /**
-   * 내가 작성한 리뷰 목록 조회 (커서 기반 페이징, 최신순)
-   * @param userId 요청 사용자 ID
-   * @param cursor 이전 페이지 마지막 리뷰 ID (null이면 첫 페이지)
-   * @returns MyReviewsResponseDto
+   * 리뷰 수정
+   * - 본인 리뷰가 아니거나 존재하지 않으면 404
+   * - answers, images는 제공 시 전체 교체 / 생략 시 유지
+   * @param command UpdateReviewCommand
    */
+  @Transactional()
+  async updateReview(command: UpdateReviewCommand): Promise<ReviewDetailResponseDto> {
+    const answerEntities = command.answers?.map((a) =>
+      ReviewAnswerEntity.create({ questionId: a.questionId, optionId: a.optionId, customAnswer: a.customAnswer }),
+    );
+
+    const imageEntities = command.images?.map((i) =>
+      ReviewImageEntity.create({ imageUrl: i.imageUrl, isPrimary: i.isPrimary, sortOrder: i.sortOrder }),
+    );
+
+    const updated = await this.reviewRepository.updateReview(command.reviewId, command.userId, {
+      content: command.content,
+      wantRecommendation: command.wantRecommendation,
+      answers: answerEntities,
+      images: imageEntities,
+    });
+
+    if (!updated) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_REVIEW);
+    }
+
+    // 수정 후 최신 상태 반환
+    return this.getReviewDetail(command.reviewId, command.userId);
+  }
+
   /**
    * 리뷰 단건 상세 조회 (수정 화면 진입용)
    * - 본인 리뷰가 아니거나 존재하지 않으면 404
@@ -94,6 +120,12 @@ export class ReviewService {
     return ReviewDetailResponseDto.from(entity);
   }
 
+  /**
+   * 내가 작성한 리뷰 목록 조회 (커서 기반 페이징, 최신순)
+   * @param userId 요청 사용자 ID
+   * @param cursor 이전 페이지 마지막 리뷰 ID (null이면 첫 페이지)
+   * @returns MyReviewsResponseDto
+   */
   async getMyReviews(userId: number, cursor: number | null): Promise<CursorPaginatedResponseDto<MyReviewResponseDto>> {
     const result = await this.reviewQuery.findMyReviews(userId, cursor, 30);
     return CursorPaginatedResponseDto.from(result, MyReviewResponseDto.from);

@@ -14,6 +14,7 @@ import { ReviewQuestionResponseDto } from '../dto/response/review-question.respo
 import { ReviewQuestionsBulkResponseDto } from '../dto/response/review-questions-bulk.response.dto';
 import { ReviewFormQuestionsResponseDto } from '../dto/response/review-form-questions.response.dto';
 import { CreateReviewDto } from '../dto/request/create-review.dto';
+import { UpdateReviewDto } from '../dto/request/update-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
 import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
@@ -77,6 +78,41 @@ export const GetMyReviewsDocs = () => {
   );
 };
 
+//? 리뷰 수정문서
+export const UpdateReviewDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 수정',
+      description: `
+      - 리뷰를 수정한다.
+      - 본인 리뷰가 아니거나 존재하지 않는 경우 404를 반환한다.
+      - answers, images는 제공 시 기존 데이터를 전체 교체한다. 생략 시 기존 데이터를 유지한다.
+      - 수정을 완료하면 최종적으로 수정 완료된 리소스를 반환한다. 
+      `,
+    }),
+    ApiBody({ type: UpdateReviewDto }),
+    ApiOkResponseTemplate({
+      description: '리뷰 수정 성공',
+      type: ReviewDetailResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpErrorConstants.NOT_FOUND_REVIEW],
+      },
+    ]),
+  );
+};
+
+//? 리뷰 단건 상세 조회 (수정 화면 진입용)
 export const GetReviewDetailDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -105,6 +141,7 @@ export const GetReviewDetailDocs = () => {
   );
 };
 
+//? 리뷰 폼 질문 조회문서
 export const GetReviewFormQuestionsDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -128,6 +165,7 @@ export const GetReviewFormQuestionsDocs = () => {
   );
 };
 
+//? 단일 presigned url 발급문서
 export const GetPresignedUrlDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -160,6 +198,7 @@ export const GetPresignedUrlDocs = () => {
   );
 };
 
+//? 다중 presigned url 발급문서
 export const GetBulkPresignedUrlDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -193,6 +232,7 @@ export const GetBulkPresignedUrlDocs = () => {
   );
 };
 
+//? 리뷰 질문 생성 (관리자용)
 export const CreateReviewQuestionDocs = () => {
   return applyDecorators(
     ApiOperation({
@@ -223,6 +263,7 @@ export const CreateReviewQuestionDocs = () => {
   );
 };
 
+//? 리뷰 질문 일괄 생성 (관리자용)
 export const CreateReviewQuestionsBulkDocs = () => {
   return applyDecorators(
     ApiOperation({
