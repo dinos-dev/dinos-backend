@@ -8,6 +8,7 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { ApiErrorResponseTemplate } from 'src/common/swagger/response/api-error-response';
 import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
 import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
+import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
 import { CreateReviewQuestionDto } from '../dto/request/create-review-question.dto';
 import { CreateReviewQuestionsBulkDto } from '../dto/request/create-review-questions-bulk.dto';
 import { ReviewQuestionResponseDto } from '../dto/response/review-question.response.dto';
@@ -73,6 +74,30 @@ export const GetMyReviewsDocs = () => {
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? 리뷰 삭제문서
+export const DeleteReviewDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '리뷰 삭제',
+      description: `
+      - 리뷰를 소프트 삭제 처리한다.
+      - 본인 리뷰가 아니거나 존재하지 않는 경우 404를 반환한다.
+      `,
+    }),
+    ApiNoContentResponseTemplate({ description: '리뷰 삭제 성공' }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpErrorConstants.NOT_FOUND_REVIEW],
       },
     ]),
   );

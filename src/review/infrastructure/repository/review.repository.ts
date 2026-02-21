@@ -112,4 +112,17 @@ export class ReviewRepository extends PrismaRepository<Review, ReviewEntity> imp
 
     return true;
   }
+
+  /**
+   * 리뷰 소프트 삭제 (본인 리뷰 여부 확인 포함)
+   * @returns 삭제된 경우 true, 대상 리뷰 없음(본인 아님 포함)이면 false
+   */
+  async softDeleteReview(reviewId: number, userId: number): Promise<boolean> {
+    const result = await this.prisma.review.updateMany({
+      where: { id: reviewId, userId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+
+    return result.count > 0;
+  }
 }

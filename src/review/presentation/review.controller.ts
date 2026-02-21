@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CursorPaginatedResponseDto, CursorPaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
@@ -11,6 +11,7 @@ import {
   CreateReviewDocs,
   CreateReviewQuestionDocs,
   CreateReviewQuestionsBulkDocs,
+  DeleteReviewDocs,
   GetBulkPresignedUrlDocs,
   GetMyReviewsDocs,
   GetPresignedUrlDocs,
@@ -77,6 +78,17 @@ export class ReviewController {
     //? 2. 리뷰 생성
     const result = await this.reviewService.createReview(command);
     return HttpResponse.created(result);
+  }
+
+  // ? 리뷰 삭제 (소프트 삭제)
+  @DeleteReviewDocs()
+  @Delete(':reviewId')
+  async deleteReview(
+    @UserId() userId: number,
+    @Param('reviewId', ParseIntPipe) reviewId: number,
+  ): Promise<HttpResponse<void>> {
+    await this.reviewService.deleteReview(reviewId, userId);
+    return HttpResponse.noContent();
   }
 
   // ? 리뷰 수정

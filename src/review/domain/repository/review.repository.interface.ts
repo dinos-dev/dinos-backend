@@ -17,4 +17,5 @@ export interface IReviewRepository {
   ): Promise<ReviewEntity>;
 
   updateReview(reviewId: number, userId: number, data: ReviewUpdateData): Promise<boolean>;
+  softDeleteReview(reviewId: number, userId: number): Promise<boolean>;
 }

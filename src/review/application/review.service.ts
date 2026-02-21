@@ -105,6 +105,20 @@ export class ReviewService {
   }
 
   /**
+   * 리뷰 소프트 삭제
+   * - 본인 리뷰가 아니거나 존재하지 않으면 404
+   * @param reviewId 삭제할 리뷰 ID
+   * @param userId 요청 사용자 ID
+   */
+  async deleteReview(reviewId: number, userId: number): Promise<void> {
+    const deleted = await this.reviewRepository.softDeleteReview(reviewId, userId);
+
+    if (!deleted) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_REVIEW);
+    }
+  }
+
+  /**
    * 리뷰 단건 상세 조회 (수정 화면 진입용)
    * - 본인 리뷰가 아니거나 존재하지 않으면 404
    * @param reviewId 조회할 리뷰 ID
