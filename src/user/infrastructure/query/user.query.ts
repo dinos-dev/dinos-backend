@@ -12,6 +12,11 @@ export class UserQuery implements IUserQuery {
     return this.txHost.tx;
   }
 
+  /**
+   * 유저의 프로필 상세, 친구 요청 count, 리뷰 count, 친구 count를 조회
+   * @param userId
+   * @returns UserProfileWithInviteDto | null
+   * */
   async findProfileByUserId(userId: number): Promise<UserProfileWithInviteDto | null> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
@@ -24,6 +29,9 @@ export class UserQuery implements IUserQuery {
                 receivedFriendRequests: {
                   where: { status: 'PENDING' },
                 },
+                reviews: true,
+                friendshipsAsRequester: true,
+                friendshipsAsAddressee: true,
               },
             },
           },
@@ -34,6 +42,8 @@ export class UserQuery implements IUserQuery {
     if (!profile) {
       return null;
     }
+
+    const friendCount = profile.user._count.friendshipsAsRequester + profile.user._count.friendshipsAsAddressee;
 
     return new UserProfileWithInviteDto(
       profile.user.id,
@@ -49,6 +59,8 @@ export class UserQuery implements IUserQuery {
       },
       profile.user.inviteCode?.code || null,
       profile.user._count.receivedFriendRequests,
+      profile.user._count.reviews,
+      friendCount,
     );
   }
 }

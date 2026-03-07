@@ -101,6 +101,22 @@ export class UserProfileWithInviteResponseDto {
   })
   pendingFriendRequestCount: number;
 
+  @Expose()
+  @ApiProperty({
+    description: '작성한 리뷰 수',
+    example: 10,
+    type: Number,
+  })
+  reviewCount: number;
+
+  @Expose()
+  @ApiProperty({
+    description: '친구 수',
+    example: 5,
+    type: Number,
+  })
+  friendCount: number;
+
   static fromDto(dto: UserProfileWithInviteDto): UserProfileWithInviteResponseDto {
     return plainToInstance(
       UserProfileWithInviteResponseDto,
@@ -120,6 +136,8 @@ export class UserProfileWithInviteResponseDto {
           : null,
         inviteCode: dto.inviteCode,
         pendingFriendRequestCount: dto.pendingFriendRequestCount,
+        reviewCount: dto.reviewCount,
+        friendCount: dto.friendCount,
       },
       {
         excludeExtraneousValues: true,
