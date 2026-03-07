@@ -39,10 +39,10 @@ export const WithdrawUserDocs = () => {
 export const FindByProfileWithInviteInfoDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: `유저의 프로필 정보 및 초대코드 & 친구 요청수 조회 `,
+      summary: `유저의 프로필 정보 및 초대코드 & 친구 요청수 & 나의 친구수 & 작성한 리뷰수 일괄조회 `,
       description: `
         - token에 담긴 userId 값을 기반으로 유저 프로필 정보 조회
-        - userId 값을 base로 사용자의 프로필 정보, 초대코드, 친구 요청건수를 조회한다.
+        - userId 값을 base로 사용자의 프로필 정보, 초대코드, 친구 요청건수, 나의 친구수, 작성한 리뷰수를 일괄로 조회한다.
         `,
     }),
     ApiOkResponseTemplate({

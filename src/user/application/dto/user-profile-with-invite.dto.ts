@@ -35,6 +35,8 @@ export class UserProfileWithInviteDto {
     public readonly profile: ProfileDetailDto | null,
     public readonly inviteCode: string | null,
     public readonly pendingFriendRequestCount: number,
+    public readonly reviewCount: number,
+    public readonly friendCount: number,
   ) {}
 
   static create(params: {
@@ -51,6 +53,8 @@ export class UserProfileWithInviteDto {
     } | null;
     inviteCode: string | null;
     pendingFriendRequestCount: number;
+    reviewCount: number;
+    friendCount: number;
   }): UserProfileWithInviteDto {
     return new UserProfileWithInviteDto(
       params.userId,
@@ -59,6 +63,8 @@ export class UserProfileWithInviteDto {
       params.profileData ? ProfileDetailDto.fromProfileData(params.profileData) : null,
       params.inviteCode,
       params.pendingFriendRequestCount,
+      params.reviewCount,
+      params.friendCount,
     );
   }
 }

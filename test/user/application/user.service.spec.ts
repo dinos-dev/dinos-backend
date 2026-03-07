@@ -87,6 +87,8 @@ describe('UserService', () => {
     },
     inviteCode: 'TEST123',
     pendingFriendRequestCount: 0,
+    reviewCount: 0,
+    friendCount: 0,
   });
 
   beforeEach(async () => {
