@@ -8,6 +8,7 @@ import { FriendshipMapper } from '../mapper/friendship.mapper';
 import { PaginatedResult, PaginationOptions } from 'src/common/types/pagination.types';
 import { PaginationUtil } from 'src/common/helper/pagination.util';
 import { FriendWithActivityDto } from 'src/friendship/application/dto/friend-with-activity.dto';
+import { SharedPinFriendProfileDto, SharedPinItemDto } from 'src/friendship/application/dto/shared-pins.dto';
 
 @Injectable()
 export class FriendshipQueryRepository extends PrismaRepository<Friendship> implements IFriendshipQuery {
@@ -88,5 +89,75 @@ export class FriendshipQueryRepository extends PrismaRepository<Friendship> impl
     const friendDtos = FriendshipMapper.toFriendDtos(friendships, userId);
 
     return PaginationUtil.createResult(friendDtos, normalizedOptions, total);
+  }
+
+  /**
+   * 내가 pin한 음식점 중 나와 친구인 사용자도 pin한 데이터를 flat하게 조회
+   * @param userId 현재 사용자 ID
+   * @returns (음식점, 친구) 조합 단위의 flat 목록
+   */
+  async findSharedPins(userId: number): Promise<SharedPinItemDto[]> {
+    /**
+     * @see
+     * 추후 Slow 경우 Raw 하게 UNION으로 처리해야 Index 확실하게 탈 수 있음.
+     * 일단 PRISMA 레이어로 처리하구 추후 성능 이슈시 Raw 하게 UNION 으로 처리
+     */
+    const pins = await this.prisma.pin.findMany({
+      where: { userId },
+      include: {
+        restaurant: {
+          include: {
+            pins: {
+              where: {
+                userId: { not: userId },
+                user: {
+                  OR: [
+                    { friendshipsAsRequester: { some: { addresseeId: userId } } },
+                    { friendshipsAsAddressee: { some: { requesterId: userId } } },
+                  ],
+                },
+              },
+              include: {
+                user: { include: { profile: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const result: SharedPinItemDto[] = [];
+
+    for (const pin of pins) {
+      // 나와 동일한 음식점을 pin한 친구 목록 순회
+      for (const friendPin of pin.restaurant.pins) {
+        const profile = friendPin.user.profile
+          ? new SharedPinFriendProfileDto(
+              friendPin.user.profile.nickname,
+              friendPin.user.profile.comment,
+              friendPin.user.profile.headerId,
+              friendPin.user.profile.bodyId,
+              friendPin.user.profile.headerColor,
+              friendPin.user.profile.bodyColor,
+            )
+          : null;
+
+        result.push(
+          new SharedPinItemDto(
+            pin.restaurant.id,
+            pin.restaurant.name,
+            pin.restaurant.address,
+            pin.restaurant.category,
+            pin.restaurant.latitude,
+            pin.restaurant.longitude,
+            pin.restaurant.primaryImageUrl,
+            friendPin.user.id,
+            profile,
+          ),
+        );
+      }
+    }
+
+    return result;
   }
 }

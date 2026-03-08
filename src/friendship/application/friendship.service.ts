@@ -19,6 +19,7 @@ import { FriendshipEntity } from '../domain/entities/friendship.entity';
 import { PaginatedResult, PaginationOptions } from 'src/common/types/pagination.types';
 import { FriendWithActivityDto } from './dto/friend-with-activity.dto';
 import { IFriendshipQuery } from './interface/friendship-query.interface';
+import { SharedPinFriendDto, SharedPinRestaurantDto, SharedPinsDto } from './dto/shared-pins.dto';
 
 @Injectable()
 export class FriendshipService {
@@ -139,6 +140,37 @@ export class FriendshipService {
     //   data: friendList,
     //   meta: friendshipResult.meta,
     // };
+  }
+
+  /**
+   * 나와 같은 음식점을 pin한 친구 목록 조회 (음식점 기준 그루핑)
+   * @param userId 현재 사용자 ID
+   * @returns SharedPinsDto[]
+   */
+  async findSharedPins(userId: number): Promise<SharedPinsDto[]> {
+    const items = await this.friendshipQuery.findSharedPins(userId);
+
+    const restaurantMap = new Map<number, SharedPinsDto>();
+
+    // 음식점을 기준으로 음식점 & 친구 조합 단위로 그루핑
+    for (const item of items) {
+      if (!restaurantMap.has(item.restaurantId)) {
+        const restaurant = new SharedPinRestaurantDto(
+          item.restaurantId,
+          item.restaurantName,
+          item.address,
+          item.category,
+          item.latitude,
+          item.longitude,
+          item.primaryImageUrl,
+        );
+        restaurantMap.set(item.restaurantId, new SharedPinsDto(restaurant, []));
+      }
+
+      restaurantMap.get(item.restaurantId)!.friends.push(new SharedPinFriendDto(item.friendUserId, item.friendProfile));
+    }
+
+    return Array.from(restaurantMap.values());
   }
 
   /**

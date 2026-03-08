@@ -19,6 +19,7 @@ import { SendFriendRequestResponseDto } from './dto/response/send-friend-respons
 import {
   FindAllFriendshipDocs,
   FindByReceiveIdDocs,
+  FindSharedPinsDocs,
   RemoveFriendshipDocs,
   RespondToFriendRequestDocs,
   SendFriendRequestDocs,
@@ -30,6 +31,7 @@ import { FriendRequestResponseDto } from './dto/response/friend-request.response
 import { RespondToFriendRequestDto } from './dto/request/respond-friend-request.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { PaginatedFriendListResponseDto } from './dto/response/friend-with-activity.response.dto';
+import { SharedPinsResponseDto } from './dto/response/shared-pins.response.dto';
 
 @ApiTags('Friendship - 친구관리')
 @ApiBearerAuth()
@@ -93,6 +95,15 @@ export class FriendshipController {
     const friendshipResult = await this.friendshipService.findAllFriendship(userId, paginationOptions);
 
     const responseData = PaginatedFriendListResponseDto.fromFriendshipResult(friendshipResult);
+    return HttpResponse.ok(responseData);
+  }
+
+  //? 나와 같은 음식점을 pin한 친구 조회 (shared-pins)
+  @FindSharedPinsDocs()
+  @Get('shared-pins')
+  async findSharedPins(@UserId() userId: number): Promise<HttpResponse<SharedPinsResponseDto[]>> {
+    const result = await this.friendshipService.findSharedPins(userId);
+    const responseData = result.map(SharedPinsResponseDto.fromResult);
     return HttpResponse.ok(responseData);
   }
 

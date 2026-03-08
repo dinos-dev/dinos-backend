@@ -12,6 +12,7 @@ import { FriendRequestResponseDto } from '../dto/response/friend-request.respons
 import { RespondToFriendRequestDto } from '../dto/request/respond-friend-request.dto';
 import { PaginatedFriendListResponseDto } from '../dto/response/friend-with-activity.response.dto';
 import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
+import { SharedPinsResponseDto } from '../dto/response/shared-pins.response.dto';
 
 //? Send Friend Request
 export const SendFriendRequestDocs = () => {
@@ -144,6 +145,32 @@ export const FindAllFriendshipDocs = () => {
     ApiOkResponseTemplate({
       description: '나의 친구 리스트 조회 성공',
       type: PaginatedFriendListResponseDto,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? Find Shared Pins
+export const FindSharedPinsDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '나와 같은 음식점을 pin한 친구 조회 (shared-pins)',
+      description: `
+      - 내가 pin한 음식점 중 나와 친구인 사용자도 동일하게 pin한 음식점과 해당 친구 프로필 목록을 반환한다.
+      - 음식점을 기준으로 그루핑되어 반환된다.
+      - 공유된 pin이 없으면 빈 배열을 반환한다.
+      - ! 내가 pin한 리소스가 아무리 많더라도 친구와 겹치는 리소스는 한정적일 수 있기에 현재는 페이징 및 리소스 튜닝은 하지 않고 반환된다. ( 추후 리소스 튜닝은 필요 )
+      `,
+    }),
+    ApiOkResponseTemplate({
+      description: 'shared-pins 조회 성공',
+      type: SharedPinsResponseDto,
+      isArray: true,
     }),
     ApiErrorResponseTemplate([
       {
