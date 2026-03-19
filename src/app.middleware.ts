@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 import * as hpp from 'hpp';
 
 /**
@@ -10,7 +10,7 @@ export function middleware(app: INestApplication): INestApplication {
 
   if (isProduction) {
     app.use(hpp());
-    app.use(helmet);
+    app.use(helmet());
   }
 
   return app;
