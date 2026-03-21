@@ -20,6 +20,7 @@ export class CreateReviewRestaurantCommand {
     public readonly address: string,
     public readonly latitude: number,
     public readonly longitude: number,
+    public readonly category?: string | null,
   ) {}
 }
 

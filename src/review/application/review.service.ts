@@ -159,6 +159,7 @@ export class ReviewService {
         address: command.restaurant.address,
         latitude: command.restaurant.latitude,
         longitude: command.restaurant.longitude,
+        category: command.restaurant.category ?? null,
       });
 
       const restaurant = await this.restaurantRepository.upsertRestaurantByNameAndAddress(restaurantEntity);
