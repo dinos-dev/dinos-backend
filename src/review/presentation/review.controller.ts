@@ -66,6 +66,7 @@ export class ReviewController {
         dto.restaurant.address,
         dto.restaurant.latitude,
         dto.restaurant.longitude,
+        dto.restaurant.category ?? null,
       ),
       dto.content ?? null,
       dto.wantRecommendation,

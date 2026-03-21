@@ -63,7 +63,6 @@ export class PinResponseDto {
         id: result.id,
         userId: result.userId,
         restaurantId: result.restaurantId,
-        // type: result.type,
         createdAt: result.createdAt,
       },
       {

@@ -95,6 +95,11 @@ export class CreateReviewRestaurantDto {
   @Type(() => Number)
   @ApiProperty({ description: '가게 경도', example: 127.005068, type: Number })
   longitude: number;
+
+  @IsOptional()
+  @IsString()
+  @ApiProperty({ description: '가게 카테고리', example: '카페', type: String, required: false, nullable: true })
+  category?: string | null;
 }
 
 export class CreateReviewAnswerDto {

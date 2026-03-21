@@ -40,6 +40,7 @@ export class PinService {
         address: command.address,
         latitude: command.latitude,
         longitude: command.longitude,
+        category: command.category ?? null,
       });
 
       //? 2. restaurantEntity 동기화

@@ -12,7 +12,13 @@ export class RestaurantEntity {
     public readonly updatedAt: Date,
   ) {}
 
-  static create(params: { name: string; address: string; latitude: number; longitude: number }): RestaurantEntity {
+  static create(params: {
+    name: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+    category?: string | null;
+  }): RestaurantEntity {
     return new RestaurantEntity(
       null,
       params.name,
@@ -21,7 +27,7 @@ export class RestaurantEntity {
       params.longitude,
       new Date(),
       true,
-      null,
+      params.category ?? null,
       new Date(),
       new Date(),
     );
