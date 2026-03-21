@@ -31,6 +31,7 @@ export class RestaurantRepository
         longitude: entity.longitude,
         lastSyncedAt: entity.lastSyncedAt,
         isActive: entity.isActive,
+        category: entity.category ?? null,
       },
       create: {
         name: entity.name,
@@ -39,7 +40,7 @@ export class RestaurantRepository
         longitude: entity.longitude,
         lastSyncedAt: entity.lastSyncedAt,
         isActive: entity.isActive,
-        category: entity.category,
+        category: entity.category ?? null,
       },
     });
     return RestaurantMapper.toDomain(restaurant);
