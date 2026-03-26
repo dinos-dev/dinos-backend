@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
 import { MyReviewAnswerData, MyReviewEntity, MyReviewImageData } from 'src/review/domain/entities/my-review.entity';
 
 export class MyReviewAnswerResponseDto {
@@ -48,28 +49,57 @@ export class MyReviewImageResponseDto {
 }
 
 export class MyReviewResponseDto {
-  @ApiProperty({ description: '리뷰 ID', example: 10 })
+  @Expose()
+  @ApiProperty({ description: '리뷰 ID', example: 10, type: Number })
   id: number;
 
-  @ApiPropertyOptional({ description: '서술형 리뷰', example: '분위기도 좋고 음식도 맛있었어요!', nullable: true })
+  @Expose()
+  @ApiPropertyOptional({
+    description: '서술형 리뷰',
+    example: '분위기도 좋고 음식도 맛있었어요!',
+    nullable: true,
+    type: String,
+  })
   content: string | null;
 
-  @ApiProperty({ description: '추천 희망 여부', example: true })
+  @Expose()
+  @ApiProperty({ description: '추천 희망 여부', example: true, type: Boolean })
   wantRecommendation: boolean;
 
-  @ApiProperty({ description: '리뷰 작성일시', example: '2026-02-21T12:00:00.000Z' })
+  @Expose()
+  @ApiProperty({ description: '리뷰 작성일시', example: '2026-02-21T12:00:00.000Z', type: Date })
   createdAt: Date;
 
-  @ApiProperty({ description: '가게 이름', example: '유키돈까스' })
+  @Expose()
+  @ApiProperty({ description: '가게 이름', example: '유키돈까스', type: String })
   restaurantName: string;
 
-  @ApiProperty({ description: '가게 주소', example: '서울특별시 강남구 역삼동 123-456' })
+  @Expose()
+  @ApiProperty({ description: '가게 주소', example: '서울특별시 강남구 역삼동 123-456', type: String })
   restaurantAddress: string;
 
-  @ApiProperty({ description: '답변 목록', type: [MyReviewAnswerResponseDto] })
+  @Expose()
+  @ApiProperty({
+    description: '답변 목록',
+    type: [MyReviewAnswerResponseDto],
+    example: [
+      {
+        questionId: 1,
+        questionContent: '방문 전 어떤 기대를 가지고 가셨나요?',
+        optionId: 4,
+        optionContent: '맛집 탐방',
+        customAnswer: '편안한 가정집',
+      },
+    ],
+  })
   answers: MyReviewAnswerResponseDto[];
 
-  @ApiProperty({ description: '이미지 목록', type: [MyReviewImageResponseDto] })
+  @Expose()
+  @ApiProperty({
+    description: '이미지 목록',
+    type: [MyReviewImageResponseDto],
+    example: [{ imageUrl: 'https://cdn.example.com/reviews/image.jpg', isPrimary: true, sortOrder: 0 }],
+  })
   images: MyReviewImageResponseDto[];
 
   static from(entity: MyReviewEntity): MyReviewResponseDto {
