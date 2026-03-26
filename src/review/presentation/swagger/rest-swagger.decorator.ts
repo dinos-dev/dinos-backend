@@ -9,6 +9,7 @@ import { ApiErrorResponseTemplate } from 'src/common/swagger/response/api-error-
 import { ApiOkResponseTemplate } from 'src/common/swagger/response/api-ok-response';
 import { ApiCreatedResponseTemplate } from 'src/common/swagger/response/api-created-response';
 import { ApiNoContentResponseTemplate } from 'src/common/swagger/response/api-no-content-response';
+import { ApiCursorPaginatedOkResponse } from 'src/common/swagger/response/api-cursor-paginated-ok-response';
 import { CreateReviewQuestionDto } from '../dto/request/create-review-question.dto';
 import { CreateReviewQuestionsBulkDto } from '../dto/request/create-review-questions-bulk.dto';
 import { ReviewQuestionResponseDto } from '../dto/response/review-question.response.dto';
@@ -17,7 +18,6 @@ import { ReviewFormQuestionsResponseDto } from '../dto/response/review-form-ques
 import { CreateReviewDto } from '../dto/request/create-review.dto';
 import { UpdateReviewDto } from '../dto/request/update-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
-import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
 import { ReviewDetailResponseDto } from '../dto/response/review-detail.response.dto';
 
@@ -66,9 +66,9 @@ export const GetMyReviewsDocs = () => {
       - 각 리뷰에는 가게 이름/주소, 답변(질문 텍스트 포함), 이미지 목록이 포함된다.
       `,
     }),
-    ApiOkResponseTemplate({
+    ApiCursorPaginatedOkResponse({
       description: '내 리뷰 목록 조회 성공',
-      type: CursorPaginatedResponseDto<MyReviewResponseDto>,
+      type: MyReviewResponseDto,
     }),
     ApiErrorResponseTemplate([
       {
