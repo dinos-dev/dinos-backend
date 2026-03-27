@@ -67,6 +67,20 @@ export class AuthController {
     return HttpResponse.created(tokens);
   }
 
+  //? Kakao OAuth Register & Login
+  @SocialLoginDocs()
+  @Public()
+  @Post('kakao')
+  @UseGuards(AuthGuard('kakao'))
+  async kakaoLogin(@Req() req: Request, @SocialToken() token: OAuthPayLoad): Promise<HttpResponse<LoginResponseDto>> {
+    const command = new SocialUserCommand(token.email, token.name, token.provider, token.providerId);
+
+    const data = await this.authService.socialLogin(req.get('user-agent').toLowerCase(), command);
+    const tokens = LoginResponseDto.fromResult(data);
+
+    return HttpResponse.created(tokens);
+  }
+
   //? Local Register & Login
   @LocalLoginDocs()
   @Public()

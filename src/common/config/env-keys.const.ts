@@ -34,6 +34,7 @@ export const envVariableKeys = Joi.object({
   GOOGLE_AUTH_URL: Joi.string().uri().required(),
   APPLE_AUTH_URL: Joi.string().uri().required(),
   APPLE_CLIENT_ID: Joi.string().required(),
+  KAKAO_AUTH_URL: Joi.string().uri().required(),
 
   // Slack 관련 환경 변수
   SLACK_WEB_HOOK: Joi.string().uri().required(),

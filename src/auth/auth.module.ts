@@ -8,6 +8,7 @@ import { AuthService } from 'src/auth/application/auth.service';
 import { NaverStrategy } from 'src/auth/infrastructure/strategy/naver.strategy';
 import { GoogleStrategy } from 'src/auth/infrastructure/strategy/google.strategy';
 import { AppleStrategy } from 'src/auth/infrastructure/strategy/apple.strategy';
+import { KakaoStrategy } from 'src/auth/infrastructure/strategy/kakao.strategy';
 import { HttpModule } from '@nestjs/axios';
 
 import { PassportModule } from '@nestjs/passport';
@@ -49,6 +50,7 @@ import { EventModule } from 'src/infrastructure/event/event.module';
     NaverStrategy,
     GoogleStrategy,
     AppleStrategy,
+    KakaoStrategy,
     JwtStrategy,
     JwtRefreshStrategy,
     PrismaService,
