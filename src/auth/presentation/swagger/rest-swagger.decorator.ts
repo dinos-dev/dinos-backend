@@ -47,6 +47,7 @@ export const SocialLoginDocs = () => {
           HttpErrorConstants.EXIST_NAVER_ACCOUNT,
           HttpErrorConstants.EXIST_APPLE_ACCOUNT,
           HttpErrorConstants.EXIST_LOCAL_ACCOUNT,
+          HttpErrorConstants.EXIST_KAKAO_ACCOUNT,
         ],
       },
     ]),
