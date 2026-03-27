@@ -132,6 +132,68 @@ describe('AuthController', () => {
     });
   });
 
+  describe('kakaoLogin', () => {
+    it('카카오 소셜 로그인을 성공적으로 처리한다.', async () => {
+      // given
+      const mockPayload: OAuthPayLoad = {
+        email: 'kakao@example.com',
+        provider: Provider.KAKAO,
+        providerId: '123456789',
+        name: '카카오사용자',
+      };
+      authService.socialLogin.mockResolvedValue(mockLoginResponse);
+
+      // when
+      const result = await controller.kakaoLogin(mockRequest, mockPayload);
+
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
+      expect(authService.socialLogin).toHaveBeenCalledWith(
+        mockRequest.get('user-agent').toLowerCase(),
+        expect.objectContaining({
+          email: mockPayload.email,
+          provider: mockPayload.provider,
+          providerId: mockPayload.providerId,
+          name: mockPayload.name,
+        }),
+      );
+    });
+
+    it('name이 null인 경우에도 정상적으로 처리한다.', async () => {
+      // given
+      const mockPayload: OAuthPayLoad = {
+        email: 'kakao@example.com',
+        provider: Provider.KAKAO,
+        providerId: '123456789',
+        name: null,
+      };
+      authService.socialLogin.mockResolvedValue(mockLoginResponse);
+
+      // when
+      const result = await controller.kakaoLogin(mockRequest, mockPayload);
+
+      // then
+      expect(result).toBeDefined();
+      expect(result.getStatus()).toBe(201);
+      expect(authService.socialLogin).toHaveBeenCalledWith(
+        mockRequest.get('user-agent').toLowerCase(),
+        expect.objectContaining({
+          name: null,
+        }),
+      );
+    });
+
+    it('AuthService에서 에러가 발생하면 그대로 전파한다.', async () => {
+      // given
+      const error = new Error('Service error');
+      authService.socialLogin.mockRejectedValue(error);
+
+      // when & then
+      await expect(controller.kakaoLogin(mockRequest, mockOAuthPayload)).rejects.toThrow(error);
+    });
+  });
+
   describe('appleLogin', () => {
     it('애플 소셜 로그인을 성공적으로 처리한다.', async () => {
       // given
