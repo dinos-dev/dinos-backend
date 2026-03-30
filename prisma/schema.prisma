@@ -27,12 +27,15 @@ model User {
   profile     Profile?
   inviteCode InviteCode? 
   
+  //? 1:1
+  recommendationResult   RecommendationResult?
+
   //? 1:N
   tokens                 Token[]            @relation("UserToken")
-  sentFriendRequests     FriendRequest[]    @relation("RequestSender")    
-  receivedFriendRequests FriendRequest[]    @relation("RequestReceiver")  
-  friendshipsAsRequester Friendship[]       @relation("FriendshipRequester") 
-  friendshipsAsAddressee Friendship[]       @relation("FriendshipAddressee") 
+  sentFriendRequests     FriendRequest[]    @relation("RequestSender")
+  receivedFriendRequests FriendRequest[]    @relation("RequestReceiver")
+  friendshipsAsRequester Friendship[]       @relation("FriendshipRequester")
+  friendshipsAsAddressee Friendship[]       @relation("FriendshipAddressee")
   bookmarks              Bookmark[]         @relation("UserBookmark")
   pins                   Pin[]              @relation("UserPin")
   reviews                Review[]           @relation("UserReview")
@@ -371,6 +374,24 @@ model ReviewAnswer {
   @@index([reviewId], map: "idx_answer_review")
   @@index([optionId], map: "idx_answer_option")
   @@map("review_answers")
+}
+
+//? ML 배치 추천 결과 테이블 (Python 워커 write, NestJS read)
+model RecommendationResult {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique @map("user_id")
+
+  /// Python ML 배치가 계산한 추천 식당 top20
+  /// 구조: [{ "restaurant_id": number, "score": number }, ...] 내림차순 정렬
+  recommendations Json     @map("recommendations")
+
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  //? N:1
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "idx_recommendation_user_id")
+  @@map("recommendation_results")
 }
 
 enum Provider {
