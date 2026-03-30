@@ -24,6 +24,7 @@ import { HealthModule } from './health/health.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { ReviewModule } from './review/review.module';
 import { PinModule } from './pin/pin.module';
+import { RecommendationModule } from './recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { PinModule } from './pin/pin.module';
     RestaurantModule,
     ReviewModule,
     PinModule,
+    RecommendationModule,
   ],
   providers: [
     {
