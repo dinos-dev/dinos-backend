@@ -234,4 +234,21 @@ export class ReviewQuery extends PrismaRepository<Review, ReviewEntity> implemen
       row.images.map((i) => new ReviewDetailImageData(i.imageUrl, i.isPrimary, i.sortOrder)),
     );
   }
+
+  /**
+   * 전달된 questionId들 중 WRAP_UP 단계에 해당하는 항목 수 반환
+   * @param questionIds 유효한 응답(optionId 또는 customAnswer)이 있는 questionId 배열
+   * @returns WRAP_UP step에 속하는 질문 수
+   */
+  async countWrapUpAmongIds(questionIds: number[]): Promise<number> {
+    if (questionIds.length === 0) return 0;
+
+    return this.prisma.reviewQuestion.count({
+      where: {
+        id: { in: questionIds },
+        step: ReviewStep.WRAP_UP,
+        isActive: true,
+      },
+    });
+  }
 }

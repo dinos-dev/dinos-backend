@@ -1,4 +1,11 @@
-import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { HttpReviewErrorConstants } from './helper/http-error-object';
 import {
   FILE_UPLOAD_SERVICE,
   RESTAURANT_REPOSITORY,
@@ -81,6 +88,11 @@ export class ReviewService {
    */
   @Transactional()
   async updateReview(command: UpdateReviewCommand): Promise<ReviewDetailResponseDto> {
+    // ! WRAP_UP 단계 답변 필수 검증
+    if (command.answers) {
+      await this.validateWrapUpAnswered(command.answers);
+    }
+
     const answerEntities = command.answers?.map((a) =>
       ReviewAnswerEntity.create({ questionId: a.questionId, optionId: a.optionId, customAnswer: a.customAnswer }),
     );
@@ -152,6 +164,8 @@ export class ReviewService {
    */
   @Transactional()
   async createReview(command: CreateReviewCommand): Promise<CreateReviewResponseDto> {
+    await this.validateWrapUpAnswered(command.answers);
+
     try {
       //? 1. Restaurant upsert (name + address 기준 조회 → 없으면 생성)
       const restaurantEntity = RestaurantEntity.create({
@@ -276,6 +290,30 @@ export class ReviewService {
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * ------------------------------------------------
+   * Private Methods
+   * ------------------------------------------------
+   */
+
+  /**
+   * WRAP_UP 단계 답변 필수 검증
+   * - 유효한 응답(optionId 또는 customAnswer)이 있는 answers 중 WRAP_UP 질문이 없으면 400
+   */
+  private async validateWrapUpAnswered(
+    answers: { questionId: number; optionId?: number; customAnswer?: string }[],
+  ): Promise<void> {
+    const validAnsweredIds = answers
+      .filter((a) => a.optionId != null || (a.customAnswer != null && a.customAnswer.trim() !== ''))
+      .map((a) => a.questionId);
+
+    const count = await this.reviewQuery.countWrapUpAmongIds(validAnsweredIds);
+
+    if (count === 0) {
+      throw new BadRequestException(HttpReviewErrorConstants.WRAP_UP_ANSWER_REQUIRED);
     }
   }
 }

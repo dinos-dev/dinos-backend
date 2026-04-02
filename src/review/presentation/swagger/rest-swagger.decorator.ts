@@ -20,6 +20,7 @@ import { UpdateReviewDto } from '../dto/request/update-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
 import { ReviewDetailResponseDto } from '../dto/response/review-detail.response.dto';
+import { HttpReviewErrorConstants } from 'src/review/application/helper/http-error-object';
 
 //? 리뷰 작성문서
 export const CreateReviewDocs = () => {
@@ -32,6 +33,7 @@ export const CreateReviewDocs = () => {
       - answers는 선택사항이며, 각 항목은 optionId 또는 customAnswer 중 하나만 입력해야 한다.
       - reviews/questions 에서 반환된 Questions의 id는 모두 포함시켜야 한다. (추후 리뷰를 수정하는 케이스에서 해당 질문지를 그대로 보여주어야 하기 때문)
       - images는 선택사항이며, 첨부 시 isPrimary: true 항목이 반드시 1개여야 한다.
+      - WRAP_UP 단계 답변은 필수이며, 최소 1개 이상 답변을 제출해야 한다.
       `,
     }),
     ApiBody({ type: CreateReviewDto }),
@@ -42,7 +44,7 @@ export const CreateReviewDocs = () => {
     ApiErrorResponseTemplate([
       {
         status: StatusCodes.BAD_REQUEST,
-        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR, HttpReviewErrorConstants.WRAP_UP_ANSWER_REQUIRED],
       },
       {
         status: StatusCodes.UNAUTHORIZED,
@@ -113,6 +115,7 @@ export const UpdateReviewDocs = () => {
       - 본인 리뷰가 아니거나 존재하지 않는 경우 404를 반환한다.
       - answers, images는 제공 시 기존 데이터를 전체 교체한다. 생략 시 기존 데이터를 유지한다.
       - 수정을 완료하면 최종적으로 수정 완료된 리소스를 반환한다. 
+      - WRAP_UP 단계 답변은 필수이며, 최소 1개 이상 답변을 제출해야 한다.
       `,
     }),
     ApiBody({ type: UpdateReviewDto }),
@@ -123,7 +126,7 @@ export const UpdateReviewDocs = () => {
     ApiErrorResponseTemplate([
       {
         status: StatusCodes.BAD_REQUEST,
-        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR, HttpReviewErrorConstants.WRAP_UP_ANSWER_REQUIRED],
       },
       {
         status: StatusCodes.UNAUTHORIZED,
