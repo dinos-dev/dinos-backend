@@ -7,4 +7,5 @@ export interface IReviewQuery {
   findAllActiveWithOptions(): Promise<ReviewQuestionWithOptionsEntity[]>;
   findMyReviews(userId: number, cursor: number | null, limit: number): Promise<CursorPaginatedResult<MyReviewEntity>>;
   findReviewDetail(reviewId: number, userId: number): Promise<ReviewDetailEntity | null>;
+  countWrapUpAmongIds(questionIds: number[]): Promise<number>;
 }
