@@ -102,6 +102,43 @@ describe('FriendRequestRepository', () => {
     });
   });
 
+  describe('findPendingBySenderAndReceiver', () => {
+    it('PENDING 상태의 역방향 요청이 존재하면 해당 엔티티를 반환한다.', async () => {
+      // 1. given
+      txHost.tx.friendRequest.findFirst.mockResolvedValue(friendRequestDataBaseEntity);
+
+      // 2. when
+      const result = await repository.findPendingBySenderAndReceiver(
+        friendRequestMockEntity.senderId,
+        friendRequestMockEntity.receiverId,
+      );
+
+      // 3. then
+      expect(txHost.tx.friendRequest.findFirst).toHaveBeenCalledWith({
+        where: {
+          senderId: friendRequestMockEntity.senderId,
+          receiverId: friendRequestMockEntity.receiverId,
+          status: DomainFriendRequestStatus.PENDING,
+        },
+      });
+      expect(result).toEqual(FriendRequestMapper.toDomain(friendRequestDataBaseEntity));
+    });
+
+    it('PENDING 상태의 역방향 요청이 없으면 null을 반환한다.', async () => {
+      // 1. given
+      txHost.tx.friendRequest.findFirst.mockResolvedValue(null);
+
+      // 2. when
+      const result = await repository.findPendingBySenderAndReceiver(
+        friendRequestMockEntity.senderId,
+        friendRequestMockEntity.receiverId,
+      );
+
+      // 3. then
+      expect(result).toBeNull();
+    });
+  });
+
   describe('findByReceiveId', () => {
     it('나에게 요청을 보낸 친구 요청 정보와 상대방 프로필을 조회한다.', async () => {
       // 1.given

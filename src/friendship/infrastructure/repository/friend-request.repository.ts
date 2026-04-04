@@ -67,6 +67,19 @@ export class FriendRequestRepository
   }
 
   /**
+   * 특정 방향의 PENDING 친구 요청 조회 (역방향 요청 존재 여부 체크용)
+   * @param senderId 요청을 보낸 사용자 ID
+   * @param receiverId 요청을 받은 사용자 ID
+   */
+  async findPendingBySenderAndReceiver(senderId: number, receiverId: number): Promise<FriendRequestEntity | null> {
+    const friendRequest = await this.model.findFirst({
+      where: { senderId, receiverId, status: FriendRequestStatus.PENDING },
+    });
+
+    return friendRequest ? FriendRequestMapper.toDomain(friendRequest) : null;
+  }
+
+  /**
    * receiverId와 senderId에 해당하는 친구 요청 기록 제거
    * @param receiverId
    * @param senderId

@@ -36,6 +36,66 @@ describe('FriendshipRepository', () => {
     jest.clearAllMocks();
   });
 
+  describe('findByUserPair', () => {
+    it('requesterId→addresseeId 방향으로 친구 관계를 조회한다.', async () => {
+      // 1. given
+      txHost.tx.friendship.findFirst.mockResolvedValue(friendshipDataBaseEntity);
+
+      // 2. when
+      const result = await repository.findByUserPair(
+        friendshipMockEntity.requesterId,
+        friendshipMockEntity.addresseeId,
+      );
+
+      // 3. then
+      expect(txHost.tx.friendship.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { requesterId: friendshipMockEntity.requesterId, addresseeId: friendshipMockEntity.addresseeId },
+            { requesterId: friendshipMockEntity.addresseeId, addresseeId: friendshipMockEntity.requesterId },
+          ],
+        },
+      });
+      expect(result).toEqual(FriendshipMapper.toDomain(friendshipDataBaseEntity));
+    });
+
+    it('addresseeId→requesterId 역방향으로도 친구 관계를 조회한다.', async () => {
+      // 1. given
+      txHost.tx.friendship.findFirst.mockResolvedValue(friendshipDataBaseEntity);
+
+      // 2. when
+      const result = await repository.findByUserPair(
+        friendshipMockEntity.addresseeId,
+        friendshipMockEntity.requesterId,
+      );
+
+      // 3. then
+      expect(txHost.tx.friendship.findFirst).toHaveBeenCalledWith({
+        where: {
+          OR: [
+            { requesterId: friendshipMockEntity.addresseeId, addresseeId: friendshipMockEntity.requesterId },
+            { requesterId: friendshipMockEntity.requesterId, addresseeId: friendshipMockEntity.addresseeId },
+          ],
+        },
+      });
+      expect(result).toEqual(FriendshipMapper.toDomain(friendshipDataBaseEntity));
+    });
+
+    it('친구 관계가 존재하지 않으면 null을 반환한다.', async () => {
+      // 1. given
+      txHost.tx.friendship.findFirst.mockResolvedValue(null);
+
+      // 2. when
+      const result = await repository.findByUserPair(
+        friendshipMockEntity.requesterId,
+        friendshipMockEntity.addresseeId,
+      );
+
+      // 3. then
+      expect(result).toBeNull();
+    });
+  });
+
   describe('upsertFriendship', () => {
     it('친구관계 테이블에 requesterId와 addresseeId가 존재하지 않을 경우 생성한다.', async () => {
       // 1. given

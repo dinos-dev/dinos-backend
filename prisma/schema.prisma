@@ -89,6 +89,9 @@ model Friendship {
   activities   FriendshipActivity[]
 
   // 제약 조건: 중복 친구 관계 방지
+  // !현재 constraint는 방향을 구분함 (requesterId=A,addresseeId=B) ≠ (requesterId=B,addresseeId=A)
+  // 완벽하게 방향 무관 중복 방지는 PostgreSQL expression index (LEAST/GREATEST) 가 필요하나,
+  // schema.prisma로 표현 불가 → 애플리케이션 레이어(requestFriendship, respondToFriendRequest)에서 방어하도록 임시 처리
   @@unique([requesterId, addresseeId], map: "unique_requester_addressee")
   @@index([requesterId], map: "idx_requester_id")
   @@index([addresseeId], map: "idx_addressee_id")
