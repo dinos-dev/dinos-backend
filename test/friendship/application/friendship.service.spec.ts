@@ -1,4 +1,4 @@
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { mockDeep } from 'jest-mock-extended';
 
 import { FriendshipService } from 'src/friendship/application/friendship.service';
@@ -65,6 +65,7 @@ describe('FriendshipService', () => {
       });
 
       userRepository.findByUserId.mockResolvedValue(mockUser);
+      friendRequestRepository.findPendingBySenderAndReceiver.mockResolvedValue(null);
       friendRequestRepository.upsertRequestFriendInvite.mockResolvedValue(mockFriendRequest);
 
       // when
@@ -73,6 +74,10 @@ describe('FriendshipService', () => {
       // then
       expect(result).toEqual(mockFriendRequest);
       expect(userRepository.findByUserId).toHaveBeenCalledWith(mockCommand.receiverId);
+      expect(friendRequestRepository.findPendingBySenderAndReceiver).toHaveBeenCalledWith(
+        mockCommand.receiverId,
+        mockCommand.senderId,
+      );
       expect(friendRequestRepository.upsertRequestFriendInvite).toHaveBeenCalled();
     });
 
@@ -84,6 +89,26 @@ describe('FriendshipService', () => {
       await expect(service.requestFriendship(mockCommand)).rejects.toThrow(NotFoundException);
       await expect(service.requestFriendship(mockCommand)).rejects.toThrow(
         HttpFriendshipErrorConstants.NOT_FOUND_USER.message as string,
+      );
+      expect(friendRequestRepository.upsertRequestFriendInvite).not.toHaveBeenCalled();
+    });
+
+    it('상대방이 이미 나에게 PENDING 친구 요청을 보낸 경우 ConflictException을 발생시킨다.', async () => {
+      // given
+      const mockUser = createMockUserEntity({ id: 2 });
+      const reverseRequest = createMockFriendshipRequestEntity({
+        senderId: 2,
+        receiverId: 1,
+        status: FriendRequestStatus.PENDING,
+      });
+
+      userRepository.findByUserId.mockResolvedValue(mockUser);
+      friendRequestRepository.findPendingBySenderAndReceiver.mockResolvedValue(reverseRequest);
+
+      // when & then
+      await expect(service.requestFriendship(mockCommand)).rejects.toThrow(ConflictException);
+      await expect(service.requestFriendship(mockCommand)).rejects.toThrow(
+        HttpFriendshipErrorConstants.REVERSE_FRIEND_REQUEST_EXISTS.message as string,
       );
       expect(friendRequestRepository.upsertRequestFriendInvite).not.toHaveBeenCalled();
     });
@@ -135,6 +160,7 @@ describe('FriendshipService', () => {
 
       friendRequestRepository.findById.mockResolvedValue(mockFriendRequest);
       friendRequestRepository.upsertRequestFriendInvite.mockResolvedValue(mockFriendRequest);
+      friendshipRepository.findByUserPair.mockResolvedValue(null);
       friendshipRepository.upsertFriendship.mockResolvedValue(mockFriendship);
 
       // when
@@ -144,7 +170,37 @@ describe('FriendshipService', () => {
       expect(result).toBe('친구 요청을 수락하였습니다.');
       expect(friendRequestRepository.findById).toHaveBeenCalledWith(friendRequestId);
       expect(friendRequestRepository.upsertRequestFriendInvite).toHaveBeenCalled();
+      expect(friendshipRepository.findByUserPair).toHaveBeenCalledWith(
+        mockFriendRequest.senderId,
+        mockFriendRequest.receiverId,
+      );
       expect(friendshipRepository.upsertFriendship).toHaveBeenCalled();
+    });
+
+    it('동시 수락으로 이미 친구 관계가 존재하면 upsertFriendship을 호출하지 않는다.', async () => {
+      // given
+      const mockFriendRequest = createMockFriendshipRequestEntity({
+        id: friendRequestId,
+        senderId: 1,
+        receiverId: userId,
+        status: FriendRequestStatus.PENDING,
+      });
+      const existingFriendship = createMockFriendshipEntity({ requesterId: 1, addresseeId: userId });
+
+      friendRequestRepository.findById.mockResolvedValue(mockFriendRequest);
+      friendRequestRepository.upsertRequestFriendInvite.mockResolvedValue(mockFriendRequest);
+      friendshipRepository.findByUserPair.mockResolvedValue(existingFriendship);
+
+      // when
+      const result = await service.respondToFriendRequest(friendRequestId, FriendRequestStatus.ACCEPTED, userId);
+
+      // then
+      expect(result).toBe('친구 요청을 수락하였습니다.');
+      expect(friendshipRepository.findByUserPair).toHaveBeenCalledWith(
+        mockFriendRequest.senderId,
+        mockFriendRequest.receiverId,
+      );
+      expect(friendshipRepository.upsertFriendship).not.toHaveBeenCalled();
     });
 
     it('친구 요청을 거절하면 친구 관계가 생성되지 않는다.', async () => {
