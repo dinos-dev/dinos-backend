@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   FRIEND_REQUEST_REPOSITORY,
   FRIENDSHIP_ACTIVITY_REPOSITORY,
@@ -38,12 +38,23 @@ export class FriendshipService {
 
   /**
    * 친구요청 (상대방이 거절 했을 경우 다시 PENDING 상태로 Upsert)
+   * 역방향 PENDING 요청이 존재하면 ConflictException 반환 (Facebook 방식)
    * @param command  RequestFriendshipCommand
    * @returns FriendRequestEntity
    */
+  @Transactional()
   async requestFriendship(command: RequestFriendshipCommand): Promise<FriendRequestEntity> {
     const user = await this.userRepository.findByUserId(command.receiverId);
     if (!user) throw new NotFoundException(HttpFriendshipErrorConstants.NOT_FOUND_USER);
+
+    // 상대방이 이미 나에게 PENDING 요청을 보낸 경우 — 받은 요청을 수락하도록 유도
+    const reversePending = await this.friendRequestRepository.findPendingBySenderAndReceiver(
+      command.receiverId,
+      command.senderId,
+    );
+    if (reversePending) {
+      throw new ConflictException(HttpFriendshipErrorConstants.REVERSE_FRIEND_REQUEST_EXISTS);
+    }
 
     const friendRequest = FriendRequestEntity.create(command);
     return await this.friendRequestRepository.upsertRequestFriendInvite(friendRequest);
@@ -85,11 +96,18 @@ export class FriendshipService {
 
     // 사용자가 수락을 했을 경우에 친구 관계 테이블을 생성
     if (status === FriendRequestStatus.ACCEPTED) {
-      const entity = FriendshipEntity.create({
-        requesterId: findFriendRequest.senderId,
-        addresseeId: findFriendRequest.receiverId,
-      });
-      await this.friendshipRepository.upsertFriendship(entity);
+      // 동시 수락 race condition 방어: 이미 친구 관계가 존재하면 생성 생략 - 멱등성 보장
+      const existing = await this.friendshipRepository.findByUserPair(
+        findFriendRequest.senderId,
+        findFriendRequest.receiverId,
+      );
+      if (!existing) {
+        const entity = FriendshipEntity.create({
+          requesterId: findFriendRequest.senderId,
+          addresseeId: findFriendRequest.receiverId,
+        });
+        await this.friendshipRepository.upsertFriendship(entity);
+      }
     }
 
     return status === FriendRequestStatus.ACCEPTED ? '친구 요청을 수락하였습니다.' : '친구 요청을 거절하였습니다.';
@@ -106,40 +124,6 @@ export class FriendshipService {
     paginationOptions?: PaginationOptions,
   ): Promise<PaginatedResult<FriendWithActivityDto>> {
     return await this.friendshipQuery.findAllFriendship(userId, paginationOptions);
-
-    // const friendList = friendshipResult.data.map((friendship) => {
-    //   const friendInfo = friendship.getFriendInfo(userId);
-    //   const activityCount = friendship.activities.length || 0;
-
-    //   // 현재 사용자 기준으로 친구 정보 추출
-    //   const friendData = friendInfo.isRequester ? (friendship as any).addresseeInfo : (friendship as any).requesterInfo;
-
-    //   const profileData = friendData.profile
-    //     ? {
-    //         nickname: friendData.profile.nickname,
-    //         comment: friendData.profile.comment,
-    //         headerId: friendData.profile.headerId,
-    //         bodyId: friendData.profile.bodyId,
-    //         headerColor: friendData.profile.headerColor,
-    //         bodyColor: friendData.profile.bodyColor,
-    //       }
-    //     : null;
-
-    //   return FriendWithActivityDto.create({
-    //     id: friendship.id!,
-    //     friendUserId: friendInfo.friendId,
-    //     email: friendData.email,
-    //     name: friendData.name,
-    //     friendProfileData: profileData,
-    //     activityCount,
-    //     createdAt: friendship.createdAt!,
-    //   });
-    // });
-
-    // return {
-    //   data: friendList,
-    //   meta: friendshipResult.meta,
-    // };
   }
 
   /**

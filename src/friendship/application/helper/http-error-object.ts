@@ -41,4 +41,10 @@ export const HttpFriendshipErrorConstants = {
     error: 'FORBIDDEN_FRIENDSHIP_REMOVAL',
     message: '친구 관계를 제거할 권한이 없습니다.',
   } as HttpErrorFormat,
+
+  REVERSE_FRIEND_REQUEST_EXISTS: {
+    status: HttpStatus.CONFLICT,
+    error: 'REVERSE_FRIEND_REQUEST_EXISTS',
+    message: '상대방이 이미 친구 요청을 보냈습니다. 받은 요청을 확인해주세요.',
+  } as HttpErrorFormat,
 };

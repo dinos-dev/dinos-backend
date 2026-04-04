@@ -23,6 +23,7 @@ export const SendFriendRequestDocs = () => {
       - 친구 요청 전송 엔드포인트 
       - receiverId는 친구 요청을 받는 사용자의 userId 값이고, 이전에 사용자가 거절했던 이력이 있더라도 Pending(대기) 상태로 upsert 된다.
       - 본인이 본인에게 친구 요청을 보내면 400 에러를 반환한다.
+      - 상대방이 이미 나에게 PENDING 요청을 보낸 경우 409 에러를 반환한다.
       `,
     }),
     ApiBody({
@@ -40,6 +41,10 @@ export const SendFriendRequestDocs = () => {
       {
         status: StatusCodes.BAD_REQUEST,
         errorFormatList: [HttpFriendshipErrorConstants.SAME_USER_ID],
+      },
+      {
+        status: StatusCodes.CONFLICT,
+        errorFormatList: [HttpFriendshipErrorConstants.REVERSE_FRIEND_REQUEST_EXISTS],
       },
       {
         status: StatusCodes.UNAUTHORIZED,

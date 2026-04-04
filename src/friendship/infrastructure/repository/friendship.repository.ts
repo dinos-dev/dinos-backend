@@ -17,6 +17,24 @@ export class FriendshipRepository
   }
 
   /**
+   * 두 사용자 간 친구 관계 조회 (방향 무관)
+   * @param userIdA
+   * @param userIdB
+   */
+  async findByUserPair(userIdA: number, userIdB: number): Promise<FriendshipEntity | null> {
+    const friendship = await this.model.findFirst({
+      where: {
+        OR: [
+          { requesterId: userIdA, addresseeId: userIdB },
+          { requesterId: userIdB, addresseeId: userIdA },
+        ],
+      },
+    });
+
+    return friendship ? FriendshipMapper.toDomain(friendship) : null;
+  }
+
+  /**
    * 친구 관계 테이블 Upsert
    * @param entity FriendshipEntity
    * @returns FriendshipEntity
