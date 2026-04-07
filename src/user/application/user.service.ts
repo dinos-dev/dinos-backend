@@ -66,26 +66,23 @@ export class UserService {
   }
 
   /**
-   * 유저 프로필 수정
-   * @param id - profileId
+   * 유저 프로필 수정 (partial update)
+   * - undefined: 요청에 포함되지 않은 필드 → 기존 값 유지
+   * - null: 명시적으로 초기화 요청한 필드 → null 저장
    * @param command
    * @returns UserProfile
    */
-  async updateProfile(id: number, command: UserProfileCommand): Promise<ProfileEntity> {
-    // 1) 프로필 조회
-    const profile = await this.profileRepository.findById(id);
-
-    // 2) 프로필 존재 여부 및 본인의 프로필 일치여부 핸들링
+  async updateProfile(command: UserProfileCommand): Promise<ProfileEntity> {
+    // 1) userId 기반 프로필 조회
+    const profile = await this.profileRepository.findByUserId(command.userId);
 
     if (!profile) throw new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE);
 
-    if (profile.userId !== command.userId) throw new ForbiddenException(HttpUserErrorConstants.FORBIDDEN_USER_PROFILE);
+    // 2) 기존 값과 병합 (전송된 필드만 덮어씀)
+    const merged = profile.merge(command);
 
-    // 3) 유저 프로필 instance 생성
-    const profileEntity = ProfileEntity.create(command);
-
-    // 4) 프로필 업데이트 및 반환
-    return await this.profileRepository.updateById(id, profileEntity);
+    // 3) 프로필 업데이트 및 반환
+    return await this.profileRepository.updateById(profile.id, merged);
   }
 
   /**

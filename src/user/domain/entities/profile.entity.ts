@@ -36,4 +36,27 @@ export class ProfileEntity {
       0,
     );
   }
+
+  merge(params: {
+    nickname?: string;
+    comment?: string | null;
+    headerId?: number | null;
+    bodyId?: number | null;
+    headerColor?: string | null;
+    bodyColor?: string | null;
+  }): ProfileEntity {
+    return new ProfileEntity(
+      this.id,
+      this.userId,
+      params.nickname !== undefined ? params.nickname : this.nickname,
+      params.comment !== undefined ? params.comment : this.comment,
+      params.headerId !== undefined ? params.headerId : this.headerId,
+      params.bodyId !== undefined ? params.bodyId : this.bodyId,
+      params.headerColor !== undefined ? params.headerColor : this.headerColor,
+      params.bodyColor !== undefined ? params.bodyColor : this.bodyColor,
+      this.createdAt,
+      this.updatedAt,
+      this.version,
+    );
+  }
 }
