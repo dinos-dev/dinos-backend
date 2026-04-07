@@ -384,8 +384,8 @@ model RecommendationResult {
   id              Int      @id @default(autoincrement())
   userId          Int      @unique @map("user_id")
 
-  /// Python ML 배치가 계산한 추천 식당 top20
-  /// 구조: [{ "restaurant_id": number, "score": number }, ...] 내림차순 정렬
+  // Python ML 배치가 계산한 추천 식당 top20
+  // 구조: [{ "restaurantId": number, "score": number, "matchRate": number, "sourceUserId": number, "sourceReviewId": number }, ...] 내림차순 정렬
   recommendations Json     @map("recommendations")
 
   updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
