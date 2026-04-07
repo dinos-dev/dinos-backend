@@ -42,4 +42,7 @@ export const envVariableKeys = Joi.object({
 
   // 포트 관련 환경 변수
   PORT: Joi.number().default(3000),
+
+  // 관리자 API Key
+  ADMIN_API_KEY: Joi.string().required(),
 });

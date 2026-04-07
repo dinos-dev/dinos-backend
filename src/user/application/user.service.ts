@@ -1,4 +1,5 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { HttpUserErrorConstants } from './helper/http-error-object';
 
@@ -13,6 +14,7 @@ import { IUserRepository } from 'src/user/domain/repository/user.repository.inte
 import { IProfileRepository } from 'src/user/domain/repository/profile.repository.interface';
 import { ITokenRepository } from '../../auth/domain/repository/token.repository.interface';
 import { UserProfileCommand } from './command/user-profile.command';
+import { UpdateUserProfileCommand } from './command/update-user-profile.command';
 import { ProfileEntity } from '../domain/entities/profile.entity';
 import { Transactional } from '@nestjs-cls/transactional';
 import { IInviteCodeRepository } from '../domain/repository/invite-code.repository.interface';
@@ -33,6 +35,7 @@ export class UserService {
     private readonly inviteCodeRepository: IInviteCodeRepository,
     @Inject(USER_QUERY_REPOSITORY)
     private readonly userQueryRepository: IUserQuery,
+    private readonly logger: WinstonLoggerService,
   ) {}
 
   /**
@@ -65,7 +68,7 @@ export class UserService {
    * @param command
    * @returns UserProfile
    */
-  async updateProfile(command: UserProfileCommand): Promise<ProfileEntity> {
+  async updateProfile(command: UpdateUserProfileCommand): Promise<ProfileEntity> {
     // 1) userId 기반 프로필 조회
     const profile = await this.profileRepository.findByUserId(command.userId);
 
@@ -90,7 +93,7 @@ export class UserService {
       await this.tokenRepository.deleteManyByUserId(userId);
       await this.profileRepository.deleteManyByUserId(userId);
     } catch (err) {
-      console.error('Transaction error:', err);
+      this.logger.error('회원탈퇴 트랜잭션 오류', err.stack);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }

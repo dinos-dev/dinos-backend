@@ -2,9 +2,14 @@ import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/com
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
+import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('auth') {
-  constructor(private reflector: Reflector) {
+  constructor(
+    private reflector: Reflector,
+    private readonly logger: WinstonLoggerService,
+  ) {
     super();
   }
 
@@ -19,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('auth') {
 
   handleRequest(err: any, user: any, info: any) {
     if (err || !user) {
-      console.log('JWT Auth Guard Error', err, info);
+      this.logger.error('JWT Auth Guard Error', err?.stack ?? String(info));
       if (info?.name === 'TokenExpiredError') {
         throw new UnauthorizedException(HttpErrorConstants.EXPIRED_TOKEN);
       }

@@ -7,12 +7,14 @@ import { firstValueFrom } from 'rxjs';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 import { Provider } from 'src/user/domain/const/provider.enum';
+import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
 @Injectable()
 export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly logger: WinstonLoggerService,
   ) {
     super();
   }
@@ -47,7 +49,7 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
       };
       return payload;
     } catch (err) {
-      console.log('error->', err);
+      this.logger.error('Naver OAuth 검증 오류', err.stack);
       throw new InternalServerErrorException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
     }
   }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { CursorPaginatedResponseDto, CursorPaginationQueryDto } from 'src/common/dto/pagination.dto';
 import { ReviewService } from '../application/review.service';
 import { CreatePresignedUrlDto } from 'src/common/dto/create.presigned-url.dto';
@@ -7,6 +7,7 @@ import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateBulkPresignedUrlDto } from 'src/common/dto/create.presigned-url.bulk.dto';
 import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.dto';
+import { AdminApiKeyGuard } from 'src/auth/presentation/guard/admin-api-key.guard';
 import {
   CreateReviewDocs,
   CreateReviewQuestionDocs,
@@ -160,6 +161,7 @@ export class ReviewController {
 
   // ? 리뷰 질문 생성 ( 관리자용 )
   @CreateReviewQuestionDocs()
+  @UseGuards(AdminApiKeyGuard)
   @Post('questions')
   async createReviewQuestion(@Body() dto: CreateReviewQuestionDto): Promise<HttpResponse<ReviewQuestionResponseDto>> {
     const command = new CreateReviewQuestionCommand(dto.step, dto.content, dto.sortOrder, dto.options);
@@ -170,6 +172,7 @@ export class ReviewController {
 
   // ? 리뷰 질문 일괄 생성 (관리자용)
   @CreateReviewQuestionsBulkDocs()
+  @UseGuards(AdminApiKeyGuard)
   @Post('questions/bulk')
   async createReviewQuestionsBulk(
     @Body() dto: CreateReviewQuestionsBulkDto,
