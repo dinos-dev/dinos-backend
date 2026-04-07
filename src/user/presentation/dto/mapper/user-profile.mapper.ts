@@ -1,4 +1,5 @@
 import { UserProfileCommand } from 'src/user/application/command/user-profile.command';
+import { UpdateUserProfileCommand } from 'src/user/application/command/update-user-profile.command';
 import { CreateUserProfileDto } from '../request/create-user-profile.dto';
 import { UpdateUserProfileDto } from '../request/update-user-profile.dto';
 
@@ -15,8 +16,8 @@ export class UserProfileMapper {
     );
   }
 
-  static toUpdateCommand(userId: number, dto: UpdateUserProfileDto): UserProfileCommand {
-    return new UserProfileCommand(
+  static toUpdateCommand(userId: number, dto: UpdateUserProfileDto): UpdateUserProfileCommand {
+    return new UpdateUserProfileCommand(
       userId,
       dto.nickname,
       dto.comment,

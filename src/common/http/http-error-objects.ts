@@ -131,7 +131,7 @@ export const HttpErrorConstants = {
     status: HttpStatus.UNAUTHORIZED,
     error: 'EXPIRED_REFRESH_TOKEN',
     message: '리프레시 토큰이 만료되었습니다. 다시 로그인이 필요합니다.',
-  },
+  } as HttpErrorFormat,
 
   EXPIRED_TOKEN: {
     status: HttpStatus.UNAUTHORIZED,
@@ -176,6 +176,7 @@ export const HttpErrorConstants = {
   } as HttpErrorFormat,
 
   NOT_COLLETED_REFRESH_TYPE: {
+    status: HttpStatus.UNAUTHORIZED,
     error: 'NOT_COLLETED_REFRESH_TYPE',
     message: '리프레시 토큰이 아닙니다.',
   } as HttpErrorFormat,
@@ -193,6 +194,7 @@ export const HttpErrorConstants = {
   } as HttpErrorFormat,
 
   NOT_REGISTER_USER: {
+    status: HttpStatus.UNAUTHORIZED,
     error: 'NOT_REGISTER_USER',
     message: '가입된 유저가 아닙니다.',
   } as HttpErrorFormat,
@@ -214,6 +216,7 @@ export const HttpErrorConstants = {
   ERR_INVALID_PARAMS: '잘못된 파라미터 입니다.',
 
   ERROR_INVALID_PARAMS: {
+    status: HttpStatus.BAD_REQUEST,
     error: 'ERR_INVALID_PARAMS',
     message: '잘못된 파라미터 입니다.',
   } as HttpErrorFormat,
