@@ -35,6 +35,7 @@ async function bootstrap() {
 
   if (!isProduction) {
     initSwagger(app);
+    app.enableCors();
   }
 
   await app.listen(port);

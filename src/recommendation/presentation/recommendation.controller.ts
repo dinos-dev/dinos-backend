@@ -1,9 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
 import { UserId } from 'src/common/decorator/user-id.decorator';
 import { HttpResponse } from 'src/common/http/http-response';
 import { RecommendationService } from '../application/recommendation.service';
+import { RecommendationFilterDto } from '../application/dto/recommendation-filter.dto';
 import { RecommendationResponseDto } from './dto/response/recommendation.response.dto';
 import { GetMyRecommendationsDocs } from './swagger/rest-swagger.decorator';
 
@@ -16,8 +17,11 @@ export class RecommendationController {
 
   @Get()
   @GetMyRecommendationsDocs()
-  async getMyRecommendations(@UserId() userId: number): Promise<HttpResponse<RecommendationResponseDto[]>> {
-    const recommendations = await this.recommendationService.getMyRecommendations(userId);
+  async getMyRecommendations(
+    @UserId() userId: number,
+    @Query() filter: RecommendationFilterDto,
+  ): Promise<HttpResponse<RecommendationResponseDto[]>> {
+    const recommendations = await this.recommendationService.getMyRecommendations(userId, filter);
     const result = recommendations.map((r) => RecommendationResponseDto.fromDto(r));
     return HttpResponse.ok(result);
   }

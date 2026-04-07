@@ -1,33 +1,44 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/infrastructure/database/prisma/prisma.service';
+import { TransactionHost } from '@nestjs-cls/transactional';
+import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { IRecommendationQuery } from 'src/recommendation/application/interface/recommendation-query.interface';
-import { RecommendedRestaurantDto } from 'src/recommendation/application/dto/recommended-restaurant.dto';
+import {
+  RestaurantSummaryDto,
+  SourceUserProfileDto,
+} from 'src/recommendation/application/dto/recommended-restaurant.dto';
 import { RecommendationItem } from 'src/recommendation/domain/type/recommendation-item.type';
 
 @Injectable()
 export class RecommendationQuery implements IRecommendationQuery {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly txHost: TransactionHost<TransactionalAdapterPrisma>) {}
+
+  private get prisma() {
+    return this.txHost.tx;
+  }
 
   /**
-   * userId 기반으로 ML 추천 결과 + 식당 상세 정보를 조합하여 반환
-   * - recommendation_results 에서 JSON 배열 조회
-   * - restaurant_ids로 restaurants 테이블 조회
-   * - Python 배치가 계산한 score 순서 유지
+   * 유저 ID를 기반으로 추천 식당 데이터 조회
+   * @param userId 유저 ID
+   * @returns 추천 식당 데이터
    */
-  async findRecommendedRestaurantsByUserId(userId: number): Promise<RecommendedRestaurantDto[]> {
+  async findRawItemsByUserId(userId: number): Promise<RecommendationItem[]> {
     const result = await this.prisma.recommendationResult.findUnique({
       where: { userId },
     });
 
     if (!result) return [];
+    return (result.recommendations as RecommendationItem[]) ?? [];
+  }
 
-    const items = result.recommendations as RecommendationItem[];
-    if (!items.length) return [];
-
-    const restaurantIds = items.map((item) => item.restaurant_id);
-
-    const restaurants = await this.prisma.restaurant.findMany({
-      where: { id: { in: restaurantIds } },
+  /**
+   * 식당 ID 목록을 기반으로 식당 요약 정보 조회
+   * @param ids 식당 ID 목록
+   * @returns 식당 요약 정보
+   */
+  async findRestaurantSummariesByIds(ids: number[]): Promise<RestaurantSummaryDto[]> {
+    if (ids.length === 0) return [];
+    return this.prisma.restaurant.findMany({
+      where: { id: { in: ids } },
       select: {
         id: true,
         name: true,
@@ -38,23 +49,34 @@ export class RecommendationQuery implements IRecommendationQuery {
         primaryImageUrl: true,
       },
     });
+  }
 
-    const restaurantMap = new Map(restaurants.map((r) => [r.id, r]));
+  /**
+   * 사용자 ID 목록을 기반으로 사용자 프로필 정보 조회
+   * @param ids 사용자 ID 목록
+   * @returns 사용자 프로필 정보
+   */
+  async findSourceUserProfilesByIds(
+    ids: number[],
+  ): Promise<{ userId: number; profile: SourceUserProfileDto | null }[]> {
+    if (ids.length === 0) return [];
+    const users = await this.prisma.user.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        profile: {
+          select: {
+            nickname: true,
+            comment: true,
+            headerId: true,
+            bodyId: true,
+            headerColor: true,
+            bodyColor: true,
+          },
+        },
+      },
+    });
 
-    return items
-      .filter((item) => restaurantMap.has(item.restaurant_id))
-      .map((item) => {
-        const r = restaurantMap.get(item.restaurant_id)!;
-        return new RecommendedRestaurantDto(
-          r.id,
-          item.score,
-          r.name,
-          r.address,
-          r.latitude,
-          r.longitude,
-          r.category,
-          r.primaryImageUrl,
-        );
-      });
+    return users.map((u) => ({ userId: u.id, profile: u.profile ?? null }));
   }
 }
