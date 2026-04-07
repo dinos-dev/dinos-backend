@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { UserService } from '../application/user.service';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { ApiCommonErrorResponseTemplate } from 'src/common/swagger/response/api-error-common-response';
@@ -42,16 +42,13 @@ export class UserController {
 
   //? 유저 프로필 수정
   @UpdateUserProfileDocs()
-  @Patch('profile/:id')
+  @Patch('profile')
   async updateProfile(
     @UserId() userId: number,
-    @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateUserProfileDto,
   ): Promise<HttpResponse<ProfileResponseDto>> {
     const command = UserProfileMapper.toUpdateCommand(userId, dto);
-
-    const profile = await this.userService.updateProfile(id, command);
-
+    const profile = await this.userService.updateProfile(command);
     const result = ProfileResponseDto.fromResult(profile);
     return HttpResponse.ok(result);
   }
