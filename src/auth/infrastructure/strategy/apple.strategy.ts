@@ -41,20 +41,20 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
 
   async validate(req: any): Promise<OAuthPayLoad> {
     const { token, fullName, nonce } = req.body;
-    console.log('Received request body:', req.body); // 디버깅: 요청 본문 출력
+    this.logger.debug('Received request body:' + JSON.stringify(req.body));
 
     if (!token || typeof token !== 'string') {
-      console.error('Token is missing, undefined, or not a string:', token);
+      this.logger.error('Token is missing, undefined, or not a string: ' + token);
       throw new UnauthorizedException(HttpErrorConstants.SOCIAL_TOKEN_REQUIRED);
     }
 
     try {
       // 1. IdentityToken 디코딩
       const decoded = jwt.decode(token, { complete: true });
-      console.log('Decoded token:', decoded); // 디버깅: 디코딩 결과 출력
+      this.logger.debug('Decoded token: ' + JSON.stringify(decoded));
 
       if (!decoded || !decoded.header || !decoded.header.kid) {
-        console.error('Invalid decoded token:', decoded);
+        this.logger.error('Invalid decoded token: ' + JSON.stringify(decoded));
         throw new UnauthorizedException('Invalid Apple Identity Token');
       }
 
@@ -87,8 +87,7 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
 
       return oauthPayload;
     } catch (err) {
-      console.error('Apple token validation error:', err);
-      this.logger.error('Apple token validation error', err);
+      this.logger.error('Apple token validation error', err.stack);
       throw new InternalServerErrorException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
     }
   }

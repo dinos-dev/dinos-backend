@@ -1,4 +1,4 @@
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { ValidationError } from 'class-validator';
 import { HttpErrorConstants } from '../http/http-error-objects';
 
@@ -20,6 +20,8 @@ export interface ValidationErrorDetail {
  * - 필드별 상세 에러 정보 반환
  * - whitelist를 통한 불필요한 속성 제거
  */
+const logger = new Logger('ValidationPipe');
+
 export function createGlobalValidationPipe(): ValidationPipe {
   return new ValidationPipe({
     transform: true,
@@ -36,7 +38,7 @@ export function createGlobalValidationPipe(): ValidationPipe {
 
       // 개발 환경에서만 로깅
       if (process.env.NODE_ENV !== 'production') {
-        console.log('Validation errors --->', validationErrors);
+        logger.debug('Validation errors --->' + JSON.stringify(validationErrors));
       }
 
       // 구조화된 에러 응답 반환

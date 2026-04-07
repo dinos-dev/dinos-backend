@@ -45,7 +45,7 @@ export class SlackService {
         channel,
         text: `🚨 *Error Occurred* 🚨\n*Message*: ${error.message}\n*Stack*: \`\`\`${error.stack}\`\`\`\n*Context*: \`\`\`${JSON.stringify(context, null, 2)}\`\`\``,
       };
-      console.log('message --->', message);
+      this.logger.log('Sending error notification to Slack: ' + JSON.stringify(message));
 
       await this.webClient.chat.postMessage(message);
       this.logger.log(`Error notification sent to Slack channel: ${channel}`);

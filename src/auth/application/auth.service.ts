@@ -150,7 +150,7 @@ export class AuthService {
 
       return { accessToken, refreshToken };
     } catch (err) {
-      console.error('error->', err);
+      this.logger.error('로컬 로그인 처리 중 오류 발생', err.stack);
       if (err instanceof ConflictException) {
         throw err;
       }
@@ -256,7 +256,7 @@ export class AuthService {
           : this.configService.get<string>('ACCESS_SECRET'),
       });
     } catch (error) {
-      console.error('token verify exception error ->', error.name);
+      this.logger.error('토큰 검증 오류', error.stack);
       if (error.name === 'TokenExpiredError') {
         // 토큰 만료 핸들링
         throw new UnauthorizedException(HttpErrorConstants.EXPIRED_TOKEN);
