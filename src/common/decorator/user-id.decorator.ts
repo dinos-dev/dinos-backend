@@ -1,14 +1,17 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 
 /**
- * payLoad에서 User sub 값을 추출하는 데코레이터
+ * JWT payload에서 userId(sub)를 추출하는 데코레이터
+ * sub가 없을 경우 UnauthorizedException을 throw하여 null이 컨트롤러에 도달하지 않도록 보장한다
  */
-export const UserId = createParamDecorator((data: unknown, ctx: ExecutionContext) => {
+export const UserId = createParamDecorator((data: unknown, ctx: ExecutionContext): number => {
   const req = ctx.switchToHttp().getRequest();
-  /**
-   * @Todo
-   * payLoad의 user, sub가 middleware에서 추출되지 않았을 경우 어떻게 핸들링할지 정해야함.
-   * 현재는 null 값이 들어와도 넘기는 형식으로 처리
-   * */
-  return req?.user?.sub;
+  const userId = req?.user?.sub;
+
+  if (!userId) {
+    throw new UnauthorizedException(HttpErrorConstants.NOT_FOUND_TOKEN);
+  }
+
+  return userId;
 });
