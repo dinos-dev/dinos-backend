@@ -32,7 +32,7 @@ export class PinService {
    * @returns PinEntity
    */
   @Transactional()
-  async togglePin(command: TogglePinCommand): Promise<PinEntity> {
+  async togglePin(command: TogglePinCommand): Promise<{ pin: PinEntity; action: 'created' | 'deleted' }> {
     try {
       //? 1. restaurantEntity 생성
       const restaurantEntity = RestaurantEntity.create({
@@ -51,7 +51,8 @@ export class PinService {
 
       //? 4. 핀의 존재 여부에 따른 생성 또는 제거 ( toggle )
       if (pin) {
-        return await this.pinRepository.removeById(pin.id);
+        const removed = await this.pinRepository.removeById(pin.id);
+        return { pin: removed, action: 'deleted' };
       }
 
       //? 5. pin이 없을 경우 생성
@@ -61,7 +62,8 @@ export class PinService {
         // type: command.type,
       });
 
-      return this.pinRepository.create(pinEntity);
+      const created = await this.pinRepository.create(pinEntity);
+      return { pin: created, action: 'created' };
     } catch (error) {
       this.logger.error(error.message, error.stack);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
