@@ -29,8 +29,8 @@ export class PinController {
       dto.longitude,
       dto.category ?? null,
     );
-    const pin = await this.pinService.togglePin(command);
-    const result = PinResponseDto.fromResult(pin);
+    const { pin, action } = await this.pinService.togglePin(command);
+    const result = PinResponseDto.fromResult(pin, action);
     return HttpResponse.created(result);
   }
 

@@ -56,7 +56,15 @@ export class PinResponseDto {
   })
   createdAt: Date;
 
-  static fromResult(result: PinEntity): PinResponseDto {
+  @Expose()
+  @ApiProperty({
+    description: '핀 생성/삭제 여부',
+    example: 'created',
+    enum: ['created', 'deleted'],
+  })
+  action: 'created' | 'deleted';
+
+  static fromResult(result: PinEntity, action: 'created' | 'deleted'): PinResponseDto {
     return plainToInstance(
       PinResponseDto,
       {
@@ -64,6 +72,7 @@ export class PinResponseDto {
         userId: result.userId,
         restaurantId: result.restaurantId,
         createdAt: result.createdAt,
+        action,
       },
       {
         excludeExtraneousValues: true,
