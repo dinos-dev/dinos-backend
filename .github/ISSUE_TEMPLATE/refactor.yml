@@ -1,0 +1,32 @@
+name: Refactor
+description: 리팩터링
+title: "[refactor/] "
+labels: ["refactor", "backend"]
+assignees: ["esyeol"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: 브랜치명 (refactor/ 뒤에 올 이름)
+      placeholder: "예: security-and-architecture-hardening"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 개발 내용(설명)
+      placeholder: |
+        - 디버깅용 인증단 winston logging으로 일괄 변경
+        - user-id.decorator — sub 없으면 UnauthorizedException throw
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 체크리스트
+      value: |
+        - [ ]
+    validations:
+      required: true

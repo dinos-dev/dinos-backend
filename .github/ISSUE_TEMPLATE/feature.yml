@@ -1,0 +1,42 @@
+name: Feature
+description: 새 기능 개발
+title: "[feature/] "
+labels: ["featrue", "backend"]
+assignees: ["esyeol"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: 브랜치명 (feature/ 뒤에 올 이름)
+      placeholder: "예: shared-pins"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 개발 내용(설명)
+      placeholder: |
+        - 나와 같은 음식점을 pin-toggle한 친구 목록을 반환
+        - 찔러보기 ( Notification )
+    validations:
+      required: true
+
+  - type: textarea
+    id: issues
+    attributes:
+      label: ⚠️ ISSUE (1차 이후 추가 예정 항목)
+      description: 이번 스코프에서 제외된 항목이 있으면 작성
+      placeholder: |
+        - 찔러보기
+        - 열람목록
+        -> 위의 기능은 1차 이후 추가
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 체크리스트
+      value: |
+        - [ ]
+    validations:
+      required: true
