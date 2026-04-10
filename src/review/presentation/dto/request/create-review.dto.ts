@@ -1,8 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
+  ArrayMinSize,
   IsArray,
   IsBoolean,
+  IsDefined,
   IsInt,
   IsNotEmpty,
   IsNumber,
@@ -15,6 +18,7 @@ import {
   ValidationArguments,
   ValidationOptions,
 } from 'class-validator';
+import { REVIEW_QUESTION_COUNT } from '../../../domain/const/review.const';
 
 /**
  * optionId와 customAnswer 동시 입력 방지
@@ -175,12 +179,17 @@ export class CreateReviewDto {
   @ApiProperty({ description: '추천을 받고 싶은지 여부 (개인화 추천 모델 활용)', example: true, type: Boolean })
   wantRecommendation: boolean;
 
-  @IsOptional()
+  @IsDefined()
   @IsArray()
+  @ArrayMinSize(REVIEW_QUESTION_COUNT)
+  @ArrayMaxSize(REVIEW_QUESTION_COUNT)
   @ValidateNested({ each: true })
   @Type(() => CreateReviewAnswerDto)
-  @ApiProperty({ description: '단계별 답변 목록 (선택, skip 가능)', type: [CreateReviewAnswerDto], required: false })
-  answers?: CreateReviewAnswerDto[];
+  @ApiProperty({
+    description: '단계별 답변 목록 (질문 수만큼 필수, skip 시 questionId만 포함)',
+    type: [CreateReviewAnswerDto],
+  })
+  answers: CreateReviewAnswerDto[];
 
   @IsOptional()
   @IsArray()
