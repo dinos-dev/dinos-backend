@@ -55,9 +55,17 @@ ${CHECKLIST}"
   fi
 fi
 
+# ── 레포 및 브랜치 정보 ────────────────────────────────────────
+REPO=$(gh repo view --json nameWithOwner -q '.nameWithOwner')
+REPO_OWNER=$(echo "$REPO" | cut -d'/' -f1)
+CURRENT_BRANCH=$(git branch --show-current)
+
 # ── PR 생성 ────────────────────────────────────────────────────
 echo "PR 생성 중..."
 PR_URL=$(gh pr create \
+  --repo "$REPO" \
+  --head "${REPO_OWNER}:${CURRENT_BRANCH}" \
+  --base main \
   --title "$PR_TITLE" \
   --body "$BODY" \
   --label "$ISSUE_LABELS")
