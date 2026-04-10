@@ -1,0 +1,50 @@
+name: Bug
+description: 버그 리포트
+title: "[fix/] "
+labels: ["bug", "backend"]
+assignees: ["esyeol"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: 브랜치명 (fix/ 뒤에 올 이름)
+      placeholder: "예: friendship-duplicate-friend-request"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 이슈
+      description: 어떤 버그가 발생했는지
+      placeholder: |
+        - 친구 A가 B에게, B가 A에게 각각 친구 요청을 보낸 뒤, 둘 다 수락하면 친구 목록에 동일인이 2명 이상 노출됨 -> race condition
+    validations:
+      required: true
+
+  - type: textarea
+    id: cause
+    attributes:
+      label: 원인
+      placeholder: |
+        - Friendship 테이블의 unique constraint가 방향을 구분하지 않음
+        - 역방향 요청 존재 여부를 체크하는 로직 없음
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 체크리스트
+      value: |
+        - [ ]
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: 유의사항
+      description: 추후 확장 시 고려할 점 (선택)
+      placeholder: |
+        - 서비스 확장시 PostgreSQL expression index (LEAST/GREATEST)를 고려

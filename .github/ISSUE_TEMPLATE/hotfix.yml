@@ -1,0 +1,32 @@
+name: Hotfix
+description: 긴급 수정
+title: "[hotfix/] "
+labels: ["hotfix", "backend"]
+assignees: ["esyeol"]
+body:
+  - type: input
+    id: branch
+    attributes:
+      label: 브랜치명 (hotfix/ 뒤에 올 이름)
+      placeholder: "예: profile-update-remove-path-id"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 수정 내용
+      placeholder: |
+        - 프로필 수정시 partial update 미적용 부분 수정
+        - users/profile 엔드포인트에 불필요한 파라미터 받는 리소스 제거
+    validations:
+      required: true
+
+  - type: textarea
+    id: checklist
+    attributes:
+      label: 체크리스트
+      value: |
+        - [ ]
+    validations:
+      required: true
