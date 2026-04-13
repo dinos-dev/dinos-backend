@@ -114,12 +114,21 @@ echo "   브랜치: ${BRANCH_NAME}"
 
 # ── 브랜치 생성 여부 확인 ──────────────────────────────────────
 echo ""
-read -rp "브랜치 '${BRANCH_NAME}'을 생성하고 체크아웃할까요? [Y/n] " CONFIRM
-CONFIRM="${CONFIRM:-Y}"
+# AUTO_BRANCH=true 환경변수로 비인터랙티브 실행 지원 (Claude Code 등)
+AUTO_BRANCH="${AUTO_BRANCH:-}"
 
-if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
+if [[ "$AUTO_BRANCH" == "true" ]]; then
   git checkout -b "$BRANCH_NAME"
   echo "✅ 브랜치 생성 및 체크아웃 완료: ${BRANCH_NAME}"
+elif [[ "$AUTO_BRANCH" == "false" ]]; then
+  echo "브랜치 생성 건너뜀: ${BRANCH_NAME}"
+else
+  read -rp "브랜치 '${BRANCH_NAME}'을 생성하고 체크아웃할까요? [Y/n] " CONFIRM
+  CONFIRM="${CONFIRM:-Y}"
+  if [[ "$CONFIRM" =~ ^[Yy]$ ]]; then
+    git checkout -b "$BRANCH_NAME"
+    echo "✅ 브랜치 생성 및 체크아웃 완료: ${BRANCH_NAME}"
+  fi
 fi
 
 echo ""
