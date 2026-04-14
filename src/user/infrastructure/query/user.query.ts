@@ -29,7 +29,9 @@ export class UserQuery implements IUserQuery {
                 receivedFriendRequests: {
                   where: { status: 'PENDING' },
                 },
-                reviews: true,
+                reviews: {
+                  where: { deletedAt: null },
+                },
                 friendshipsAsRequester: true,
                 friendshipsAsAddressee: true,
               },
