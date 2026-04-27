@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WebClient } from '@slack/web-api';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorMessage, getErrorStack } from 'src/common/utils/error.util';
 
 @Injectable()
 export class SlackService {
@@ -27,7 +28,7 @@ export class SlackService {
       });
       this.logger.log(`Slack message sent to ${channel}: ${text}`);
     } catch (error) {
-      this.logger.error(`Failed to send Slack message to ${channel}: ${error.message}`, error.stack);
+      this.logger.error(`Failed to send Slack message to ${channel}: ${getErrorMessage(error)}`, getErrorStack(error));
       throw error;
     }
   }
@@ -50,7 +51,7 @@ export class SlackService {
       await this.webClient.chat.postMessage(message);
       this.logger.log(`Error notification sent to Slack channel: ${channel}`);
     } catch (slackError) {
-      this.logger.error(`Failed to send Slack notification: ${slackError.message}`);
+      this.logger.error(`Failed to send Slack notification: ${getErrorMessage(slackError)}`);
     }
   }
 }

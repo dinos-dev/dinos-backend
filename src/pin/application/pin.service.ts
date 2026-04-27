@@ -1,5 +1,6 @@
 import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PIN_QUERY_REPOSITORY, PIN_REPOSITORY, RESTAURANT_REPOSITORY } from 'src/common/config/common.const';
+import { getErrorMessage, getErrorStack } from 'src/common/utils/error.util';
 import { IPinRepository } from '../domain/repository/pin.repository.interface';
 import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaurant.repository.interface';
 import { TogglePinCommand } from './command/toggle-pin.command';
@@ -65,7 +66,7 @@ export class PinService {
       const created = await this.pinRepository.create(pinEntity);
       return { pin: created, action: 'created' };
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      this.logger.error(getErrorMessage(error), getErrorStack(error));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }

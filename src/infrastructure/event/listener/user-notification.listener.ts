@@ -3,6 +3,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { SlackService } from 'src/infrastructure/slack/slack.service';
 import { SERVICE_CHANNEL } from 'src/infrastructure/slack/constant/channel.const';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorStack } from 'src/common/utils/error.util';
 import { UserRegisteredEvent } from 'src/auth/application/event/user-registered.event';
 
 @Injectable()
@@ -23,7 +24,7 @@ export class UserNotificationListener {
 
       this.logger.log(`[사용자 등록 알림] ${event.email} - Slack 알림 전송 완료`);
     } catch (error) {
-      this.logger.error(`[사용자 등록 알림 실패] ${event.email}`, error);
+      this.logger.error(`[사용자 등록 알림 실패] ${event.email}`, getErrorStack(error));
     }
   }
 }

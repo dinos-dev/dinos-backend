@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorStack } from 'src/common/utils/error.util';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'auth') {
@@ -22,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'auth') {
     try {
       return payload;
     } catch (err) {
-      this.logger.error('JWT 토큰 검증 오류', err.stack);
+      this.logger.error('JWT 토큰 검증 오류', getErrorStack(err));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }
