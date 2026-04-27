@@ -8,6 +8,7 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 import { Provider } from 'src/user/domain/const/provider.enum';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorStack } from 'src/common/utils/error.util';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -40,7 +41,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
       return payload;
     } catch (err) {
-      this.logger.error('Google OAuth 검증 오류', err.stack);
+      this.logger.error('Google OAuth 검증 오류', getErrorStack(err));
       throw new InternalServerErrorException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
     }
   }

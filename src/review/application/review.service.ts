@@ -24,6 +24,7 @@ import { ReviewQuestionOptionEntity } from '../domain/entities/review-question-o
 import { Transactional } from '@nestjs-cls/transactional';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorMessage, getErrorStack } from 'src/common/utils/error.util';
 import { IReviewQuery } from './interface/review-query.interface';
 import { ReviewStep } from '../domain/const/review.enum';
 import { ReviewQuestionWithOptionsEntity } from '../domain/entities/review-question-with-options.entity';
@@ -223,7 +224,7 @@ export class ReviewService {
 
       return CreateReviewResponseDto.fromEntity(review);
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      this.logger.error(getErrorMessage(error), getErrorStack(error));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }
@@ -265,7 +266,7 @@ export class ReviewService {
       //? 3. 질문과 선택지를 함께 저장
       return await this.reviewQuestionRepository.createWithOptions(questionEntity, optionEntities);
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      this.logger.error(getErrorMessage(error), getErrorStack(error));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }
@@ -288,7 +289,7 @@ export class ReviewService {
 
       return createdQuestions;
     } catch (error) {
-      this.logger.error(error.message, error.stack);
+      this.logger.error(getErrorMessage(error), getErrorStack(error));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }
