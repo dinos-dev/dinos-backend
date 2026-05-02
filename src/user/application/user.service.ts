@@ -1,6 +1,7 @@
 import { ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
+import { getErrorStack } from 'src/common/utils/error.util';
 import { HttpUserErrorConstants } from './helper/http-error-object';
 
 import {
@@ -93,7 +94,7 @@ export class UserService {
       await this.tokenRepository.deleteManyByUserId(userId);
       await this.profileRepository.deleteManyByUserId(userId);
     } catch (err) {
-      this.logger.error('회원탈퇴 트랜잭션 오류', err.stack);
+      this.logger.error('회원탈퇴 트랜잭션 오류', getErrorStack(err));
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }

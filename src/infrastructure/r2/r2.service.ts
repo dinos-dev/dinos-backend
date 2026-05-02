@@ -7,6 +7,7 @@ import { v4 as Uuid } from 'uuid';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { IFileUploadService, PresignedUrlParams } from 'src/common/interface/file-upload.interface';
 import { WinstonLoggerService } from '../logger/winston-logger.service';
+import { getErrorMessage } from 'src/common/utils/error.util';
 import { PresignedUrlResponseDto } from 'src/common/dto/presigned-url.response.dto';
 
 @Injectable()
@@ -60,7 +61,7 @@ export class R2Service implements IFileUploadService {
         cdnUrl: this.getCdnUrl(key),
       };
     } catch (err) {
-      this.logger.error(`Failed to create presigned url: ${err.message}`);
+      this.logger.error(`Failed to create presigned url: ${getErrorMessage(err)}`);
       throw new InternalServerErrorException(HttpErrorConstants.INTERNAL_SERVER_ERROR);
     }
   }

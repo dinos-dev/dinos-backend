@@ -9,6 +9,7 @@ import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { OAuthPayLoad } from 'src/auth/domain/interface/token-payload.interface';
 
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
+import { getErrorStack } from 'src/common/utils/error.util';
 import { Provider } from 'src/user/domain/const/provider.enum';
 
 interface AppleJwtPayload {
@@ -87,7 +88,7 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
 
       return oauthPayload;
     } catch (err) {
-      this.logger.error('Apple token validation error', err.stack);
+      this.logger.error('Apple token validation error', getErrorStack(err));
       throw new InternalServerErrorException(HttpErrorConstants.SOCIAL_TOKEN_INTERNAL_SERVER_ERROR);
     }
   }
