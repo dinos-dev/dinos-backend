@@ -18,12 +18,13 @@ import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { InviteCodeEntity } from 'src/user/domain/entities/invite-code.entity';
 import { UserProfileWithInviteDto } from 'src/user/application/dto/user-profile-with-invite.dto';
 import { Provider } from 'src/user/domain/const/provider.enum';
-import { ConflictException, ForbiddenException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { HttpUserErrorConstants } from 'src/user/application/helper/http-error-object';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { mockDeep } from 'jest-mock-extended';
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
+import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
 
 jest.mock('@nestjs-cls/transactional', () => ({
   ...jest.requireActual('@nestjs-cls/transactional'),
@@ -39,6 +40,7 @@ describe('UserService', () => {
   let tokenRepository: jest.Mocked<ITokenRepository>;
   let inviteCodeRepository: jest.Mocked<IInviteCodeRepository>;
   let userQueryRepository: jest.Mocked<IUserQuery>;
+  let logger: jest.Mocked<WinstonLoggerService>;
   let mockTransactionHost: ReturnType<typeof mockDeep<TransactionHost<TransactionalAdapterPrisma>>>;
 
   const mockUser = new UserEntity(
@@ -98,6 +100,7 @@ describe('UserService', () => {
     tokenRepository = mockDeep<ITokenRepository>();
     inviteCodeRepository = mockDeep<IInviteCodeRepository>();
     userQueryRepository = mockDeep<IUserQuery>();
+    logger = mockDeep<WinstonLoggerService>();
     mockTransactionHost = mockDeep<TransactionHost<TransactionalAdapterPrisma>>();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -122,6 +125,10 @@ describe('UserService', () => {
         {
           provide: USER_QUERY_REPOSITORY,
           useValue: userQueryRepository,
+        },
+        {
+          provide: WinstonLoggerService,
+          useValue: logger,
         },
         {
           provide: TransactionHost,
@@ -183,57 +190,30 @@ describe('UserService', () => {
   });
 
   describe('updateProfile', () => {
-    const profileId = 1;
-
     it('유저 프로필을 성공적으로 수정한다.', async () => {
       // given
-      profileRepository.findById.mockResolvedValue(mockProfile);
+      profileRepository.findByUserId.mockResolvedValue(mockProfile);
       profileRepository.updateById.mockResolvedValue(mockProfile);
 
       // when
-      const result = await service.updateProfile(profileId, mockProfileCommand);
+      const result = await service.updateProfile(mockProfileCommand);
 
       // then
       expect(result).toBeDefined();
       expect(result).toEqual(mockProfile);
-      expect(profileRepository.findById).toHaveBeenCalledWith(profileId);
-      expect(profileRepository.updateById).toHaveBeenCalledWith(profileId, expect.any(ProfileEntity));
+      expect(profileRepository.findByUserId).toHaveBeenCalledWith(mockProfileCommand.userId);
+      expect(profileRepository.updateById).toHaveBeenCalledWith(mockProfile.id, expect.any(ProfileEntity));
     });
 
     it('프로필을 찾을 수 없으면 NotFoundException을 던진다.', async () => {
       // given
-      profileRepository.findById.mockResolvedValue(null);
+      profileRepository.findByUserId.mockResolvedValue(null);
 
       // when & then
-      await expect(service.updateProfile(profileId, mockProfileCommand)).rejects.toThrow(
+      await expect(service.updateProfile(mockProfileCommand)).rejects.toThrow(
         new NotFoundException(HttpUserErrorConstants.NOT_FOUND_PROFILE),
       );
-      expect(profileRepository.findById).toHaveBeenCalledWith(profileId);
-      expect(profileRepository.updateById).not.toHaveBeenCalled();
-    });
-
-    it('본인의 프로필이 아니면 ForbiddenException을 던진다.', async () => {
-      // given
-      const differentUserProfile = new ProfileEntity(
-        1,
-        999,
-        'OtherNickname',
-        'Other comment',
-        1,
-        1,
-        '#FFFFFF',
-        '#000000',
-        new Date(),
-        new Date(),
-        0,
-      );
-      profileRepository.findById.mockResolvedValue(differentUserProfile);
-
-      // when & then
-      await expect(service.updateProfile(profileId, mockProfileCommand)).rejects.toThrow(
-        new ForbiddenException(HttpUserErrorConstants.FORBIDDEN_USER_PROFILE),
-      );
-      expect(profileRepository.findById).toHaveBeenCalledWith(profileId);
+      expect(profileRepository.findByUserId).toHaveBeenCalledWith(mockProfileCommand.userId);
       expect(profileRepository.updateById).not.toHaveBeenCalled();
     });
   });

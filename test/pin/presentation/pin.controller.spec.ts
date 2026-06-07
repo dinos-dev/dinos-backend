@@ -8,7 +8,12 @@ describe('PinController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PinController],
-      providers: [PinService],
+      providers: [
+        {
+          provide: PinService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
     controller = module.get<PinController>(PinController);

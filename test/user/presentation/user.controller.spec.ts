@@ -129,7 +129,6 @@ describe('UserController', () => {
 
   describe('updateProfile', () => {
     const userId = 1;
-    const profileId = 1;
     const dto: UpdateUserProfileDto = {
       nickname: 'UpdatedNickname',
       comment: 'Updated comment',
@@ -138,7 +137,7 @@ describe('UserController', () => {
     it('유저 프로필을 성공적으로 수정한다.', async () => {
       // given
       const updatedProfile = new ProfileEntity(
-        profileId,
+        1,
         userId,
         'UpdatedNickname',
         'Updated comment',
@@ -153,13 +152,12 @@ describe('UserController', () => {
       userService.updateProfile.mockResolvedValue(updatedProfile);
 
       // when
-      const result = await controller.updateProfile(userId, profileId, dto);
+      const result = await controller.updateProfile(userId, dto);
 
       // then
       expect(result).toBeDefined();
       expect(result.getStatus()).toBe(200);
       expect(userService.updateProfile).toHaveBeenCalledWith(
-        profileId,
         expect.objectContaining({
           userId: userId,
           nickname: dto.nickname,
@@ -174,7 +172,7 @@ describe('UserController', () => {
       userService.updateProfile.mockRejectedValue(error);
 
       // when & then
-      await expect(controller.updateProfile(userId, profileId, dto)).rejects.toThrow(error);
+      await expect(controller.updateProfile(userId, dto)).rejects.toThrow(error);
     });
   });
 
