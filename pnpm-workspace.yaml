@@ -9,5 +9,7 @@ allowBuilds:
   "@scarf/scarf": false
   "@sentry-internal/node-cpu-profiler": true
   bcrypt: true
+  cpu-features: false
   prisma: true
   protobufjs: true
+  ssh2: false

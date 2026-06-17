@@ -5,6 +5,11 @@
   "author": "esyeol",
   "private": true,
   "license": "MIT",
+  "packageManager": "pnpm@11.7.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=11 <12"
+  },
   "scripts": {
     "build": "NODE_ENV=production nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -23,7 +28,7 @@
     "test:feed": "jest --testPathPattern=test/feed",
     "test:friendship": "jest --testPathPattern=test/friendship",
     "test:bookmark": "jest --testPathPattern=test/bookmark",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.726.1",
