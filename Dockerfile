@@ -1,7 +1,7 @@
 # -----------------------------------------------
 # Stage 1: Dependencies
 # -----------------------------------------------
-FROM node:22-alpine AS deps
+FROM node:24.16.0-alpine AS deps
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -20,7 +20,7 @@ RUN pnpm install --frozen-lockfile
 # -----------------------------------------------
 # Stage 2: Builder
 # -----------------------------------------------
-FROM node:22-alpine AS builder
+FROM node:24.16.0-alpine AS builder
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -46,7 +46,7 @@ RUN pnpm prune --prod --ignore-scripts
 # -----------------------------------------------
 # Stage 3: Runner (Production)
 # -----------------------------------------------
-FROM node:22-alpine AS runner
+FROM node:24.16.0-alpine AS runner
 
 WORKDIR /app
 
