@@ -14,12 +14,13 @@ import { CreateUserDto } from 'src/user/presentation/dto/request/create-user.dto
 export const SocialLoginDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '소셜 가입 및 로그인 인증 ',
-      description: `
-      - 소셜 플랫폼 유형별로 회원가입 및 로그인 검증 완료후 Access, Refresh Token을 발행한다.
-      - email은 unique 하며, 플랫폼 별로 email 값이 같을 경우 중복 가입을 방지한다.
-      - conflict exception이 발생할 경우, 프론트엔드에서 다른 플랫폼에 가입된 정보로 바로 로그인을 시켜주던가, 화면 or 모달에서 별도로 표기해주어야한다.
-      `,
+      summary: '소셜 가입 및 로그인 인증 ( Login/Signin )',
+      description: [
+        '- 소셜 플랫폼 유형별로 회원가입 및 로그인 검증 완료후 Access, Refresh Token을 발행한다.',
+        '- email은 unique 하며, 플랫폼 별로 email 값이 같을 경우 중복 가입을 방지한다.',
+        '- conflict exception이 발생할 경우, 프론트엔드에서 다른 플랫폼에 가입된 정보로 바로 로그인을 시켜주던가, 화면 or 모달에서 별도로 표기해주어야한다.',
+        '- 프론트 화면: [ 참고 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-12482&t=6ZVA1CPvQqHzL8mH-0)',
+      ].join('\n'),
     }),
     ApiBody({
       type: SocialLoginDto,
@@ -58,14 +59,15 @@ export const SocialLoginDocs = () => {
 export const LocalLoginDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '자체 가입 및 로그인 인증 ',
-      description: `
-      - 자체 플랫폼 (Email)로 회원가입 및 로그인 검증 완료후 Access, Refresh Token을 발행한다.
-      - email은 unique 하며, 플랫폼 별로 email 값이 같을 경우 중복 가입을 방지한다.
-      - conflict exception이 발생할 경우, 프론트엔드에서 다른 플랫폼에 가입된 정보로 바로 로그인을 시켜주던가, 화면 or 모달에서 별도로 표기해주어야한다.
-      - 비밀번호는 영문, 숫자, 특수문자 조합 8자 이상으로 정의 -> 정확하게 입력을 하지 않을 경우 400 Validation Error Response
-      - 이름은 Nullable -> 회원가입 & 로그인에 대응되어 처리하기 위함.
-      `,
+      summary: '자체 가입 및 로그인 인증 ( Login/Signin )',
+      description: [
+        '- 자체 플랫폼 (Email)로 회원가입 및 로그인 검증 완료후 Access, Refresh Token을 발행한다. ( 현재는 테스트 용도로 사용 프로덕션에서는 사용 x)',
+        '- email은 unique 하며, 플랫폼 별로 email 값이 같을 경우 중복 가입을 방지한다.',
+        '- conflict exception이 발생할 경우, 프론트엔드에서 다른 플랫폼에 가입된 정보로 바로 로그인을 시켜주던가, 화면 or 모달에서 별도로 표기해주어야한다.',
+        '- 비밀번호는 영문, 숫자, 특수문자 조합 8자 이상으로 정의 -> 정확하게 입력을 하지 않을 경우 400 Validation Error Response',
+        '- 이름은 Nullable -> 회원가입 & 로그인에 대응되어 처리하기 위함.',
+        '- 프론트 화면: [ 참고 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-12482&t=6ZVA1CPvQqHzL8mH-0)',
+      ].join('\n'),
     }),
     ApiBody({
       type: CreateUserDto,
@@ -97,9 +99,10 @@ export const RotateAccessTokenDocs = () => {
   return applyDecorators(
     ApiOperation({
       summary: '엑세스 토큰 재발급',
-      description: `
-      - 리프레시 토큰으로 엑세스 토큰을 재발급한다.
-      - 검증 절차(1. Bearer 여부,  2. Refresh 형태,  3. Token Signature,  4. RefToken 테이블에 정상적으로 등록된 토큰인지 여부) `,
+      description: [
+        '- 리프레시 토큰으로 엑세스 토큰을 재발급한다.',
+        '- 검증 절차(1. Bearer 여부,  2. Refresh 형태,  3. Token Signature,  4. RefToken 테이블에 정상적으로 등록된 토큰인지 여부)',
+      ].join('\n'),
     }),
     ApiHeader({
       name: 'authorization',
@@ -128,12 +131,13 @@ export const LogOutDocs = () => {
   return applyDecorators(
     ApiBearerAuth(),
     ApiOperation({
-      summary: '로그아웃',
-      description: `
-      - 헤더에 authorization key로 Bearer AccessToken을 요청 
-      - 응답 성공시 204 noContent를 반환한다 
-      - 웹은 고려하지 않고 있기 때문에, 자체 RN에서 AsyncStorage에서 토큰을 제거
-      `,
+      summary: '로그아웃 ( Mypage > Logout )',
+      description: [
+        '- 헤더에 authorization key로 Bearer AccessToken을 요청',
+        '- 응답 성공시 204 noContent를 반환한다',
+        '- 웹은 고려하지 않고 있기 때문에, 자체 RN에서 AsyncStorage에서 토큰을 제거',
+        '- 프론트 화면: [ 참고 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6941&t=6ZVA1CPvQqHzL8mH-0)',
+      ].join('\n'),
     }),
     ApiNoContentResponseTemplate({
       description: '로그아웃 성공',

@@ -18,13 +18,14 @@ import { SharedPinsResponseDto } from '../dto/response/shared-pins.response.dto'
 export const SendFriendRequestDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '친구 요청 전송',
-      description: `
-      - 친구 요청 전송 엔드포인트 
-      - receiverId는 친구 요청을 받는 사용자의 userId 값이고, 이전에 사용자가 거절했던 이력이 있더라도 Pending(대기) 상태로 upsert 된다.
-      - 본인이 본인에게 친구 요청을 보내면 400 에러를 반환한다.
-      - 상대방이 이미 나에게 PENDING 요청을 보낸 경우 409 에러를 반환한다.
-      `,
+      summary: '친구 요청 전송 ( Mypage > 친구 > 친구 추가 )',
+      description: [
+        '- 친구 요청 전송 엔드포인트',
+        '- receiverId는 친구 요청을 받는 사용자의 userId 값이고, 이전에 사용자가 거절했던 이력이 있더라도 Pending(대기) 상태로 upsert 된다.',
+        '- 본인이 본인에게 친구 요청을 보내면 400 에러를 반환한다.',
+        '- 상대방이 이미 나에게 PENDING 요청을 보낸 경우 409 에러를 반환한다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6911&t=zRtKYhIbdF799Dtl-0)',
+      ].join('\n'),
     }),
     ApiBody({
       type: SendFriendRequestDto,
@@ -58,11 +59,12 @@ export const SendFriendRequestDocs = () => {
 export const FindByReceiveIdDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '나에게 요청을 보낸 유저 정보 조회',
-      description: `
-      - 나에게 요청을 보낸 유저 정보를 조회한다.
-      - 요청을 보낸 사용자가 없을 경우 빈 배열을 리턴한다.
-      `,
+      summary: '나에게 요청을 보낸 유저 정보 조회 ( Mypage > 친구 > 친구 추가 > 요청 목록 )',
+      description: [
+        '- 나에게 요청을 보낸 유저 정보를 조회한다.',
+        '- 요청을 보낸 사용자가 없을 경우 빈 배열을 리턴한다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6922&t=zRtKYhIbdF799Dtl-0)',
+      ].join('\n'),
     }),
     ApiOkResponseTemplate({
       description: '나에게 요청을 보낸 유저 정보 조회 성공',
@@ -82,16 +84,17 @@ export const FindByReceiveIdDocs = () => {
 export const RespondToFriendRequestDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '친구 요청에 대한 사용자의 응답을 처리하는 엔드포인트',
-      description: `
-      - 상대방이 나에게 보낸 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하기 위한 엔드포인트
-      - 사용자의 Bearer Token의 user 정보를 기반으로 본인에게 온 요청인지 체크 후 403 에러를 반환
-      - 친구 요청 id값이 불일치 하면 404 에러를 반환 
-      - 사용자가 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하면 친구 관계 테이블을 생성 또는 미생성한다. 
-      - 거절 (REJECTED) 했을 경우, 기존 친구 요청 테이블에서 상태값이 REJECTED로 업데이트 되고, 나의 요청 목록에서 제거된다.
-      - 친구 요청을 수락(ACCEPTED)시, http response의 result로 "친구 요청을 수락하였습니다." 
-      - 친구 요청을 거절(REJECTED)시, http response의 result로 "친구 요청을 거절하였습니다."
-      `,
+      summary: '친구 요청에 대한 사용자의 응답을 처리하는 엔드포인트 ( Mypage > 친구 > 요청 목록 ( 확인 | 삭제 ))',
+      description: [
+        '- 상대방이 나에게 보낸 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하기 위한 엔드포인트',
+        '- 사용자의 Bearer Token의 user 정보를 기반으로 본인에게 온 요청인지 체크 후 403 에러를 반환',
+        '- 친구 요청 id값이 불일치 하면 404 에러를 반환',
+        '- 사용자가 친구 요청을 수락(ACCEPTED) 또는 거절(REJECTED) 하면 친구 관계 테이블을 생성 또는 미생성한다.',
+        '- 거절 (REJECTED) 했을 경우, 기존 친구 요청 테이블에서 상태값이 REJECTED로 업데이트 되고, 나의 요청 목록에서 제거된다.',
+        '- 친구 요청을 수락(ACCEPTED)시, http response의 result로 "친구 요청을 수락하였습니다."',
+        '- 친구 요청을 거절(REJECTED)시, http response의 result로 "친구 요청을 거절하였습니다."',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6922&t=zRtKYhIbdF799Dtl-0)',
+      ].join('\n'),
     }),
     ApiParam({
       description: '친구 요청 id ( 내가 받은 친구요청 리스트를 조회 했을 때의 id ) ',
@@ -128,12 +131,13 @@ export const RespondToFriendRequestDocs = () => {
 export const FindAllFriendshipDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '나의 친구 리스트 조회',
-      description: `
-      - 나의 친구 리스트를 조회한다.
-      - 친구 리스트는 친구의 사용자(userId) ID, 이메일, 이름, 프로필 정보, 활동 수, 생성 시간을 포함한다.
-      - query 파라미터로 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.
-      `,
+      summary: '나의 친구 리스트 조회 ( Mypage > 친구 ( 목록 ) )',
+      description: [
+        '- 나의 친구 리스트를 조회한다.',
+        '- 친구 리스트는 친구의 사용자(userId) ID, 이메일, 이름, 프로필 정보, 활동 수, 생성 시간을 포함한다.',
+        '- query 파라미터로 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6343&t=XfzYONie16XC3WuL-0)',
+      ].join('\n'),
     }),
     ApiQuery({
       name: 'page',
@@ -164,13 +168,14 @@ export const FindAllFriendshipDocs = () => {
 export const FindSharedPinsDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '나와 같은 음식점을 pin한 친구 조회 (shared-pins)',
-      description: `
-      - 내가 pin한 음식점 중 나와 친구인 사용자도 동일하게 pin한 음식점과 해당 친구 프로필 목록을 반환한다.
-      - 음식점을 기준으로 그루핑되어 반환된다.
-      - 공유된 pin이 없으면 빈 배열을 반환한다.
-      - ! 내가 pin한 리소스가 아무리 많더라도 친구와 겹치는 리소스는 한정적일 수 있기에 현재는 페이징 및 리소스 튜닝은 하지 않고 반환된다. ( 추후 리소스 튜닝은 필요 )
-      `,
+      summary: '나와 같은 음식점을 pin한 친구 조회 ( Home > 나와 같은 곳 저장한 친구 목록 ) ',
+      description: [
+        '- 내가 pin한 음식점 중 나와 친구인 사용자도 동일하게 pin한 음식점과 해당 친구 프로필 목록을 반환한다.',
+        '- 음식점을 기준으로 그루핑되어 반환된다.',
+        '- 공유된 pin이 없으면 빈 배열을 반환한다.',
+        '- ! 내가 pin한 리소스가 아무리 많더라도 친구와 겹치는 리소스는 한정적일 수 있기에 현재는 페이징 및 리소스 튜닝은 하지 않고 반환된다. ( 추후 리소스 튜닝은 필요 )',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-190&t=XfzYONie16XC3WuL-0)',
+      ].join('\n'),
     }),
     ApiOkResponseTemplate({
       description: 'shared-pins 조회 성공',
@@ -190,13 +195,14 @@ export const FindSharedPinsDocs = () => {
 export const RemoveFriendshipDocs = () => {
   return applyDecorators(
     ApiOperation({
-      summary: '친구 제거',
-      description: `
-      - 친구를 제거한다.
-      - 친구 관계를 제거할 권한이 없으면 403 에러를 반환한다(Bearer Token의 user 정보를 기반으로 본인의 친구 관계가 아닌 경우)
-      - 친구 관계를 찾을 수 없으면 404 에러를 반환한다. 
-      - 친구를 제거하면 친구 요청, 활동 내역, 친구 관계 정보가 모두 일괄로 hard delete 된다.
-      `,
+      summary: '친구 제거 ( Mypage > 친구 목록 제거 )',
+      description: [
+        '- 친구를 제거한다.',
+        '- 친구 관계를 제거할 권한이 없으면 403 에러를 반환한다(Bearer Token의 user 정보를 기반으로 본인의 친구 관계가 아닌 경우)',
+        '- 친구 관계를 찾을 수 없으면 404 에러를 반환한다.',
+        '- 친구를 제거하면 친구 요청, 활동 내역, 친구 관계 정보가 모두 일괄로 hard delete 된다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-6397&t=zRtKYhIbdF799Dtl-0)',
+      ].join('\n'),
     }),
     ApiParam({
       description: '친구 관계 id',

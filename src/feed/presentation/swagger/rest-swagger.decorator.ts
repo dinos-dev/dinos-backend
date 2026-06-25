@@ -14,11 +14,11 @@ export const FindAllFeedDocs = () => {
   return applyDecorators(
     ApiOperation({
       summary: `전체 홈 피드의 Documents 리스트 조회`,
-      description: `
-          - 전체 홈 피드에 대한 MongoDB의 Documents 리스트를 조회한다.
-          - 실제 Application 개발이 아닌 추후, Admin 환경에서 적용된다.
-          - Public API로 설정되어 있어, 인증 없이 접근 가능하다.
-          `,
+      description: [
+        '- 전체 홈 피드에 대한 MongoDB의 Documents 리스트를 조회한다.',
+        '- 실제 Application 개발이 아닌 추후, Admin 환경에서 적용된다.',
+        '- Public API로 설정되어 있어, 인증 없이 접근 가능하다.',
+      ].join('\n'),
     }),
     ApiOkResponseTemplate({
       description: '전체 홈 피드 조회 성공',
@@ -33,10 +33,10 @@ export const FindByHomeFeedDocs = () => {
     ApiBearerAuth(),
     ApiOperation({
       summary: `홈 피드 조회`,
-      description: `
-          - 크롤링된 InputKeyWord 기반 AI로 생성된 홈 피드를 조회한다.
-          - 실제 배포되는 Application Home Feeds 메인에서 조회되는 리스트다.
-          `,
+      description: [
+        '- 크롤링된 InputKeyWord 기반 AI로 생성된 홈 피드를 조회한다.',
+        '- 실제 배포되는 Application Home Feeds 메인에서 조회되는 리스트다.',
+      ].join('\n'),
     }),
     ApiOkResponseTemplate({
       description: '홈 피드 조회 성공',
@@ -57,10 +57,10 @@ export const FindByIdFeedDocs = () => {
     ApiBearerAuth(),
     ApiOperation({
       summary: `ID 기반 피드 상세 조회`,
-      description: `
-          - ID를 기반으로 피드의 상세 정보를 조회한다.
-          - 만약, 해당 ID로 피드를 찾을 수 없는 경우, NotFoundException이 발생한다.
-          `,
+      description: [
+        '- ID를 기반으로 피드의 상세 정보를 조회한다.',
+        '- 만약, 해당 ID로 피드를 찾을 수 없는 경우, NotFoundException이 발생한다.',
+      ].join('\n'),
     }),
     ApiParam({
       name: 'id',

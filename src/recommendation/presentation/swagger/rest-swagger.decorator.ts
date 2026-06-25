@@ -10,15 +10,16 @@ export const GetMyRecommendationsDocs = () => {
   return applyDecorators(
     ApiOperation({
       summary: '개별 유저 추천 식당 조회',
-      description: `
-      - ML 배치가 사전 계산한 사용자 맞춤 추천 식당 목록을 반환한다.
-      - 기본 정렬: score 내림차순, 최대 10개 반환.
-      - category 필터 적용 시 해당 카테고리 식당만 반환한다.
-      - distance 필터 적용 시 latitude, longitude 는 필수이다. (lat, lon 값을 보내지 않으면 400에러 반환 )
-        - nearest: 반경 제한 없이 가까운순 정렬
-        - 100 / 500 / 1000 / 3000 / 5000: 해당 반경(m) 이내 필터 + 가까운순 정렬
-      - 추천 데이터가 없는 경우 (신규 유저 등) 빈 배열을 반환한다.
-      `,
+      description: [
+        '- ML 배치가 사전 계산한 사용자 맞춤 추천 식당 목록을 반환한다.',
+        '- 기본 정렬: score 내림차순, 최대 10개 반환.',
+        '- category 필터 적용 시 해당 카테고리 식당만 반환한다.',
+        '- distance 필터 적용 시 latitude, longitude 는 필수이다. (lat, lon 값을 보내지 않으면 400에러 반환 )',
+        '  - nearest: 반경 제한 없이 가까운순 정렬',
+        '  - 100 / 500 / 1000 / 3000 / 5000: 해당 반경(m) 이내 필터 + 가까운순 정렬',
+        '- 추천 데이터가 없는 경우 (신규 유저 등) 빈 배열을 반환한다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-%EA%B0%9C%EB%B0%9C?node-id=201-273&t=zRtKYhIbdF799Dtl-0)',
+      ].join('\n'),
     }),
     ApiOkResponseTemplate({
       description: '개인화 추천 식당 조회 성공',
