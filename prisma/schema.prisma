@@ -1,10 +1,12 @@
 datasource db {
-  provider = "postgresql"
-  url      = env("DB_URL")
+  provider   = "postgresql"
+  url        = env("DB_URL")
+  extensions = [pg_trgm]
 }
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 // 유저 정보
@@ -251,6 +253,8 @@ model Restaurant {
 
   @@index([latitude, longitude], map: "idx_latitude_longitude")
   @@index([category], map: "idx_category")
+  /// 한글 식당명 부분일치 검색용 trigram GIN 인덱스
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "idx_restaurants_name_trgm")
 
   @@map("restaurants")
 }
