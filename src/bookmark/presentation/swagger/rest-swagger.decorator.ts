@@ -14,10 +14,12 @@ export const ToggleBookmarkDocs = () => {
   return applyDecorators(
     ApiOperation({
       summary: '북마크 생성 또는 제거 ( toggle )',
-      description: `북마크를 생성 또는 제거 ( toggle ) 한다.
-      - 북마크가 존재할 경우 제거하고, 존재하지 않을 경우 생성한다.
-      - 북마크 조회 시, 북마크 존재 여부를 확인하고, 존재할 경우 제거하고, 존재하지 않을 경우 생성한다.
-      `,
+      description: [
+        '북마크를 생성 또는 제거 ( toggle ) 한다.',
+        '',
+        '- 북마크가 존재할 경우 제거하고, 존재하지 않을 경우 생성한다.',
+        '- 북마크 조회 시, 북마크 존재 여부를 확인하고, 존재할 경우 제거하고, 존재하지 않을 경우 생성한다.',
+      ].join('\n'),
     }),
     ApiBody({
       type: ToggleBookmarkDto,
@@ -44,11 +46,13 @@ export const FindFilterBookmarkDocs = () => {
   return applyDecorators(
     ApiOperation({
       summary: '내가 북마크한 피드 및 음식점 조회 ( 페이징 처리 )',
-      description: `내가 북마크한 피드 및 음식점을 조회한다.
-      - 페이징 처리를 위해 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.
-      - itemType을 통해 피드 및 음식점을 구분한다.
-      - 내가 북마크한 데이터가 없을경우 response의 data값이 빈 배열로 리스폰스 된다.
-      `,
+      description: [
+        '내가 북마크한 피드 및 음식점을 조회한다.',
+        '',
+        '- 페이징 처리를 위해 page와 limit를 받을 수 있고, 기본값은 page=1, limit=20이다.',
+        '- itemType을 통해 피드 및 음식점을 구분한다.',
+        '- 내가 북마크한 데이터가 없을경우 response의 data값이 빈 배열로 리스폰스 된다.',
+      ].join('\n'),
     }),
     ApiQuery({
       name: 'page',

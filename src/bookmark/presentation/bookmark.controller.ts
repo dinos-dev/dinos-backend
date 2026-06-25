@@ -12,7 +12,7 @@ import { ItemType } from '../domain/const/item-type.enum';
 import { PaginatedBookmarkResponseDto } from './dto/response/response.bookmark.dto';
 import { PaginationQueryDto } from 'src/common/dto/pagination.dto';
 
-@ApiTags('Bookmarks - 북마크')
+@ApiTags('Bookmarks - 북마크 ( Deprecated > 미사용 api )')
 @ApiBearerAuth()
 @ApiCommonErrorResponseTemplate()
 @Controller('bookmarks')

@@ -9,7 +9,7 @@ import { FindAllFeedDocs, FindByHomeFeedDocs, FindByIdFeedDocs } from './swagger
 import { FeedResponseDto } from './dto/response/feed.response.dto';
 import { HttpFeedErrorConstants } from '../application/helper/http-error-object';
 
-@ApiTags('Feed - 피드')
+@ApiTags('Feed - 피드 ( Deprecated > 미사용 api )')
 @ApiCommonErrorResponseTemplate()
 @Controller('feeds')
 export class FeedController {
