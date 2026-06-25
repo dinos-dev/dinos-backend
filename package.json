@@ -28,6 +28,7 @@
     "test:feed": "jest --testPathPattern=test/feed",
     "test:friendship": "jest --testPathPattern=test/friendship",
     "test:bookmark": "jest --testPathPattern=test/bookmark",
+    "test:restaurant": "jest --testPathPattern=test/restaurant",
     "prepare": "husky || true"
   },
   "dependencies": {
