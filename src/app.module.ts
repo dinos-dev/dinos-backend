@@ -14,12 +14,16 @@ import { envVariableKeys } from './common/config/env-keys.const';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/presentation/guard/jwt-auth.guard';
-import { FeedModule } from './feed/feed.module';
-import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
+// NOTE: 하이브리드 feed(MongoDB)는 현 단계 미사용으로 IoC 미주입(보류).
+//       코드/스키마는 보존되어 있으며, 재사용 시 아래 두 모듈을 imports에 다시 등록하면 됨.
+// import { FeedModule } from './feed/feed.module';
+// import { MongoDatabaseModule } from './infrastructure/database/mongoose/mongoose.module';
 import { ClsModule } from './infrastructure/cls/cls.module';
 import { FriendshipModule } from './friendship/friendship.module';
 import { EventModule } from './infrastructure/event/event.module';
-import { BookmarkModule } from './bookmark/bookmark.module';
+// NOTE: bookmark 도메인 Deprecated - 현 단계 미사용으로 IoC 미주입(보류).
+//       코드는 보존되어 있으며, 재사용 시 아래 모듈을 imports에 다시 등록하면 됨.
+// import { BookmarkModule } from './bookmark/bookmark.module';
 import { HealthModule } from './health/health.module';
 import { RestaurantModule } from './restaurant/restaurant.module';
 import { ReviewModule } from './review/review.module';
@@ -36,7 +40,7 @@ import { RecommendationModule } from './recommendation/recommendation.module';
         abortEarly: false,
       },
     }),
-    MongoDatabaseModule,
+    // MongoDatabaseModule, // 미사용 feed 도메인 전용 커넥션 - 보류
     SentryModule.forRoot(),
     TraceModule,
     UserModule,
@@ -44,11 +48,11 @@ import { RecommendationModule } from './recommendation/recommendation.module';
     CommonModule,
     SlackModule,
     R2Module,
-    FeedModule,
+    // FeedModule, // 하이브리드 feed 미사용 - 보류
     FriendshipModule,
     ClsModule,
     EventModule,
-    BookmarkModule,
+    // BookmarkModule, // Deprecated 미사용 - 보류
     HealthModule,
     RestaurantModule,
     ReviewModule,
