@@ -186,6 +186,7 @@ model FriendshipActivity {
 }
 
 //? bookmarks ( feeds 정보 marking용 )
+/// DEPRECATED: 하이브리드 feed(MongoDB) 보류에 따라 미사용. 재사용 전까지 IoC 미주입 상태이며, 테이블은 롤백 여지를 위해 보존한다.
 model Bookmark {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
