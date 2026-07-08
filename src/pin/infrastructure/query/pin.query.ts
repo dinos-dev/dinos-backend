@@ -62,6 +62,11 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
         r.longitude,
         r.address,
         r.category,
+        r.primary_image_url,
+        -- 상세보기용: 내가 이 가게에 쓴 최신 리뷰 1건
+        rv.last_review_content,
+        -- 이 가게를 나와 동일하게 핀한 친구 수
+        COALESCE(fpc.friend_pin_count, 0) AS friend_pin_count,
         -- 거리 계산 (Haversine)
         (
           6371 * acos(
@@ -75,6 +80,26 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
 
       FROM pins p
       INNER JOIN restaurants r ON p.restaurant_id = r.id
+      -- 리뷰는 가게당 다중이므로 LATERAL로 접어 핀 1행당 최신 리뷰 1건만 취함
+      LEFT JOIN LATERAL (
+        SELECT rv.content AS last_review_content
+        FROM reviews rv
+        WHERE rv.user_id = p.user_id
+          AND rv.restaurant_id = r.id
+          AND rv.deleted_at IS NULL
+        ORDER BY rv.created_at DESC, rv.id DESC
+        LIMIT 1
+      ) rv ON TRUE
+      -- 나와 친구인 사용자 중 이 가게를 핀한 친구 수 (친구관계는 양방향 확인, 본인 제외)
+      LEFT JOIN LATERAL (
+        SELECT count(DISTINCT fp.user_id)::int AS friend_pin_count
+        FROM pins fp
+        INNER JOIN friendships f
+          ON (f.requester_id = ${userId} AND f.addressee_id = fp.user_id)
+          OR (f.addressee_id = ${userId} AND f.requester_id = fp.user_id)
+        WHERE fp.restaurant_id = r.id
+          AND fp.user_id <> ${userId}
+      ) fpc ON TRUE
 
       WHERE
         p.user_id = ${userId}
@@ -100,6 +125,9 @@ export class PinQuery extends PrismaRepository<Pin, PinEntity> implements IPinQu
           Number(row.distance_km),
           // row.pin_type as PinType,
           row.pinned_at,
+          row.primary_image_url ?? null,
+          row.last_review_content ?? null,
+          Number(row.friend_pin_count ?? 0),
         ),
     );
   }

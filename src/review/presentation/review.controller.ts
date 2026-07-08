@@ -15,6 +15,7 @@ import {
   DeleteReviewDocs,
   GetBulkPresignedUrlDocs,
   GetMyReviewsDocs,
+  GetNearbyReviewsDocs,
   GetPresignedUrlDocs,
   GetReviewDetailDocs,
   GetReviewFormQuestionsDocs,
@@ -44,6 +45,8 @@ import { MyReviewResponseDto } from './dto/response/my-reviews.response.dto';
 import { UpdateReviewDto } from './dto/request/update-review.dto';
 import { ReviewDetailResponseDto } from './dto/response/review-detail.response.dto';
 import { UserId } from 'src/common/decorator/user-id.decorator';
+import { NearbyReviewsQueryDto } from './dto/request/nearby-reviews-query.dto';
+import { NearbyReviewResponseDto } from './dto/response/nearby-reviews.response.dto';
 
 @ApiTags('Reviews - 리뷰')
 @ApiBearerAuth()
@@ -121,6 +124,18 @@ export class ReviewController {
     @Query() query: CursorPaginationQueryDto,
   ): Promise<HttpResponse<CursorPaginatedResponseDto<MyReviewResponseDto>>> {
     const result = await this.reviewService.getMyReviews(userId, query.cursor ?? null);
+    return HttpResponse.ok(result);
+  }
+
+  // ? 내가 리뷰한 가게 지도 조회 (:reviewId)
+  @GetNearbyReviewsDocs()
+  @Get('nearby')
+  async getNearbyReviewed(
+    @UserId() userId: number,
+    @Query() query: NearbyReviewsQueryDto,
+  ): Promise<HttpResponse<NearbyReviewResponseDto[]>> {
+    const reviewed = await this.reviewService.getNearbyReviewed(userId, query);
+    const result = reviewed.map((item) => NearbyReviewResponseDto.fromDto(item));
     return HttpResponse.ok(result);
   }
 

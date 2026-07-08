@@ -20,6 +20,7 @@ import { UpdateReviewDto } from '../dto/request/update-review.dto';
 import { CreateReviewResponseDto } from '../dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from '../dto/response/my-reviews.response.dto';
 import { ReviewDetailResponseDto } from '../dto/response/review-detail.response.dto';
+import { NearbyReviewResponseDto } from '../dto/response/nearby-reviews.response.dto';
 import { HttpReviewErrorConstants } from 'src/review/application/helper/http-error-object';
 
 //? 리뷰 작성문서
@@ -75,6 +76,40 @@ export const GetMyReviewsDocs = () => {
       type: MyReviewResponseDto,
     }),
     ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.UNAUTHORIZED,
+        errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+    ]),
+  );
+};
+
+//? 내가 리뷰한 가게 지도(주변) 조회 문서
+export const GetNearbyReviewsDocs = () => {
+  return applyDecorators(
+    ApiOperation({
+      summary: '주변 내가 리뷰한 가게 조회 ( MAP > 리뷰 )',
+      description: [
+        '- 사용자 디바이스의 위치 정보(위도&경도)를 기준으로 본인이 리뷰를 작성한 가게 리스트를 거리순으로 조회한다.',
+        '- 요청 시 min & max 위도/경도(화면 비율의 최소/최대 좌표, Naver Map 기준)를 함께 보내야 한다.',
+        '- 같은 가게에 리뷰가 여러 개면 가게 단위로 묶어 최신 리뷰 1건(myReviewContent)으로 반환한다.',
+        '- 내가 이 가게를 핀했는지 여부(isPinned)와 핀 생성일(pinnedAt)을 교차 정보로 함께 반환한다.',
+        '- 이 가게를 나와 동일하게 핀한 친구 수(friendPinCount)를 함께 반환한다.',
+        '- limit 값으로 조회 개수를 제한한다. ( 기본값: 50, 최대: 1000 )',
+        '- 리뷰한 가게가 없으면 빈 배열을 반환한다.',
+        '- 프론트 화면: [화면 (Figma)](https://www.figma.com/design/AtU0tCeeJ6GKP0M7X3fFO0/%EB%8B%A4%EC%9D%B4%EB%85%B8%EC%8A%A4-New?node-id=201-3134&t=vk8He0loDN0aRFMV-0)',
+      ].join('\n'),
+    }),
+    ApiOkResponseTemplate({
+      description: '주변 내가 리뷰한 가게 조회 성공',
+      type: NearbyReviewResponseDto,
+      isArray: true,
+    }),
+    ApiErrorResponseTemplate([
+      {
+        status: StatusCodes.BAD_REQUEST,
+        errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,

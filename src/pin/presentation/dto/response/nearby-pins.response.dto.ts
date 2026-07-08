@@ -33,6 +33,25 @@ export class NearbyPinResponseDto {
   @ApiProperty({ description: '핀 생성일', example: '2026-01-28T12:00:00Z', type: Date })
   pinnedAt: Date;
 
+  @ApiProperty({
+    description: '가게 대표 썸네일 이미지 URL (없으면 null)',
+    example: 'https://cdn.dinos.com/restaurants/10/primary.jpg',
+    nullable: true,
+    type: String,
+  })
+  primaryImageUrl: string | null;
+
+  @ApiProperty({
+    description: '내가 이 가게에 작성한 최신 리뷰 내용 (없으면 null)',
+    example: '분위기 좋고 재방문 의사 있음',
+    nullable: true,
+    type: String,
+  })
+  myReviewContent: string | null;
+
+  @ApiProperty({ description: '이 가게를 나와 동일하게 핀한 친구 수', example: 3, type: Number })
+  friendPinCount: number;
+
   static fromDto(dto: PinWithRestaurantDto): NearbyPinResponseDto {
     const response = new NearbyPinResponseDto();
     response.pinId = dto.pinId;
@@ -45,6 +64,9 @@ export class NearbyPinResponseDto {
     response.distanceKm = dto.distanceKm;
     // response.pinType = dto.pinType;
     response.pinnedAt = dto.pinnedAt;
+    response.primaryImageUrl = dto.primaryImageUrl;
+    response.myReviewContent = dto.myReviewContent;
+    response.friendPinCount = dto.friendPinCount;
     return response;
   }
 }
