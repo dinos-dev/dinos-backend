@@ -41,6 +41,9 @@ import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
 import { CreateReviewResponseDto } from '../presentation/dto/response/create-review.response.dto';
 import { MyReviewResponseDto } from '../presentation/dto/response/my-reviews.response.dto';
 import { ReviewDetailResponseDto } from '../presentation/dto/response/review-detail.response.dto';
+import { NearbyReviewsQueryDto } from '../presentation/dto/request/nearby-reviews-query.dto';
+import { NearbyReviewOptionsDto } from './dto/nearby-review-options.dto';
+import { ReviewedRestaurantNearbyDto } from './dto/reviewed-restaurant-nearby.dto';
 
 @Injectable()
 export class ReviewService {
@@ -57,6 +60,26 @@ export class ReviewService {
     private readonly restaurantRepository: IRestaurantRepository,
     private readonly logger: WinstonLoggerService,
   ) {}
+
+  /**
+   * 내가 리뷰한 가게를 지도(bbox) 범위 내에서 거리순으로 조회
+   * @param userId 현재 사용자 ID
+   * @param query bbox + 사용자 좌표 + limit
+   * @returns 거리순 정렬된 (가게 + 내 리뷰 요약 + 핀 여부)
+   */
+  async getNearbyReviewed(userId: number, query: NearbyReviewsQueryDto): Promise<ReviewedRestaurantNearbyDto[]> {
+    const options = NearbyReviewOptionsDto.create({
+      userLat: query.userLat,
+      userLng: query.userLng,
+      minLat: query.minLat,
+      maxLat: query.maxLat,
+      minLng: query.minLng,
+      maxLng: query.maxLng,
+      limit: query.limit,
+    });
+
+    return this.reviewQuery.findNearbyReviewedRestaurants(userId, options);
+  }
 
   /**
    * 리뷰 폼 질문 조회 - step별 랜덤 1개 반환

@@ -1,7 +1,7 @@
 import { TransactionHost } from '@nestjs-cls/transactional';
 import { TransactionalAdapterPrisma } from '@nestjs-cls/transactional-adapter-prisma';
 import { Injectable } from '@nestjs/common';
-import { Review } from '@prisma/client';
+import { Prisma, Review } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { IReviewQuery } from 'src/review/application/interface/review-query.interface';
 import { ReviewEntity } from 'src/review/domain/entities/review.entity';
@@ -18,6 +18,8 @@ import {
 import { ReviewStep } from 'src/review/domain/const/review.enum';
 import { ReviewQuestionWithOptionsEntity } from 'src/review/domain/entities/review-question-with-options.entity';
 import { ReviewQuestionMapper } from '../mapper/review-question.mapper';
+import { NearbyReviewOptionsDto } from 'src/review/application/dto/nearby-review-options.dto';
+import { ReviewedRestaurantNearbyDto } from 'src/review/application/dto/reviewed-restaurant-nearby.dto';
 
 const MY_REVIEWS_DEFAULT_LIMIT = 30;
 
@@ -250,5 +252,100 @@ export class ReviewQuery extends PrismaRepository<Review, ReviewEntity> implemen
         isActive: true,
       },
     });
+  }
+
+  /**
+   * 내가 리뷰를 작성한 가게를 지도(bbox) 범위 내에서 거리순으로 조회
+   * - 가게 단위로 dedupe (같은 가게 다중 리뷰 → 최신 1건 내용 + count로 접음)
+   * - 내가 핀한 가게면 isPinned/pinnedAt 교차 정보를 함께 반환
+   * @param userId 현재 사용자 ID
+   * @param options bbox + 사용자 좌표 + limit
+   * @returns 거리순 정렬된 (가게 + 내 리뷰 요약 + 핀 여부)
+   */
+  async findNearbyReviewedRestaurants(
+    userId: number,
+    options: NearbyReviewOptionsDto,
+  ): Promise<ReviewedRestaurantNearbyDto[]> {
+    const { userLat, userLng, minLat, maxLat, minLng, maxLng, limit } = options;
+
+    const query = Prisma.sql`
+      SELECT
+        r.id AS restaurant_id,
+        r.name AS restaurant_name,
+        r.latitude,
+        r.longitude,
+        r.address,
+        r.category,
+        r.primary_image_url,
+        myr.last_review_content,
+        myr.last_reviewed_at,
+        p.id AS pin_id,
+        p.created_at AS pinned_at,
+        -- 이 가게를 나와 동일하게 핀한 친구 수
+        COALESCE(fpc.friend_pin_count, 0) AS friend_pin_count,
+        -- 거리 계산 (Haversine)
+        (
+          6371 * acos(
+            cos(radians(${userLat}))
+            * cos(radians(r.latitude))
+            * cos(radians(r.longitude) - radians(${userLng}))
+            + sin(radians(${userLat}))
+            * sin(radians(r.latitude))
+          )
+        ) AS distance_km
+
+      -- 내가 쓴 리뷰를 가게 단위로 집계 (최신 1건 내용 + 개수 + 최신 작성일)
+      FROM (
+        SELECT
+          rv.restaurant_id,
+          max(rv.created_at) AS last_reviewed_at,
+          (array_agg(rv.content ORDER BY rv.created_at DESC, rv.id DESC))[1] AS last_review_content
+        FROM reviews rv
+        WHERE rv.user_id = ${userId}
+          AND rv.deleted_at IS NULL
+        GROUP BY rv.restaurant_id
+      ) myr
+      INNER JOIN restaurants r ON myr.restaurant_id = r.id
+      -- 핀은 (user, restaurant) 유니크라 0..1건 → 단순 LEFT JOIN
+      LEFT JOIN pins p ON p.user_id = ${userId} AND p.restaurant_id = r.id
+      -- 나와 친구인 사용자 중 이 가게를 핀한 친구 수 (친구관계는 양방향 확인, 본인 제외)
+      LEFT JOIN LATERAL (
+        SELECT count(DISTINCT fp.user_id)::int AS friend_pin_count
+        FROM pins fp
+        INNER JOIN friendships f
+          ON (f.requester_id = ${userId} AND f.addressee_id = fp.user_id)
+          OR (f.addressee_id = ${userId} AND f.requester_id = fp.user_id)
+        WHERE fp.restaurant_id = r.id
+          AND fp.user_id <> ${userId}
+      ) fpc ON TRUE
+
+      WHERE
+        r.latitude BETWEEN ${minLat} AND ${maxLat}
+        AND r.longitude BETWEEN ${minLng} AND ${maxLng}
+
+      ORDER BY distance_km ASC
+      LIMIT ${limit};
+    `;
+
+    const result: any[] = await this.prisma.$queryRaw(query);
+
+    return result.map(
+      (row) =>
+        new ReviewedRestaurantNearbyDto(
+          Number(row.restaurant_id),
+          row.restaurant_name,
+          Number(row.latitude),
+          Number(row.longitude),
+          row.address,
+          row.category,
+          row.primary_image_url ?? null,
+          Number(row.distance_km),
+          row.last_review_content ?? null,
+          row.last_reviewed_at,
+          row.pin_id != null,
+          row.pinned_at ?? null,
+          Number(row.friend_pin_count ?? 0),
+        ),
+    );
   }
 }
