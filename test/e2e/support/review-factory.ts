@@ -7,13 +7,7 @@ export type ReviewSeedQuestion = {
 };
 
 type CreateReviewBody = {
-  restaurant: {
-    name: string;
-    address: string;
-    latitude: number;
-    longitude: number;
-    category: string;
-  };
+  restaurantId: number;
   content: string;
   wantRecommendation: boolean;
   answers: Array<{
@@ -63,15 +57,13 @@ export async function seedReviewQuestions(prisma: PrismaService): Promise<Review
   return questions;
 }
 
-export function buildCreateReviewBody(questions: ReviewSeedQuestion[], content = '리뷰 e2e 본문'): CreateReviewBody {
+export function buildCreateReviewBody(
+  questions: ReviewSeedQuestion[],
+  restaurantId: number,
+  content = '리뷰 e2e 본문',
+): CreateReviewBody {
   return {
-    restaurant: {
-      name: '리뷰 e2e 식당',
-      address: '서울특별시 테스트구 리뷰로 1',
-      latitude: 37.5,
-      longitude: 127.0,
-      category: '한식',
-    },
+    restaurantId,
     content,
     wantRecommendation: true,
     answers: questions.map((question) => ({

@@ -1,6 +1,4 @@
-import { RestaurantEntity } from '../entities/restaurant.entity';
-
 export interface IRestaurantRepository {
-  upsertRestaurantByNameAndAddress(entity: RestaurantEntity): Promise<RestaurantEntity>;
+  existsById(id: number): Promise<boolean>;
   updatePrimaryImageIfNotSet(restaurantId: number, imageUrl: string, userId: number): Promise<void>;
 }

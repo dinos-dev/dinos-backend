@@ -5,7 +5,6 @@ import { Restaurant } from '@prisma/client';
 import { PrismaRepository } from 'src/infrastructure/database/prisma/prisma.repository.impl';
 import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
 import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaurant.repository.interface';
-import { RestaurantMapper } from '../mapper/restaurant.mapper';
 
 @Injectable()
 export class RestaurantRepository
@@ -17,33 +16,16 @@ export class RestaurantRepository
   }
 
   /**
-   * 네이버 refPlaceId 기반 restaurant 정보 동기화
-   * @param entity RestaurantEntity
-   * @returns RestaurantEntity
+   * 가게 존재 여부 확인 (restaurantId 참조 검증용)
+   * @param id restaurantId
+   * @returns 존재하면 true
    */
-  async upsertRestaurantByNameAndAddress(entity: RestaurantEntity): Promise<RestaurantEntity> {
-    const restaurant = await this.model.upsert({
-      where: { unique_name_address: { name: entity.name, address: entity.address } },
-      update: {
-        name: entity.name,
-        address: entity.address,
-        latitude: entity.latitude,
-        longitude: entity.longitude,
-        lastSyncedAt: entity.lastSyncedAt,
-        isActive: entity.isActive,
-        category: entity.category ?? null,
-      },
-      create: {
-        name: entity.name,
-        address: entity.address,
-        latitude: entity.latitude,
-        longitude: entity.longitude,
-        lastSyncedAt: entity.lastSyncedAt,
-        isActive: entity.isActive,
-        category: entity.category ?? null,
-      },
+  async existsById(id: number): Promise<boolean> {
+    const restaurant = await this.model.findUnique({
+      where: { id },
+      select: { id: true },
     });
-    return RestaurantMapper.toDomain(restaurant);
+    return restaurant !== null;
   }
 
   /**

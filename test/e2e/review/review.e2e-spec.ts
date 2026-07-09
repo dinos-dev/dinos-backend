@@ -1,10 +1,12 @@
 import { createE2eTestApp, E2eTestApp, registerLocalUser, resetRelationalDb } from '../support/e2e-test-app';
 import { buildCreateReviewBody, ReviewSeedQuestion, seedReviewQuestions } from '../support/review-factory';
+import { E2E_RESTAURANT_NAME, seedRestaurant } from '../support/restaurant-factory';
 import { request } from '../support/supertest';
 
 describe('Review endpoints (e2e)', () => {
   let testApp: E2eTestApp;
   let questions: ReviewSeedQuestion[];
+  let restaurantId: number;
 
   beforeAll(async () => {
     testApp = await createE2eTestApp();
@@ -17,6 +19,7 @@ describe('Review endpoints (e2e)', () => {
   beforeEach(async () => {
     await resetRelationalDb(testApp.prisma);
     questions = await seedReviewQuestions(testApp.prisma);
+    ({ id: restaurantId } = await seedRestaurant(testApp.prisma));
   });
 
   describe('GET /reviews/questions/form', () => {
@@ -43,7 +46,7 @@ describe('Review endpoints (e2e)', () => {
   describe('POST /reviews', () => {
     it('creates a review with answers and images', async () => {
       const { accessToken } = await registerLocalUser(testApp.app, 'review-create@example.com');
-      const body = buildCreateReviewBody(questions);
+      const body = buildCreateReviewBody(questions, restaurantId);
 
       const response = await request(testApp.app.getHttpServer())
         .post('/reviews')
@@ -69,12 +72,12 @@ describe('Review endpoints (e2e)', () => {
 
       expect(review.answers).toHaveLength(5);
       expect(review.images).toHaveLength(1);
-      expect(review.restaurant.name).toBe(body.restaurant.name);
+      expect(review.restaurant.name).toBe(E2E_RESTAURANT_NAME);
     });
 
     it('rejects a review without an answered WRAP_UP question', async () => {
       const { accessToken } = await registerLocalUser(testApp.app, 'review-wrap-up@example.com');
-      const body = buildCreateReviewBody(questions);
+      const body = buildCreateReviewBody(questions, restaurantId);
       body.answers = body.answers.map((answer) =>
         answer.questionId === questions.find((question) => question.step === 'WRAP_UP')!.id
           ? { questionId: answer.questionId }
@@ -88,6 +91,19 @@ describe('Review endpoints (e2e)', () => {
         .expect(400);
 
       expect(response.body.error).toBe('WRAP_UP_ANSWER_REQUIRED');
+    });
+
+    it('rejects a review for a non-existent restaurantId with 404', async () => {
+      const { accessToken } = await registerLocalUser(testApp.app, 'review-no-restaurant@example.com');
+      const body = buildCreateReviewBody(questions, 999_999_999);
+
+      const response = await request(testApp.app.getHttpServer())
+        .post('/reviews')
+        .set('authorization', `Bearer ${accessToken}`)
+        .send(body)
+        .expect(404);
+
+      expect(response.body.error).toBe('NOT_FOUND_RESTAURANT');
     });
   });
 
@@ -175,7 +191,7 @@ describe('Review endpoints (e2e)', () => {
     const response = await request(testApp.app.getHttpServer())
       .post('/reviews')
       .set('authorization', `Bearer ${accessToken}`)
-      .send(buildCreateReviewBody(questions))
+      .send(buildCreateReviewBody(questions, restaurantId))
       .expect(201);
 
     return response.body.result.id;
