@@ -16,9 +16,9 @@ export const TogglePinDocs = () => {
       summary: '핀 생성 또는 제거 ( Map > 핀 토글 ) ',
       description: [
         '- 핀을 생성 또는 제거 ( toggle ) 한다.',
+        '- 요청 바디로 자체 검색 API가 반환한 restaurantId를 전달한다. (가게 정보 upsert 로직 제거됨)',
         '- 핀이 존재할 경우 제거하고, 존재하지 않을 경우 생성한다.',
-        '- 본인이 가고자 하는 PLANNED 타입의 핀을 생성한다. (deprecated)',
-        '- VISITED 유형의 핀은 해당 API로 생성되는 것이 아니라, Review 생성시 자동으로 해당 pin의 type이 VISITED로 UPSERT 된다. (deprecated)',
+        '- 존재하지 않는 restaurantId면 404를 반환한다.',
       ].join('\n'),
     }),
     ApiBody({
@@ -32,6 +32,10 @@ export const TogglePinDocs = () => {
       {
         status: StatusCodes.BAD_REQUEST,
         errorFormatList: [HttpErrorConstants.VALIDATE_ERROR],
+      },
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpErrorConstants.NOT_FOUND_RESTAURANT],
       },
     ]),
   );

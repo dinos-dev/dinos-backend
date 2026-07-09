@@ -8,8 +8,8 @@ import {
   IsDefined,
   IsInt,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   MaxLength,
   Min,
@@ -73,39 +73,6 @@ function HasExactlyOnePrimary(validationOptions?: ValidationOptions) {
   };
 }
 
-export class CreateReviewRestaurantDto {
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ description: '가게 이름 (Naver Place 기반)', example: '유키돈까스', type: String })
-  name: string;
-
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({
-    description: '가게 주소 (Naver Place 기반)',
-    example: '서울특별시 강남구 역삼동 123-456',
-    type: String,
-  })
-  address: string;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  @ApiProperty({ description: '가게 위도', example: 37.511281, type: Number })
-  latitude: number;
-
-  @IsNotEmpty()
-  @IsNumber()
-  @Type(() => Number)
-  @ApiProperty({ description: '가게 경도', example: 127.005068, type: Number })
-  longitude: number;
-
-  @IsOptional()
-  @IsString()
-  @ApiProperty({ description: '가게 카테고리', example: '카페', type: String, required: false, nullable: true })
-  category?: string | null;
-}
-
 export class CreateReviewAnswerDto {
   @IsNotEmpty()
   @IsInt()
@@ -156,10 +123,15 @@ export class CreateReviewImageDto {
 
 export class CreateReviewDto {
   @IsNotEmpty()
-  @ValidateNested()
-  @Type(() => CreateReviewRestaurantDto)
-  @ApiProperty({ description: '가게 정보 (Naver Place 기반)', type: CreateReviewRestaurantDto })
-  restaurant: CreateReviewRestaurantDto;
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  @ApiProperty({
+    description: '리뷰 대상 가게의 restaurantId (자체 검색 API가 반환한 값)',
+    example: 1024,
+    type: Number,
+  })
+  restaurantId: number;
 
   @IsOptional()
   @IsString()

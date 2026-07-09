@@ -193,6 +193,12 @@ export const HttpErrorConstants = {
     message: '리뷰를 찾을 수 없습니다.',
   } as HttpErrorFormat,
 
+  NOT_FOUND_RESTAURANT: {
+    status: HttpStatus.NOT_FOUND,
+    error: 'NOT_FOUND_RESTAURANT',
+    message: '가게를 찾을 수 없습니다.',
+  } as HttpErrorFormat,
+
   NOT_REGISTER_USER: {
     status: HttpStatus.UNAUTHORIZED,
     error: 'NOT_REGISTER_USER',

@@ -14,20 +14,10 @@ export class CreateReviewImageCommand {
   ) {}
 }
 
-export class CreateReviewRestaurantCommand {
-  constructor(
-    public readonly name: string,
-    public readonly address: string,
-    public readonly latitude: number,
-    public readonly longitude: number,
-    public readonly category?: string | null,
-  ) {}
-}
-
 export class CreateReviewCommand {
   constructor(
     public readonly userId: number,
-    public readonly restaurant: CreateReviewRestaurantCommand,
+    public readonly restaurantId: number,
     public readonly content: string | null,
     public readonly wantRecommendation: boolean,
     public readonly answers: CreateReviewAnswerCommand[],

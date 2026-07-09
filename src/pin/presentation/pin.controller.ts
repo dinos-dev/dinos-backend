@@ -21,14 +21,7 @@ export class PinController {
   @Post('toggle')
   @TogglePinDocs()
   async togglePin(@UserId() userId: number, @Body() dto: TogglePinDto): Promise<HttpResponse<PinResponseDto>> {
-    const command = new TogglePinCommand(
-      userId,
-      dto.name,
-      dto.address,
-      dto.latitude,
-      dto.longitude,
-      dto.category ?? null,
-    );
+    const command = new TogglePinCommand(userId, dto.restaurantId);
     const { pin, action } = await this.pinService.togglePin(command);
     const result = PinResponseDto.fromResult(pin, action);
     return HttpResponse.created(result);

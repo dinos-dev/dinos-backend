@@ -34,7 +34,6 @@ import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaura
 import { CreateReviewCommand } from './command/create-review.command';
 import { UpdateReviewCommand } from './command/update-review.command';
 import { ReviewEntity } from '../domain/entities/review.entity';
-import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
 import { ReviewAnswerEntity } from '../domain/entities/review-answer.entity';
 import { ReviewImageEntity } from '../domain/entities/review-image.entity';
 import { CursorPaginatedResponseDto } from 'src/common/dto/pagination.dto';
@@ -190,27 +189,22 @@ export class ReviewService {
   async createReview(command: CreateReviewCommand): Promise<CreateReviewResponseDto> {
     await this.validateWrapUpAnswered(command.answers);
 
+    //? 0. 가게 존재 검증 (자체 수집된 restaurants 참조 — 없으면 404)
+    const restaurantExists = await this.restaurantRepository.existsById(command.restaurantId);
+    if (!restaurantExists) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_RESTAURANT);
+    }
+
     try {
-      //? 1. Restaurant upsert (name + address 기준 조회 → 없으면 생성)
-      const restaurantEntity = RestaurantEntity.create({
-        name: command.restaurant.name,
-        address: command.restaurant.address,
-        latitude: command.restaurant.latitude,
-        longitude: command.restaurant.longitude,
-        category: command.restaurant.category ?? null,
-      });
-
-      const restaurant = await this.restaurantRepository.upsertRestaurantByNameAndAddress(restaurantEntity);
-
-      //? 2. ReviewEntity 생성
+      //? 1. ReviewEntity 생성
       const reviewEntity = ReviewEntity.create({
         userId: command.userId,
-        restaurantId: restaurant.id,
+        restaurantId: command.restaurantId,
         content: command.content,
         wantRecommendation: command.wantRecommendation,
       });
 
-      //? 3. ReviewAnswerEntity 배열 생성
+      //? 2. ReviewAnswerEntity 배열 생성
       const answerEntities = command.answers.map((a) =>
         ReviewAnswerEntity.create({
           questionId: a.questionId,
@@ -219,7 +213,7 @@ export class ReviewService {
         }),
       );
 
-      //? 4. ReviewImageEntity 배열 생성
+      //? 3. ReviewImageEntity 배열 생성
       const imageEntities = command.images.map((i) =>
         ReviewImageEntity.create({
           imageUrl: i.imageUrl,
@@ -228,18 +222,18 @@ export class ReviewService {
         }),
       );
 
-      //? 5. Review + Answers + Images 단일 트랜잭션 생성
+      //? 4. Review + Answers + Images 단일 트랜잭션 생성
       const review = await this.reviewRepository.createWithAnswersAndImages(
         reviewEntity,
         answerEntities,
         imageEntities,
       );
 
-      //? 6. Restaurant 대표 이미지 업데이트 (primaryImageSetBy가 null인 경우에만 → 최초 리뷰어 이미지 채택)
+      //? 5. Restaurant 대표 이미지 업데이트 (primaryImageSetBy가 null인 경우에만 → 최초 리뷰어 이미지 채택)
       const primaryImage = command.images.find((i) => i.isPrimary);
       if (primaryImage) {
         await this.restaurantRepository.updatePrimaryImageIfNotSet(
-          restaurant.id,
+          command.restaurantId,
           primaryImage.imageUrl,
           command.userId,
         );

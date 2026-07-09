@@ -1,11 +1,10 @@
-import { Inject, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { PIN_QUERY_REPOSITORY, PIN_REPOSITORY, RESTAURANT_REPOSITORY } from 'src/common/config/common.const';
 import { getErrorMessage, getErrorStack } from 'src/common/utils/error.util';
 import { IPinRepository } from '../domain/repository/pin.repository.interface';
 import { IRestaurantRepository } from 'src/restaurant/domain/repository/restaurant.repository.interface';
 import { TogglePinCommand } from './command/toggle-pin.command';
 import { PinEntity } from '../domain/entities/pin.entity';
-import { RestaurantEntity } from 'src/restaurant/domain/entities/restaurant.entity';
 import { Transactional } from '@nestjs-cls/transactional';
 import { HttpErrorConstants } from 'src/common/http/http-error-objects';
 import { WinstonLoggerService } from 'src/infrastructure/logger/winston-logger.service';
@@ -34,32 +33,26 @@ export class PinService {
    */
   @Transactional()
   async togglePin(command: TogglePinCommand): Promise<{ pin: PinEntity; action: 'created' | 'deleted' }> {
+    //? 1. 가게 존재 검증 (자체 수집된 restaurants 참조 — 없으면 404)
+    const restaurantExists = await this.restaurantRepository.existsById(command.restaurantId);
+    if (!restaurantExists) {
+      throw new NotFoundException(HttpErrorConstants.NOT_FOUND_RESTAURANT);
+    }
+
     try {
-      //? 1. restaurantEntity 생성
-      const restaurantEntity = RestaurantEntity.create({
-        name: command.name,
-        address: command.address,
-        latitude: command.latitude,
-        longitude: command.longitude,
-        category: command.category ?? null,
-      });
+      //? 2. pin 조회
+      const pin = await this.pinQuery.findByUserIdAndRestaurantId(command.userId, command.restaurantId);
 
-      //? 2. restaurantEntity 동기화
-      const upsertRestaurantEntity = await this.restaurantRepository.upsertRestaurantByNameAndAddress(restaurantEntity);
-
-      //? 3. pin 조회
-      const pin = await this.pinQuery.findByUserIdAndRestaurantId(command.userId, upsertRestaurantEntity.id);
-
-      //? 4. 핀의 존재 여부에 따른 생성 또는 제거 ( toggle )
+      //? 3. 핀의 존재 여부에 따른 생성 또는 제거 ( toggle )
       if (pin) {
         const removed = await this.pinRepository.removeById(pin.id);
         return { pin: removed, action: 'deleted' };
       }
 
-      //? 5. pin이 없을 경우 생성
+      //? 4. pin이 없을 경우 생성
       const pinEntity = PinEntity.create({
         userId: command.userId,
-        restaurantId: upsertRestaurantEntity.id,
+        restaurantId: command.restaurantId,
         // type: command.type,
       });
 

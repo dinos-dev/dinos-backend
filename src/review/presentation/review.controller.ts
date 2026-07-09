@@ -33,7 +33,6 @@ import {
   CreateReviewAnswerCommand,
   CreateReviewCommand,
   CreateReviewImageCommand,
-  CreateReviewRestaurantCommand,
 } from '../application/command/create-review.command';
 import {
   UpdateReviewAnswerCommand,
@@ -65,13 +64,7 @@ export class ReviewController {
     //? 1. CreateReviewCommand 생성
     const command = new CreateReviewCommand(
       userId,
-      new CreateReviewRestaurantCommand(
-        dto.restaurant.name,
-        dto.restaurant.address,
-        dto.restaurant.latitude,
-        dto.restaurant.longitude,
-        dto.restaurant.category ?? null,
-      ),
+      dto.restaurantId,
       dto.content ?? null,
       dto.wantRecommendation,
       (dto.answers ?? []).map(

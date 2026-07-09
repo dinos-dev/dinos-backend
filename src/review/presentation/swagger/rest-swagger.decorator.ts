@@ -30,7 +30,8 @@ export const CreateReviewDocs = () => {
       summary: '리뷰 작성',
       description: [
         '- 가게에 대한 리뷰를 작성한다.',
-        '- 가게 정보(name, address)를 기반으로 자동 upsert 처리된다. (Naver Place 기반)',
+        '- 요청 바디로 자체 검색 API가 반환한 restaurantId를 전달한다. (가게 정보 upsert 로직 제거됨)',
+        '- 존재하지 않는 restaurantId면 404를 반환한다.',
         '- answers는 선택사항이며, 각 항목은 optionId 또는 customAnswer 중 하나만 입력해야 한다.',
         '- reviews/questions 에서 반환된 Questions의 id는 모두 포함시켜야 한다. (추후 리뷰를 수정하는 케이스에서 해당 질문지를 그대로 보여주어야 하기 때문)',
         '- images는 선택사항이며, 첨부 시 isPrimary: true 항목이 반드시 1개여야 한다.',
@@ -51,6 +52,10 @@ export const CreateReviewDocs = () => {
       {
         status: StatusCodes.UNAUTHORIZED,
         errorFormatList: HttpErrorConstants.COMMON_UNAUTHORIZED_TOKEN_ERROR,
+      },
+      {
+        status: StatusCodes.NOT_FOUND,
+        errorFormatList: [HttpErrorConstants.NOT_FOUND_RESTAURANT],
       },
     ]),
   );
